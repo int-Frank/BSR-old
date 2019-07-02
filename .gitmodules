@@ -1,0 +1,3 @@
+[submodule "Vendor/DgLib"]
+	path = Vendor/DgLib
+	url = https://github.com/int-Frank/DgLib

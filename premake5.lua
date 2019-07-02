@@ -36,7 +36,14 @@ project "Game"
   
   links
   {
+    "DgLib",
     "Core"
+  }
+
+  includedirs
+  {
+    "%{wks.location}/Vendor/DgLib/src",
+    "%{wks.location}/Core/src",
   }
 
 project "Core"
@@ -52,6 +59,16 @@ project "Core"
   {
     "Core/src/**.h",
     "Core/src/**.cpp",
+  }
+  
+  links
+  {
+    "DgLib"
+  }
+  
+  includedirs
+  {
+    "%{wks.location}/Vendor/DgLib/src"
   }
   
 project "Tools"
@@ -71,10 +88,21 @@ project "Tools"
   
   includedirs
   {
+    "%{wks.location}/Vendor/DgLib/src",
     "%{wks.location}/Core/src"
   }
   
   links
   {
+    "DgLib",
     "Core"
   }
+  
+ project "DgLib"
+  location "Vendor/DgLib"
+  kind "StaticLib"
+  targetdir (projOutput)
+  objdir (projOutputInt)
+  systemversion "latest"
+  
+  include "Vendor/DgLib/premake5_DgLib.lua"
