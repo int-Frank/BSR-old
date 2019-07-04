@@ -6,7 +6,7 @@
 #include "DgHyperArray.h"
 #include "Types.h"
 
-#define BSR_VERSION 0x1000000
+#define BSR_VERSION 0x10000000
 
 typedef uint32_t BlockID; //This is simply the index to the block in m_rBlocks
 

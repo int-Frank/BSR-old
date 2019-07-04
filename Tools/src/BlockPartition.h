@@ -6,6 +6,8 @@
 #include "DgHyperArray.h"
 #include "MapData.h"
 
+//TODO  Look for large blocks first (10 x 10 for exmaple). This way we can ensure larger areas are not
+//      split by smaller ones. We can the decrement and search again (9 x 9 for example) all the way to 1.
 class BlockPartition
 {
 private:
@@ -23,7 +25,7 @@ public:
 
 private:
 
-  bool GetNextSeed(XY & currentSeed) const;
+  bool GetNextSeed(XY & currentSeed) const; //change to 'bool GetNextSeed(XY & currentSeed, int size) const;'
   Block GetCandidate(XY const & seed) const;
   void MaskOut(Block const &);
   void CheckCoordinate(XY const & coord) const;

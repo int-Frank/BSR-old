@@ -44,6 +44,7 @@ project "Game"
   {
     "%{wks.location}/Vendor/DgLib/src",
     "%{wks.location}/Core/src",
+    "%{wks.location}/Vendor/spdlog/include"
   }
 
 project "Core"
@@ -68,7 +69,8 @@ project "Core"
   
   includedirs
   {
-    "%{wks.location}/Vendor/DgLib/src"
+    "%{wks.location}/Vendor/DgLib/src",
+    "%{wks.location}/Vendor/spdlog/include"
   }
   
 project "Tools"
