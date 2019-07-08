@@ -2,6 +2,9 @@
 #define GAME_H
 
 #include "Types.h"
+#include "MessageBus.h"
+
+class System;
 
 class Game
 {
@@ -24,6 +27,11 @@ private:
 private:
 
   static Game * s_instance;
+
+private:
+
+  MessageBus m_msgBus;
+
 };
 
 #endif
