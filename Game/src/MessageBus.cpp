@@ -2,9 +2,9 @@
 #include "Message.h"
 #include "MessageBus.h"
 #include "System.h"
+#include "SystemStack.h"
 
 MessageBus::MessageBus()
-  : m_nextHandle(1)
 {
 
 }
@@ -21,36 +21,13 @@ void MessageBus::Register(Message const & a_message)
   m_messageQueue.push_back(a_message);
 } 
 
-void MessageBus::Dispatch(Message const & a_message)
+bool MessageBus::GetNextMessage(Message & a_out)
 {
-  for (auto kv : m_subscribers)
-    kv.second->HandleMessage(a_message);
-}
-
-bool MessageBus::ProcessNextMessage()
-{
-  m_mutex.lock();
+  std::lock_guard<std::mutex> lock(m_mutex);
   if (m_messageQueue.size() > 0)
   {
-    Message msg(m_messageQueue.front());
-    m_messageQueue.pop_front(); //Leaves the queue to recieve messages from other threads
-    m_mutex.unlock();
-    Dispatch(msg);
-    m_mutex.lock();
+    a_out = m_messageQueue.front();
+    m_messageQueue.pop_front();
   }
   return m_messageQueue.size() > 0;
-  m_mutex.unlock();
-}
-
-SubscriberHandle MessageBus::RegisterSubscriber(System * a_pSub)
-{
-  SubscriberHandle handle = m_nextHandle;
-  m_subscribers.insert(handle, a_pSub);
-  m_nextHandle++;
-  return handle;
-}
-
-void MessageBus::DeregisterSubscriber(SubscriberHandle a_handle)
-{
-  m_subscribers.erase(a_handle);
 }

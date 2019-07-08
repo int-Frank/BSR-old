@@ -20,9 +20,13 @@ public:
   System(System &&);
   System & operator=(System &&);
 
+  virtual void OnAttach() =0;
+  virtual void OnDetach() =0;
+
   virtual void Update() =0;
 
-  virtual void HandleMessage(Message const &) =0;
+  //Return bool: consumed
+  virtual bool HandleMessage(Message const &) =0;
   void Post(Message const &);
 
   //This is dangerous in a multithreaded environment.

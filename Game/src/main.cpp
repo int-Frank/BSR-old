@@ -3,6 +3,7 @@
 #include <exception>
 
 #include "Game.h"
+#include "Options.h"
 
 int main( int argc, char* args[] )
 {
@@ -12,12 +13,12 @@ int main( int argc, char* args[] )
   }
   catch (std::exception & e)
   {
-    std::ofstream ofs("crash-report.txt");
+    std::ofstream ofs(CRASH_REPORT_FILE);
     ofs << "Game failed to initialise: " << e.what();
   }
   catch (...)
   {
-    std::ofstream ofs("crash-report.txt");
+    std::ofstream ofs(CRASH_REPORT_FILE);
     ofs << "Game failed to intialise, no error reported.";
   }
 
@@ -29,15 +30,17 @@ int main( int argc, char* args[] )
     }
     catch (std::exception & e)
     {
-      std::ofstream ofs("crash-report.txt");
+      std::ofstream ofs(CRASH_REPORT_FILE);
       ofs << "Game has thrown exception: " << e.what();
     }
     catch (...)
     {
-      std::ofstream ofs("crash-report.txt");
+      std::ofstream ofs(CRASH_REPORT_FILE);
       ofs << "Game has thrown an unknown exception";
     }
 
     Game::ShutDown();
   }
+
+  return 0;
 }
