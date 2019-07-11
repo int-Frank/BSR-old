@@ -4,7 +4,8 @@
 #include "System.h"
 #include "SystemStack.h"
 
-MessageBus::MessageBus()
+MessageBus::MessageBus(SystemStack & a_ss)
+  : m_systemStack(a_ss)
 {
 
 }
@@ -21,13 +22,30 @@ void MessageBus::Register(Message const & a_message)
   m_messageQueue.push_back(a_message);
 } 
 
-bool MessageBus::GetNextMessage(Message & a_out)
+void MessageBus::DispatchMessages()
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
-  if (m_messageQueue.size() > 0)
+  while (true)
   {
-    a_out = m_messageQueue.front();
-    m_messageQueue.pop_front();
+    Message msg;
+    bool shouldBreak = false;
+    m_mutex.lock();
+    if (m_messageQueue.size() > 0)
+    {
+      msg = m_messageQueue.front();
+      m_messageQueue.pop_front();
+    }
+    else
+      shouldBreak = true;
+    m_mutex.unlock();
+
+    if (shouldBreak)
+      break;
+
+    auto it = m_systemStack.begin();
+    for (; it != m_systemStack.end(); it++)
+    {
+      if (it->second->HandleMessage(msg))
+        continue;
+    }
   }
-  return m_messageQueue.size() > 0;
 }

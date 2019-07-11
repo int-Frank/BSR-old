@@ -8,25 +8,26 @@
 #include "Message.h"
 
 class System;
+class SystemStack;
 
 class MessageBus
 {
 
 public:
 
-  MessageBus();
+  MessageBus(SystemStack &);
 
   //Add message to the queue to be processed at a later time
   void Register(Message const &);
 
-  //Returns false if no more messages to process
-  bool GetNextMessage(Message &);
+  void DispatchMessages();
   size_t MessageCount();
 
 private:
 
   std::mutex                    m_mutex;       
   Dg::DoublyLinkedList<Message> m_messageQueue;
+  SystemStack &                 m_systemStack;
 };
 
 #endif

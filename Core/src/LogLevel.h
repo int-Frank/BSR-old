@@ -9,4 +9,7 @@
 #define LL_CRITICAL 5
 #define LL_OFF      6
 
+//Redefine this in your code
+#define LOGLEVEL LL_TRACE
+
 #endif

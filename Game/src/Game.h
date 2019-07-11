@@ -3,6 +3,7 @@
 
 #include "Types.h"
 #include "MessageBus.h"
+#include "SystemStack.h"
 
 class System;
 
@@ -30,8 +31,8 @@ private:
 
 private:
 
-  MessageBus m_msgBus;
-
+  SystemStack m_systemStack;
+  MessageBus  m_msgBus;
 };
 
 #endif

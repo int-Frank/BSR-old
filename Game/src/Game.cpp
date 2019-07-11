@@ -32,6 +32,7 @@ Game * Game::Instance()
 }
 
 Game::Game()
+  : m_msgBus(m_systemStack)
 {
 
 }
