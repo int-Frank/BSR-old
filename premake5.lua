@@ -14,6 +14,16 @@ workspace "BSR"
 projOutput = "%{wks.location}/build/%{prj.name}-%{cfg.buildcfg}"
 projOutputInt = "%{wks.location}/build/intermediate/%{prj.name}-%{cfg.buildcfg}"
 
+-- Include directories relative to root folder (solution directory)
+IncludeDir = {}
+IncludeDir["Glad"] = "Vendor/GLAD/include"
+IncludeDir["SDL2"] = "Vendor/SDL2-2.0.9/include"
+
+group "Depenencies"
+  include "Vendor/GLAD/premake5_GLAD.lua"
+  
+group ""
+
 project "Game"
   location "Game"
   kind "ConsoleApp"
@@ -29,23 +39,38 @@ project "Game"
     "Game/src/**.cpp",
   }
 
-  includedirs
-  {
-    "%{wks.location}/Core/src"
-  }
-  
   links
   {
     "DgLib",
-    "Core"
+    "Glad",
+    "Core",
+    "Vendor/SDL2-2.0.9/lib/x64/SDL2.lib",
+    "Vendor/SDL2-2.0.9/lib/x64/SDL2main.lib"
   }
 
   includedirs
   {
     "%{wks.location}/Vendor/DgLib/src",
     "%{wks.location}/Core/src",
-    "%{wks.location}/Vendor/spdlog/include"
+    "%{wks.location}/Vendor/spdlog/include",
+		"%{IncludeDir.Glad}",
+		"%{IncludeDir.SDL2}"
   }
+  
+  filter "configurations:Debug"
+		defines "BSR_DEBUG"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		defines "BSR_RELEASE"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Dist"
+		defines "BSR_DIST"
+		runtime "Release"
+		optimize "on"
 
 project "Core"
   location "Core"
@@ -73,6 +98,18 @@ project "Core"
     "%{wks.location}/Vendor/spdlog/include"
   }
   
+  filter "configurations:Debug"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Dist"
+		runtime "Release"
+		optimize "on"
+    
 project "Tools"
   location "Tools"
   kind "ConsoleApp"
@@ -91,14 +128,32 @@ project "Tools"
   includedirs
   {
     "%{wks.location}/Vendor/DgLib/src",
-    "%{wks.location}/Core/src"
+    "%{wks.location}/Core/src",
+		"%{IncludeDir.Glad}",
+		"%{IncludeDir.SDL2}"
   }
   
   links
   {
     "DgLib",
+    "Glad",
     "Core"
   }
+  
+  filter "configurations:Debug"
+		defines "BSR_DEBUG"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		defines "BSR_RELEASE"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Dist"
+		defines "BSR_DIST"
+		runtime "Release"
+		optimize "on"
   
  project "DgLib"
   location "Vendor/DgLib"
