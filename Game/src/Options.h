@@ -2,11 +2,17 @@
 #define OPTIONS_H
 
 #include "LogLevel.h"
+#include "DgAssert.h"
+
+#ifdef BSR_DEBUG
+#define BSR_ASSERT(...) DG_ASSERT(__VA_ARGS__)
+#else
+#define BSR_ASSERT(...)
+#endif
 
 //----------------------------------------------------------------------------
 // Switches
 //----------------------------------------------------------------------------
-#define BSR_ASSERTS_ENABLED
 
 
 //----------------------------------------------------------------------------
@@ -19,7 +25,12 @@
 //----------------------------------------------------------------------------
 // Logging
 //----------------------------------------------------------------------------
-#undef LOGLEVEL
-#define LOGLEVEL LL_DEBUG
+#if defined(BSR_DEBUG)
+#define LOGLEVEL LL_TRACE
+#elif defined(BSR_RELEASE)
+#define LOGLEVEL LL_WARN
+#else
+#define LOGLEVEL LL_OFF
+#endif
 
 #endif

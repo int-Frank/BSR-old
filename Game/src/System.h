@@ -14,14 +14,9 @@ public:
   System(MessageBus * a_pMsgBus);
   virtual ~System();
 
-  System(System const &);
-  System & operator=(System const &);
-
-  System(System &&);
-  System & operator=(System &&);
-
-  virtual void OnAttach() =0;
-  virtual void OnDetach() =0;
+  virtual void OnAttach(){};
+  virtual void OnDetach(){};
+  virtual void ShutDown(){};
 
   virtual void Update() =0;
 
@@ -34,6 +29,9 @@ public:
   //void PriorityPost(Message const &);
 
 private:
+
+  System(System const &);
+  System & operator=(System const &);
 
   MessageBus * m_pMsgBus;
 };

@@ -25,12 +25,4 @@ typedef Dg::R2::Line<float>       line2D;
 typedef Dg::R3::Sphere<float>     sphere;
 typedef Dg::R3::Rectangle<float>  rect3D;
 
-
-enum ErrorCode
-{
-  E_None,
-  E_Error,
-  E_InvalidIndices
-};
-
 #endif

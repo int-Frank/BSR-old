@@ -1,5 +1,6 @@
 #include "Log.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/fmt/ostr.h"
 
 std::shared_ptr<spdlog::logger> impl::Logger::s_logger;
 

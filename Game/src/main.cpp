@@ -7,6 +7,11 @@
 
 int main( int argc, char* args[] )
 {
+  //Clear crash report file
+  std::ofstream ofs;
+  ofs.open(CRASH_REPORT_FILE, std::ofstream::out | std::ofstream::trunc);
+  ofs.close();
+
   try
   {
     Game::Init();
