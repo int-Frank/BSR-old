@@ -14,9 +14,8 @@ public:
   System(MessageBus * a_pMsgBus);
   virtual ~System();
 
-  virtual void OnAttach(){};
-  virtual void OnDetach(){};
-  virtual void ShutDown(){};
+  virtual void OnAttach(){}
+  virtual void OnDetach(){}
 
   virtual void Update() =0;
 

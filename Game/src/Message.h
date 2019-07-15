@@ -6,63 +6,70 @@
 
 enum MessageClass
 {
-  MC_None = 0,
-  MC_Application    = BIT(0),
+  MC_None           = 0,
+  MC_Game           = BIT(0),
   MC_Input          = BIT(1),
   MC_Keyboard       = BIT(2),
   MC_Mouse          = BIT(3),
   MC_Menu           = BIT(4),
-  MC_Game           = BIT(5)
+  MC_Window         = BIT(5)
 };
 
-enum class MessageType
+enum MessageType
 {
-  None,
+  MT_None,
 
-  //Events
-  Event_Input,
-  Event_Window,
-  Event_QuitRequest,
+  //Application
+  MT_QuitRequest,
+
+  //Input
+  MT_ButtonUp,
+  MT_ButtonDown,
+  MT_MouseWheel,
+  MT_MouseMotion,
 
   //Menu bindings
-  Select,       //Enter, mouse left button
-  MouseMove,
-  NextItem,     //down arrow
-  PreviousItem, //up arrow
-  ModifyUp,     //right arrow, wheel up
-  ModifyDown,   //left arrow, wheel down
+  MT_Select,       //Enter, mouse left button
+  MT_MouseMove,
+  MT_NextItem,     //down arrow
+  MT_PreviousItem, //up arrow
+  MT_ModifyUp,     //right arrow, wheel up
+  MT_ModifyDown,   //left arrow, wheel down
 
-  GoBack,       //typically at least bound to escape key
+  MT_GoBack,       //typically at least bound to escape key
 
   //Game specific
-  Rotate,
-  Activate,
-  Back,
-  BeginFire,
-  EndFire,
-  BeginAltFire,
-  EndAltFire,
-  BeginForward,
-  EndForward,
-  BeginMoveBack,
-  EndMoveBack,
-  BeginTurnLeft,
-  EndTurnLeft,
-  BeginTurnRight,
-  EndTurnRight,
-  BeginMoveLeft,
-  EndMoveLeft,
-  BeginMoveRight,
-  EndMoveRight,
-  BeginActivate,
-  EndActivate,
-  RunOn,
-  RunOff,
-  ToggleRun,
-  ToggleMap,
-  GoToLevel
+  MT_Rotate,
+  MT_Activate,
+  MT_Back,
+  MT_BeginFire,
+  MT_EndFire,
+  MT_BeginAltFire,
+  MT_EndAltFire,
+  MT_BeginForward,
+  MT_EndForward,
+  MT_BeginMoveBack,
+  MT_EndMoveBack,
+  MT_BeginTurnLeft,
+  MT_EndTurnLeft,
+  MT_BeginTurnRight,
+  MT_EndTurnRight,
+  MT_BeginMoveLeft,
+  MT_EndMoveLeft,
+  MT_BeginMoveRight,
+  MT_EndMoveRight,
+  MT_BeginActivate,
+  MT_EndActivate,
+  MT_RunOn,
+  MT_RunOff,
+  MT_ToggleRun,
+  MT_ToggleMap,
+  MT_GoToLevel
 };
 
+uint32_t CombineMessageParts(uint32_t, uint32_t);
+uint32_t GetMessageClass(uint32_t);
+uint32_t GetMessageType(uint32_t);
 
 /*
   -door opens
@@ -72,7 +79,8 @@ enum class MessageType
 */
 struct LocationalEvent
 {
-  float vector[3]; //offset relative to the player
+  uint32_t  type;
+  float     vector[3]; //offset relative to the player
 };
 
 //-----------------------------------------------------------------------------------
@@ -80,8 +88,7 @@ struct LocationalEvent
 //-----------------------------------------------------------------------------------
 struct MouseButtonData
 {
-  uint32_t type; //IT_MOUSEBUTTON
-  uint32_t state;
+  uint32_t type;
   uint32_t code;
   int x;
   int y;
@@ -89,21 +96,14 @@ struct MouseButtonData
 
 struct KeyData
 {
-  uint32_t type; //IT_KEY
-  uint32_t state;
+  uint32_t type;
   uint32_t code;
   bool     repeat;
 };
 
-struct MouseWheelData
-{
-  uint32_t type; //IT_MOUSEWHEEL
-  int y;
-};
-
 struct MouseMoveData
 {
-  uint32_t type; //IT_MOUSEMOVE
+  uint32_t type;
   int x;
   int y;
   int xRel;
@@ -115,12 +115,14 @@ struct MouseMoveData
 //-----------------------------------------------------------------------------------
 struct TMouseMoveData
 {
+  uint32_t type;
   int x;
   int y;
 };
 
 struct RotateData
 {
+  uint32_t type;
   float dPitch;
   float dYaw;
 };
@@ -130,25 +132,27 @@ struct RotateData
 //-----------------------------------------------------------------------------------
 struct WindowData
 {
-  uint32_t  code;
+  uint32_t  type;
   int32_t   data1;
   int32_t   data2;
 };
 
+struct MouseWheelData
+{
+  uint32_t type;
+  int32_t  y;
+};
+
 struct Message
 {
-  MessageType type;
   union
   {
-    //Generic storage
-    float     f32;
-    uint32_t  uint32;
-    int32_t   int32;
+    uint32_t type;
 
     //Message specific storage
     MouseButtonData mouseButton;
-    MouseWheelData  mouseWheel;
     MouseMoveData   mouseMove;
+    MouseWheelData  mouseWheel;
     KeyData         key;
     WindowData      window;
     TMouseMoveData  tMouseMove;

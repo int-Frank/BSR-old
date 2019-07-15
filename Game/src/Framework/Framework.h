@@ -3,9 +3,10 @@
 
 #include "ErrorCodes.h"
 
+#include "../IWindow.h"
+#include "../IEventPoller.h"
+
 //class Logger;
-class IWindow;
-class IEventPoller;
 class IDraw;
 class IAudio;
 
@@ -17,10 +18,8 @@ public:
   ~Framework();
 
   static Framework * Instance();
-  static void DestroyInstance();
-
-  ErrorCode Init();
-  ErrorCode ShutDown();
+  static ErrorCode Init();
+  static ErrorCode ShutDown();
 
   //These will pass pointers to internal objects.
   //Do NOT delete these! All internal objects will
@@ -30,6 +29,17 @@ public:
   IEventPoller * GetEventPoller();
   IDraw *        GetDraw();
   IAudio *       GetAudio();
+
+private:
+
+  //These are implemented in the relevent cpp files
+  void InitWindow();
+  void InitEventPoller();
+
+private:
+
+  void SetWindow(IWindow *);
+  void SetEventPoller(IEventPoller *);
 
 private:
 
