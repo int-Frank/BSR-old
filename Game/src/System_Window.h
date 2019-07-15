@@ -1,27 +1,29 @@
 #ifndef SYSTEM_WINDOW_H
 #define SYSTEM_WINDOW_H
 
+#include "ErrorCodes.h"
 #include "System.h"
+
+class IWindow;
 
 class System_Window : public System
 {
 public:
 
-  System_Window(MessageBus * a_pMsgBus);
+  System_Window(MessageBus * a_pMsgBus, IWindow *);
   ~System_Window();
 
-  void Init();
   void OnAttach();
   void OnDetach();
-  void ShutDown();
 
   void Update();
 
   //Return bool: consumed
-  bool HandleMessage(Message const &) =0;
+  bool HandleMessage(Message const &);
 
 private:
 
+   IWindow * m_pWindow;
 };
 
 #endif

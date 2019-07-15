@@ -218,39 +218,39 @@ static uint32_t TranslateWindowCode(int a_code)
   switch (a_code)
   {
     case  SDL_WINDOWEVENT_SHOWN:
-      return WC_SHOWN;
+      return MT_Window_Shown;
     case  SDL_WINDOWEVENT_HIDDEN:
-      return WC_HIDDEN;
+      return MT_Window_Hidden;
     case  SDL_WINDOWEVENT_EXPOSED:
-      return WC_EXPOSED;
+      return MT_Window_Exposed;
     case  SDL_WINDOWEVENT_MOVED:
-      return WC_MOVED;
+      return MT_Window_Moved;
     case  SDL_WINDOWEVENT_RESIZED:
-      return WC_RESIZED;
+      return MT_Window_Resized;
     case  SDL_WINDOWEVENT_SIZE_CHANGED:
-      return WC_SIZE_CHANGED;
+      return MT_Window_Sized_Changed;
     case  SDL_WINDOWEVENT_MINIMIZED:
-      return WC_MINIMIZED;
+      return MT_Window_Minimized;
     case  SDL_WINDOWEVENT_MAXIMIZED:
-      return WC_MAXIMIZED;
+      return MT_Window_Maximized;
     case  SDL_WINDOWEVENT_RESTORED:
-      return WC_RESTORED;
+      return MT_Window_Restored;
     case  SDL_WINDOWEVENT_ENTER:
-      return WC_ENTER;
+      return MT_Window_Enter;
     case  SDL_WINDOWEVENT_LEAVE:
-      return WC_LEAVE;
+      return MT_Window_Leave;
     case  SDL_WINDOWEVENT_FOCUS_GAINED:
-      return WC_FOCUS_GAINED;
+      return MT_Window_Focus_Gained;
     case  SDL_WINDOWEVENT_FOCUS_LOST:
-      return WC_FOCUS_LOST;
+      return MT_Window_Focus_Lost;
     case  SDL_WINDOWEVENT_CLOSE:
-      return WC_CLOSE;
+      return MT_Window_Close;
     case  SDL_WINDOWEVENT_TAKE_FOCUS:
-      return WC_TAKE_FOCUS;
+      return MT_Window_Take_Focus;
     case  SDL_WINDOWEVENT_HIT_TEST:
-      return WC_HIT_TEST;
+      return MT_Window_Hit_Test;
     default:
-      return WC_UNKNOWN;
+      return MT_None;
   }
 
   return uint32_t(a_code);
@@ -267,7 +267,7 @@ bool FW_EventPoller::NextEvent(Message & a_message)
     case SDL_KEYDOWN:
     case SDL_KEYUP:
     {
-      a_message.type = CombineMessageParts((MC_Input | MC_Keyboard), TranslateKeyState(event.type));
+      a_message.SetType((MC_Input | MC_Keyboard), TranslateKeyState(event.type));
       a_message.key.code = TranslateKeyCode(event.key.keysym.sym);
       a_message.key.repeat = event.key.repeat != 0;
       break;
@@ -275,7 +275,7 @@ bool FW_EventPoller::NextEvent(Message & a_message)
     case SDL_MOUSEBUTTONDOWN:
     case SDL_MOUSEBUTTONUP:
     {
-      a_message.type = CombineMessageParts((MC_Input | MC_Mouse), TranslateKeyState(event.type));
+      a_message.SetType((MC_Input | MC_Mouse), TranslateKeyState(event.type));
       a_message.mouseButton.code = TranslateMouseButtonCode(event.button.button);
       a_message.mouseButton.x = event.button.x;
       a_message.mouseButton.y = event.button.y;
@@ -283,13 +283,13 @@ bool FW_EventPoller::NextEvent(Message & a_message)
     }
     case SDL_MOUSEWHEEL:
     {
-      a_message.type = CombineMessageParts((MC_Input | MC_Mouse), MT_MouseWheel);
+      a_message.SetType((MC_Input | MC_Mouse), MT_MouseWheel);
       a_message.mouseWheel.y = event.wheel.y;
       break;
     }
     case SDL_MOUSEMOTION:
     {
-      a_message.type = CombineMessageParts((MC_Input | MC_Mouse), MT_MouseMotion);
+      a_message.SetType((MC_Input | MC_Mouse), MT_MouseMotion);
       a_message.mouseMove.x = event.motion.x;
       a_message.mouseMove.y = event.motion.y;
       a_message.mouseMove.xRel = event.motion.xrel;
@@ -299,7 +299,7 @@ bool FW_EventPoller::NextEvent(Message & a_message)
     case SDL_WINDOWEVENT:
     {
       //Handle and send to window system
-      a_message.type = CombineMessageParts(MC_Window, TranslateWindowCode(event.window.type));
+      a_message.SetType(MC_Window, TranslateWindowCode(event.window.type));
       a_message.window.data1 = event.window.data1;
       a_message.window.data2 = event.window.data2;
       break;
@@ -307,7 +307,7 @@ bool FW_EventPoller::NextEvent(Message & a_message)
     case SDL_QUIT:
     {
       //Handle quit request
-      a_message.type = CombineMessageParts(MC_Window, MT_QuitRequest);
+      a_message.SetType(MC_Window, MT_Window_Close);
       break;
     }
     default:

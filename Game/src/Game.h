@@ -23,10 +23,13 @@ public:
   static bool IsInitialised();
 
   void Run();
+  void RequestQuit();
 
 private:
   Game(Game const &) = delete;
   Game & operator=(Game const &) = delete;
+
+  void InitWindow();
 
 private:
 
@@ -34,6 +37,7 @@ private:
 
 private:
 
+  bool m_shouldQuit;
   IWindow * m_window;
 
   SystemStack m_systemStack;

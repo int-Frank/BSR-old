@@ -8,6 +8,16 @@
 
 Game * Game::s_instance = nullptr;
 
+void Game::InitWindow()
+{
+  m_window = Framework::Instance()->GetWindow();
+  if (m_window == nullptr)
+    throw std::runtime_error("GetWindow() has returned a null pointer!");
+
+  if (m_window->Init() != EC_None)
+    throw std::runtime_error("Failed to initialise window!");
+}
+
 //Be sure to clean up if this fails.
 void Game::Init()
 {
@@ -17,9 +27,7 @@ void Game::Init()
   if (Framework::Init() != EC_None)
     throw std::runtime_error("Failed to initialise framework!");
 
-  s_instance->m_window = Framework::Instance()->GetWindow();
-  if (s_instance->m_window->Init() != EC_None)
-    throw std::runtime_error("Failed to initialise window!");
+  s_instance->InitWindow();
 
   //Set up Window system and add to stack
 
@@ -53,6 +61,7 @@ bool Game::IsInitialised()
 Game::Game()
   : m_msgBus(m_systemStack)
   , m_window(nullptr)
+  , m_shouldQuit(false)
 {
 
 }
@@ -64,5 +73,13 @@ Game::~Game()
 
 void Game::Run()
 {
+  while (!m_shouldQuit)
+  {
+  
+  }
+}
 
+void Game::RequestQuit()
+{
+  m_shouldQuit = true;
 }

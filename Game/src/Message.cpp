@@ -1,16 +1,27 @@
 #include "Message.h"
 
-uint32_t CombineMessageParts(uint32_t a_class, uint32_t a_type)
+Message::Message()
+  : type(0)
 {
-  return ((a_class << 16) | a_type);
+
 }
 
-uint32_t GetMessageClass(uint32_t a_class)
+void Message::SetType(uint32_t a_class, uint32_t a_type)
 {
-  return (a_class >> 16);
+  type = ((a_class << 16) | a_type);
 }
 
-uint32_t GetMessageType(uint32_t a_type)
+uint32_t Message::GetClass() const
 {
-  return (a_type & 0xFFFF);
+  return (type >> 16);
+}
+
+uint32_t Message::GetType() const
+{
+  return (type & 0xFFFF);
+}
+
+bool Message::IsOfClass(MessageClass a_class) const
+{
+  return (GetClass() & a_class) != 0;
 }

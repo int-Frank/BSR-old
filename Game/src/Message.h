@@ -19,8 +19,23 @@ enum MessageType
 {
   MT_None,
 
-  //Application
-  MT_QuitRequest,
+  //Window
+  MT_Window_Shown,          //< Window has been shown 
+  MT_Window_Hidden,         //< Window has been hidden 
+  MT_Window_Exposed,        //< Window has been exposed and should be redrawn 
+  MT_Window_Moved,          //< Window has been moved to data1: data2                                  
+  MT_Window_Resized,        //< Window has been resized to data1xdata2 
+  MT_Window_Sized_Changed,  //< The window size has changed: either as a result of an API call or through the system or user changing the window size. 
+  MT_Window_Minimized,      //< Window has been minimized 
+  MT_Window_Maximized,      //< Window has been maximized 
+  MT_Window_Restored,       //< Window has been restored to normal size and position 
+  MT_Window_Enter,          //< Window has gained mouse focus 
+  MT_Window_Leave,          //< Window has lost mouse focus 
+  MT_Window_Focus_Gained,   //< Window has gained keyboard focus 
+  MT_Window_Focus_Lost,     //< Window has lost keyboard focus 
+  MT_Window_Close,          //< The window manager requests that the window be closed 
+  MT_Window_Take_Focus,     //< Window is being offered a focus (should SetWindowInputFocus() on itself or a subwindow: or ignore) 
+  MT_Window_Hit_Test,       //< Window had a hit test that wasn't SDL_HITTEST_NORMAL. 
 
   //Input
   MT_ButtonUp,
@@ -66,10 +81,6 @@ enum MessageType
   MT_ToggleMap,
   MT_GoToLevel
 };
-
-uint32_t CombineMessageParts(uint32_t, uint32_t);
-uint32_t GetMessageClass(uint32_t);
-uint32_t GetMessageType(uint32_t);
 
 /*
   -door opens
@@ -143,8 +154,17 @@ struct MouseWheelData
   int32_t  y;
 };
 
-struct Message
+class Message
 {
+public:
+
+  Message();
+
+  void SetType(uint32_t  a_class, uint32_t a_type);
+  uint32_t GetClass() const;
+  uint32_t GetType() const;
+  bool IsOfClass(MessageClass) const;
+
   union
   {
     uint32_t type;
