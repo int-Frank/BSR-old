@@ -37,147 +37,145 @@ FW_EventPoller::~FW_EventPoller()
 
 static uint32_t TranslateKeyCode(SDL_Keycode a_key)
 {
-  //SDL keys directly map onto KC keys
+  if (a_key < 128)
+    return a_key;
+
   switch (a_key)
   {
     case SDLK_UNKNOWN:
-    case SDLK_RETURN:
-    case SDLK_ESCAPE:
-    case SDLK_BACKSPACE:
-    case SDLK_TAB:
-    case SDLK_SPACE:
-    case SDLK_EXCLAIM:
-    case SDLK_QUOTEDBL:
-    case SDLK_HASH:
-    case SDLK_PERCENT:
-    case SDLK_DOLLAR:
-    case SDLK_AMPERSAND:
-    case SDLK_QUOTE:
-    case SDLK_LEFTPAREN:
-    case SDLK_RIGHTPAREN:
-    case SDLK_ASTERISK:
-    case SDLK_PLUS:
-    case SDLK_COMMA:
-    case SDLK_MINUS:
-    case SDLK_PERIOD:
-    case SDLK_SLASH:
-    case SDLK_0:
-    case SDLK_1:
-    case SDLK_2:
-    case SDLK_3:
-    case SDLK_4:
-    case SDLK_5:
-    case SDLK_6:
-    case SDLK_7:
-    case SDLK_8:
-    case SDLK_9:
-    case SDLK_COLON:
-    case SDLK_SEMICOLON:
-    case SDLK_LESS:
-    case SDLK_EQUALS:
-    case SDLK_GREATER:
-    case SDLK_QUESTION:
-    case SDLK_AT:
-    case SDLK_LEFTBRACKET:
-    case SDLK_BACKSLASH:
-    case SDLK_RIGHTBRACKET:
-    case SDLK_CARET:
-    case SDLK_UNDERSCORE:
-    case SDLK_BACKQUOTE:
-    case SDLK_a:
-    case SDLK_b:
-    case SDLK_c:
-    case SDLK_d:
-    case SDLK_e:
-    case SDLK_f:
-    case SDLK_g:
-    case SDLK_h:
-    case SDLK_i:
-    case SDLK_j:
-    case SDLK_k:
-    case SDLK_l:
-    case SDLK_m:
-    case SDLK_n:
-    case SDLK_o:
-    case SDLK_p:
-    case SDLK_q:
-    case SDLK_r:
-    case SDLK_s:
-    case SDLK_t:
-    case SDLK_u:
-    case SDLK_v:
-    case SDLK_w:
-    case SDLK_x:
-    case SDLK_y:
-    case SDLK_z:
+      return IC_UNKNOWN;
     case SDLK_CAPSLOCK:
+      return IC_CAPSLOCK;
     case SDLK_F1:
+      return IC_F1;
     case SDLK_F2:
+      return IC_F2;
     case SDLK_F3:
+      return IC_F3;
     case SDLK_F4:
+      return IC_F4;
     case SDLK_F5:
+      return IC_F5;
     case SDLK_F6:
+      return IC_F6;
     case SDLK_F7:
+      return IC_F7;
     case SDLK_F8:
+      return IC_F8;
     case SDLK_F9:
+      return IC_F9;
     case SDLK_F10:
+      return IC_F10;
     case SDLK_F11:
+      return IC_F11;
     case SDLK_F12:
+      return IC_F12;
     case SDLK_PRINTSCREEN:
+      return IC_PRINTSCREEN;
     case SDLK_SCROLLLOCK:
+      return IC_SCROLLLOCK;
     case SDLK_PAUSE: 
+      return IC_PAUSE;
     case SDLK_INSERT:
+      return IC_INSERT;
     case SDLK_HOME:
+      return IC_HOME;
     case SDLK_PAGEUP:
+      return IC_PAGEUP;
     case SDLK_DELETE:
+      return IC_DELETE;
     case SDLK_END:
+      return IC_END;
     case SDLK_PAGEDOWN:
+      return IC_PAGEDOWN;
     case SDLK_RIGHT:
+      return IC_RIGHT;
     case SDLK_LEFT:
+      return IC_LEFT;
     case SDLK_DOWN:
+      return IC_DOWN;
     case SDLK_UP:
+      return IC_UP;
     case SDLK_NUMLOCKCLEAR:
+      return IC_NUMLOCKCLEAR;
     case SDLK_KP_DIVIDE:
+      return IC_KP_DIVIDE;
     case SDLK_KP_MULTIPLY:
+      return IC_KP_MULTIPLY;
     case SDLK_KP_MINUS:
+      return IC_KP_MINUS;
     case SDLK_KP_PLUS:
+      return IC_KP_PLUS;
     case SDLK_KP_ENTER:
+      return IC_KP_ENTER;
     case SDLK_KP_1:
+      return IC_KP_1;
     case SDLK_KP_2:
+      return IC_KP_2;
     case SDLK_KP_3:
+      return IC_KP_3;
     case SDLK_KP_4:
+      return IC_KP_4;
     case SDLK_KP_5:
+      return IC_KP_5;
     case SDLK_KP_6:
+      return IC_KP_6;
     case SDLK_KP_7:
+      return IC_KP_7;
     case SDLK_KP_8:
+      return IC_KP_8;
     case SDLK_KP_9:
+      return IC_KP_9;
     case SDLK_KP_0:
+      return IC_KP_0;
     case SDLK_KP_PERIOD:
+      return IC_KP_PERIOD;
     case SDLK_KP_EQUALS:
+      return IC_KP_EQUALS;
     case SDLK_F13:
+      return IC_F13;
     case SDLK_F14:
+      return IC_F14;
     case SDLK_F15:
+      return IC_F15;
     case SDLK_F16:
+      return IC_F16;
     case SDLK_F17:
+      return IC_F17;
     case SDLK_F18:
+      return IC_F18;
     case SDLK_F19:
+      return IC_F19;
     case SDLK_F20:
+      return IC_F20;
     case SDLK_F21:
+      return IC_F21;
     case SDLK_F22:
+      return IC_F22;
     case SDLK_F23:
+      return IC_F23;
     case SDLK_F24:
+      return IC_F24;
     case SDLK_KP_COMMA:
+      return IC_KP_COMMA;
     case SDLK_LCTRL:
+      return IC_LCTRL;
     case SDLK_LSHIFT:
+      return IC_LSHIFT;
     case SDLK_LALT:
+      return IC_LALT;
     case SDLK_LGUI:
+      return IC_LGUI;
     case SDLK_RCTRL:
+      return IC_RCTRL;
     case SDLK_RSHIFT:
+      return IC_RSHIFT;
     case SDLK_RALT:
+      return IC_RALT;
     case SDLK_RGUI:
-      return a_key;
+      return IC_RGUI;
     default:
-      return KC_UNKNOWN;
+      return IC_UNKNOWN;
   }
 }
 
@@ -185,14 +183,18 @@ static uint32_t TranslateMouseButtonCode(int a_code)
 {
   switch (a_code)
   {
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-      return a_code;
+    case SDL_BUTTON_LEFT:
+      return IC_MOUSEBUTTON_LEFT;
+    case SDL_BUTTON_MIDDLE:
+      return IC_MOUSEBUTTON_MIDDLE;
+    case SDL_BUTTON_RIGHT:
+      return IC_MOUSEBUTTON_RIGHT;
+    case SDL_BUTTON_X1:
+      return IC_MOUSEBUTTON_X1;
+    case SDL_BUTTON_X2:
+      return IC_MOUSEBUTTON_X2;
     default:
-      return MC_UNKNOWN;
+      return IC_UNKNOWN;
   }
 }
 
@@ -202,10 +204,10 @@ static uint32_t TranslateKeyState(int a_code)
   {
     case SDL_KEYUP:
     case SDL_MOUSEBUTTONUP:
-      return MT_ButtonUp;
+      return MT_KeyUp;
     case SDL_KEYDOWN:
     case SDL_MOUSEBUTTONDOWN:
-      return MT_ButtonDown;
+      return MT_KeyDown;
     default:
       return MT_None;
   }
@@ -283,13 +285,15 @@ bool FW_EventPoller::NextEvent(Message & a_message)
     }
     case SDL_MOUSEWHEEL:
     {
-      a_message.SetType((MC_Input | MC_Mouse), MT_MouseWheel);
-      a_message.mouseWheel.y = event.wheel.y;
+      if (event.wheel.y > 0)
+        a_message.SetType((MC_Input | MC_Mouse), MT_MouseWheelUp);
+      else
+        a_message.SetType((MC_Input | MC_Mouse), MT_MouseWheelDown);
       break;
     }
     case SDL_MOUSEMOTION:
     {
-      a_message.SetType((MC_Input | MC_Mouse), MT_MouseMotion);
+      a_message.SetType((MC_Input | MC_Mouse), MT_MouseMoveEvent);
       a_message.mouseMove.x = event.motion.x;
       a_message.mouseMove.y = event.motion.y;
       a_message.mouseMove.xRel = event.motion.xrel;

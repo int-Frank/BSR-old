@@ -38,10 +38,11 @@ enum MessageType
   MT_Window_Hit_Test,       //< Window had a hit test that wasn't SDL_HITTEST_NORMAL. 
 
   //Input
-  MT_ButtonUp,
-  MT_ButtonDown,
-  MT_MouseWheel,
-  MT_MouseMotion,
+  MT_KeyUp,
+  MT_KeyDown,
+  MT_MouseMoveEvent,
+  MT_MouseWheelUp,
+  MT_MouseWheelDown,
 
   //Menu bindings
   MT_Select,       //Enter, mouse left button
@@ -100,25 +101,25 @@ struct LocationalEvent
 struct MouseButtonData
 {
   uint32_t type;
-  uint32_t code;
-  int x;
-  int y;
+  uint8_t code;
+  int16_t x;
+  int16_t y;
 };
 
 struct KeyData
 {
   uint32_t type;
-  uint32_t code;
+  uint16_t code;
   bool     repeat;
 };
 
 struct MouseMoveData
 {
   uint32_t type;
-  int x;
-  int y;
-  int xRel;
-  int yRel;
+  int16_t x;
+  int16_t y;
+  int16_t xRel;
+  int16_t yRel;
 };
 
 //-----------------------------------------------------------------------------------
@@ -127,8 +128,8 @@ struct MouseMoveData
 struct TMouseMoveData
 {
   uint32_t type;
-  int x;
-  int y;
+  int16_t x;
+  int16_t y;
 };
 
 struct RotateData
@@ -151,7 +152,6 @@ struct WindowData
 struct MouseWheelData
 {
   uint32_t type;
-  int32_t  y;
 };
 
 class Message
