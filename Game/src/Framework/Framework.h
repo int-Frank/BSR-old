@@ -5,10 +5,7 @@
 
 #include "../IWindow.h"
 #include "../IEventPoller.h"
-
-//class Logger;
-class IDraw;
-class IAudio;
+#include "../IMouseController.h"
 
 class Framework
 {
@@ -24,22 +21,26 @@ public:
   //These will pass pointers to internal objects.
   //Do NOT delete these! All internal objects will
   //Destroyed on calling DestroyInstance();
-  //Logger *    GetLogger();
+
   IWindow *      GetWindow();
   IEventPoller * GetEventPoller();
-  IDraw *        GetDraw();
-  IAudio *       GetAudio();
+  IMouseController * GetMouseController();
+
+  //IDraw *        GetDraw();
+  //IAudio *       GetAudio();
 
 private:
 
   //These are implemented in the relevent cpp files
   void InitWindow();
   void InitEventPoller();
+  void InitMouseController();
 
 private:
 
   void SetWindow(IWindow *);
   void SetEventPoller(IEventPoller *);
+  void SetMouseController(IMouseController *);
 
 private:
 

@@ -3,7 +3,6 @@
 #include "Framework.h"
 #include "../Message.h"
 #include "../InputCodes.h"
-#include "../WindowCodes.h"
 #include "../Log.h"
 
 #include "SDL_events.h"

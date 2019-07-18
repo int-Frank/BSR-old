@@ -11,6 +11,7 @@ public:
   PIMPL()
     : window(nullptr)
     , eventPoller(nullptr)
+    , mouseController(nullptr)
   {
   
   }
@@ -19,13 +20,16 @@ public:
   {
     delete window;
     delete eventPoller;
+    delete mouseController;
 
     window = nullptr;
     eventPoller = nullptr;
+    mouseController = nullptr;
   }
 
   IWindow *       window;
   IEventPoller *  eventPoller;
+  IMouseController * mouseController;
 };
 
 Framework * Framework::s_instance(nullptr);
@@ -71,6 +75,7 @@ ErrorCode Framework::Init()
     //-----------------------------------------------------------------------------------------
     s_instance->InitWindow();
     s_instance->InitEventPoller();
+    s_instance->InitMouseController();
 
   } while (false);
   return result;
@@ -98,6 +103,11 @@ IEventPoller * Framework::GetEventPoller()
   return m_pimpl->eventPoller;
 }
 
+IMouseController * Framework::GetMouseController()
+{
+  return m_pimpl->mouseController;
+}
+
 void Framework::SetWindow(IWindow * a_window)
 {
   m_pimpl->window = a_window;
@@ -106,4 +116,9 @@ void Framework::SetWindow(IWindow * a_window)
 void Framework::SetEventPoller(IEventPoller * a_ep)
 {
   m_pimpl->eventPoller = a_ep;
+}
+
+void Framework::SetMouseController(IMouseController * a_mc)
+{
+  m_pimpl->mouseController = a_mc;
 }

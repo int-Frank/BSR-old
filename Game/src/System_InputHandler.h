@@ -9,14 +9,33 @@
 #include "Message.h"
 #include "System.h"
 
+class IEventPoller;
+class IMouseController;
+
 class System_InputHandler : public System
 {
+  enum BindingProfile
+  {
+    BP_None,
+    BP_Loading,
+    BP_Menu,
+    BP_DebugOverlay,
+    BP_Game,
+    BP_Elevator
+  };
 public:
 
   System_InputHandler(MessageBus *);
   ~System_InputHandler();
 
+  void SetProfile(BindingProfile);
+
+private:
+
   void ClearBindings();
+
+  template<int BINDING>
+  void SetProfile(){}
 
   //For mouse motion just set the keyState to KS_NONE
   //inputCode: Class|Type eg KeyCode|MT_ButtonUp
@@ -28,13 +47,6 @@ public:
   void ReleaseMouse();
   void SetMouseLook(float xSpeed, float ySpeed);
 
-private:
-
-  System_InputHandler(System_InputHandler const &);
-  System_InputHandler & operator=(System_InputHandler const &);
-
-private:
-
   uint64_t PackKey(uint32_t inputCode, uint32_t type);
   void UnpackKey(uint64_t mapKey, uint32_t & inputCode, uint32_t & type);
   void HandleInputEvent(Message const &);
@@ -43,6 +55,9 @@ private:
   virtual void HandleMouseMove(Message const &);
 
 protected:
+
+  IEventPoller * m_eventPoller;
+  IMouseController * m_mouseController;
 
   float                              m_xMouseSpeed;
   float                              m_yMouseSpeed;
