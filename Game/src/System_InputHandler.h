@@ -12,56 +12,65 @@
 class IEventPoller;
 class IMouseController;
 
+#define ITEM
+#define BINDING_PROFILES \
+  ITEM(BP_None)\
+  ITEM(BP_Loading)\
+  ITEM(BP_Menu)\
+  ITEM(BP_TextInput)\
+  ITEM(BP_DebugOverlay)\
+  ITEM(BP_Game)\
+  ITEM(BP_Elevator)
+#undef ITEM
+
 class System_InputHandler : public System
 {
+#define ITEM(x) x,
   enum BindingProfile
   {
-    BP_None,
-    BP_Loading,
-    BP_Menu,
-    BP_DebugOverlay,
-    BP_Game,
-    BP_Elevator
+    BINDING_PROFILES
   };
+#undef ITEM
 public:
 
   System_InputHandler(MessageBus *);
   ~System_InputHandler();
 
   void SetProfile(BindingProfile);
+  void ClearBindings();
+
+  bool HandleMessage(Message const &);
+  void Update();
 
 private:
 
-  void ClearBindings();
-
   template<int BINDING>
-  void SetProfile(){}
+  void _SetProfile(){}
 
-  //For mouse motion just set the keyState to KS_NONE
-  //inputCode: Class|Type eg KeyCode|MT_ButtonUp
-  void SetBinding(MessageType messageType, uint32_t inputCode, uint32_t keyState);
-
-  bool HandleMessage(Message const &);
+#define ITEM(x) template<> void _SetProfile<x>();
+  BINDING_PROFILES
+#undef ITEM
 
   void GrabMouse();
   void ReleaseMouse();
-  void SetMouseLook(float xSpeed, float ySpeed);
+  void SetMouseLookRate(float xRate, float yRate);
 
-  uint64_t PackKey(uint32_t inputCode, uint32_t type);
-  void UnpackKey(uint64_t mapKey, uint32_t & inputCode, uint32_t & type);
-  void HandleInputEvent(Message const &);
-  void RetrieveAndSend(uint64_t mapKey);
+  void SetKeyRepeat(bool);
 
-  virtual void HandleMouseMove(Message const &);
+  uint64_t PackKey(uint32_t inputCode, uint32_t eventType);
+  void UnpackKey(uint64_t mapKey, uint32_t & inputCode, uint32_t & eventType);
+  void HandleKeyEvent(Message const &);
+  void HandleMouseEvent(Message const &);
 
 protected:
 
-  IEventPoller * m_eventPoller;
-  IMouseController * m_mouseController;
+  IEventPoller *      m_eventPoller;
+  IMouseController *  m_mouseController;
 
-  float                              m_xMouseSpeed;
-  float                              m_yMouseSpeed;
-  Dg::Map_AVL<uint64_t, MessageType> m_messageMap;
+  bool                               m_useKeyRepeat;
+  float                              m_xMouseRotRate;
+  float                              m_yMouseRotRate;
+  Dg::Map_AVL<uint64_t, MessageType> m_bindings;
 };
 
 #endif

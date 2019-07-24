@@ -17,6 +17,14 @@ public:
   FW_EventPoller();
   ~FW_EventPoller();
   bool NextEvent(Message &);
+
+private:
+
+  void UpdateModState(SDL_Event const &);
+
+private:
+
+  uint32_t m_modState;
 };
 
 void Framework::InitEventPoller()
@@ -24,7 +32,8 @@ void Framework::InitEventPoller()
   SetEventPoller(new FW_EventPoller());
 }
 
-FW_EventPoller::FW_EventPoller()
+FW_EventPoller::FW_EventPoller(): 
+  m_modState(KM_NONE)
 {
 
 }
@@ -32,6 +41,38 @@ FW_EventPoller::FW_EventPoller()
 FW_EventPoller::~FW_EventPoller()
 {
 
+}
+
+void FW_EventPoller::UpdateModState(SDL_Event const & a_event)
+{
+  if (a_event.type == SDL_KEYDOWN)
+  {
+    if (a_event.key.keysym.sym == SDLK_LSHIFT)            m_modState |= KM_LSHIFT;
+    else if (a_event.key.keysym.sym == SDLK_LCTRL)        m_modState |= KM_LCTRL;
+    else if (a_event.key.keysym.sym == SDLK_LALT)         m_modState |= KM_LALT;
+    else if (a_event.key.keysym.sym == SDLK_LGUI)         m_modState |= KM_LGUI;
+    else if (a_event.key.keysym.sym == SDLK_RSHIFT)       m_modState |= KM_RSHIFT;
+    else if (a_event.key.keysym.sym == SDLK_RCTRL)        m_modState |= KM_RCTRL;
+    else if (a_event.key.keysym.sym == SDLK_RALT)         m_modState |= KM_RALT;
+    else if (a_event.key.keysym.sym == SDLK_RGUI)         m_modState |= KM_RGUI;
+    else if (a_event.key.keysym.sym == SDLK_NUMLOCKCLEAR) m_modState |= KM_NUM;
+    else if (a_event.key.keysym.sym == SDLK_CAPSLOCK)     m_modState |= KM_CAPS;
+    else if (a_event.key.keysym.sym == SDLK_MODE)         m_modState |= KM_MODE;
+  }
+  else if (a_event.type == SDL_KEYUP)
+  {
+    if (a_event.key.keysym.sym == SDLK_LSHIFT)            m_modState &= ~KM_LSHIFT;
+    else if (a_event.key.keysym.sym == SDLK_LCTRL)        m_modState &= ~KM_LCTRL;
+    else if (a_event.key.keysym.sym == SDLK_LALT)         m_modState &= ~KM_LALT;
+    else if (a_event.key.keysym.sym == SDLK_LGUI)         m_modState &= ~KM_LGUI;
+    else if (a_event.key.keysym.sym == SDLK_RSHIFT)       m_modState &= ~KM_RSHIFT;
+    else if (a_event.key.keysym.sym == SDLK_RCTRL)        m_modState &= ~KM_RCTRL;
+    else if (a_event.key.keysym.sym == SDLK_RALT)         m_modState &= ~KM_RALT;
+    else if (a_event.key.keysym.sym == SDLK_RGUI)         m_modState &= ~KM_RGUI;
+    else if (a_event.key.keysym.sym == SDLK_NUMLOCKCLEAR) m_modState &= ~KM_NUM;
+    else if (a_event.key.keysym.sym == SDLK_CAPSLOCK)     m_modState &= ~KM_CAPS;
+    else if (a_event.key.keysym.sym == SDLK_MODE)         m_modState &= ~KM_MODE;
+  }
 }
 
 static uint32_t TranslateKeyCode(SDL_Keycode a_key)
@@ -202,11 +243,13 @@ static uint32_t TranslateKeyState(int a_code)
   switch (a_code)
   {
     case SDL_KEYUP:
-    case SDL_MOUSEBUTTONUP:
       return MT_KeyUp;
+    case SDL_MOUSEBUTTONUP:
+      return MT_ButtonUp;
     case SDL_KEYDOWN:
+      return MT_KeyUp;
     case SDL_MOUSEBUTTONDOWN:
-      return MT_KeyDown;
+      return MT_ButtonDown;
     default:
       return MT_None;
   }
@@ -214,8 +257,6 @@ static uint32_t TranslateKeyState(int a_code)
 
 static uint32_t TranslateWindowCode(int a_code)
 {
-  //SDL window codes directly map onto our codes
-
   switch (a_code)
   {
     case  SDL_WINDOWEVENT_SHOWN:
@@ -268,41 +309,57 @@ bool FW_EventPoller::NextEvent(Message & a_message)
     case SDL_KEYDOWN:
     case SDL_KEYUP:
     {
-      a_message.SetType((MC_Input | MC_Keyboard), TranslateKeyState(event.type));
-      a_message.key.code = TranslateKeyCode(event.key.keysym.sym);
+      UpdateModState(event);
+      a_message.type = TranslateKeyState(event.type);
+      a_message.key.code = m_modState | TranslateKeyCode(event.key.keysym.sym);
       a_message.key.repeat = event.key.repeat != 0;
       break;
     }
     case SDL_MOUSEBUTTONDOWN:
     case SDL_MOUSEBUTTONUP:
     {
-      a_message.SetType((MC_Input | MC_Mouse), TranslateKeyState(event.type));
-      a_message.mouseButton.code = TranslateMouseButtonCode(event.button.button);
-      a_message.mouseButton.x = event.button.x;
-      a_message.mouseButton.y = event.button.y;
+      UpdateModState(event);
+      a_message.type = TranslateKeyState(event.type);
+      a_message.mouse.code = m_modState | TranslateMouseButtonCode(event.button.button);
+      a_message.mouse.x = event.button.x;
+      a_message.mouse.y = event.button.y;
       break;
     }
     case SDL_MOUSEWHEEL:
     {
+      UpdateModState(event);
       if (event.wheel.y > 0)
-        a_message.SetType((MC_Input | MC_Mouse), MT_MouseWheelUp);
+      {
+        a_message.type = MT_OtherMouseEvent;
+        a_message.mouse.code = m_modState | IC_MOUSEWHEEL_UP;
+      }
       else
-        a_message.SetType((MC_Input | MC_Mouse), MT_MouseWheelDown);
+      {
+        a_message.type = MT_OtherMouseEvent;
+        a_message.mouse.code = m_modState | IC_MOUSEWHEEL_DOWN;
+      }
       break;
     }
     case SDL_MOUSEMOTION:
     {
-      a_message.SetType((MC_Input | MC_Mouse), MT_MouseMoveEvent);
-      a_message.mouseMove.x = event.motion.x;
-      a_message.mouseMove.y = event.motion.y;
-      a_message.mouseMove.xRel = event.motion.xrel;
-      a_message.mouseMove.yRel = event.motion.yrel;
+      a_message.type = MT_OtherMouseEvent;
+      a_message.mouse.code = IC_MOUSE_MOTION;
+      if (SDL_GetRelativeMouseMode() == SDL_TRUE)
+      {
+        a_message.mouse.x = event.motion.xrel;
+        a_message.mouse.y = event.motion.yrel;
+      }
+      else
+      {
+        a_message.mouse.x = event.motion.x;
+        a_message.mouse.y = event.motion.y;
+      }
       break;
     }
     case SDL_WINDOWEVENT:
     {
       //Handle and send to window system
-      a_message.SetType(MC_Window, TranslateWindowCode(event.window.type));
+      a_message.type = TranslateWindowCode(event.window.type);
       a_message.window.data1 = event.window.data1;
       a_message.window.data2 = event.window.data2;
       break;
@@ -310,7 +367,7 @@ bool FW_EventPoller::NextEvent(Message & a_message)
     case SDL_QUIT:
     {
       //Handle quit request
-      a_message.SetType(MC_Window, MT_Window_Close);
+      a_message.type = MT_Window_Close;
       break;
     }
     default:

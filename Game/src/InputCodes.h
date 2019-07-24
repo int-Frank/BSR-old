@@ -1,6 +1,29 @@
 #ifndef INPUTCODES_H
 #define INPUTCODES_H
 
+#include "Utility.h"
+
+#define KM_CTRL   (KM_LCTRL|KM_RCTRL)
+#define KM_SHIFT  (KM_LSHIFT|KM_RSHIFT)
+#define KM_ALT    (KM_LALT|KM_RALT)
+#define KM_GUI    (KM_LGUI|KM_RGUI)
+
+enum KeyMod
+{
+  KM_NONE   = 0,
+  KM_LSHIFT = BIT(16),
+  KM_RSHIFT = BIT(17),
+  KM_LCTRL  = BIT(18),
+  KM_RCTRL  = BIT(19),
+  KM_LALT   = BIT(20),
+  KM_RALT   = BIT(21),
+  KM_LGUI   = BIT(22),
+  KM_RGUI   = BIT(23),
+  KM_NUM    = BIT(24),
+  KM_CAPS   = BIT(25),
+  KM_MODE   = BIT(26),
+};
+
 enum InputCode
 {
   IC_UNKNOWN = 0,
@@ -153,7 +176,10 @@ enum InputCode
   IC_MOUSEBUTTON_MIDDLE,
   IC_MOUSEBUTTON_RIGHT,
   IC_MOUSEBUTTON_X1,
-  IC_MOUSEBUTTON_X2
+  IC_MOUSEBUTTON_X2,
+  IC_MOUSEWHEEL_UP,
+  IC_MOUSEWHEEL_DOWN,
+  IC_MOUSE_MOTION
 };
 
 #endif

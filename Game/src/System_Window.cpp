@@ -31,11 +31,11 @@ void System_Window::Update()
 
 bool System_Window::HandleMessage(Message const & a_msg)
 {
-  if (!a_msg.IsOfClass(MC_Window))
+  if (!(a_msg.type & MC_Window))
     return false;
 
   bool result = true;
-  switch (a_msg.GetType())
+  switch (a_msg.type)
   {
     case MT_Window_Close:
     {

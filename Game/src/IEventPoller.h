@@ -1,7 +1,7 @@
 #ifndef IEVENTPOLLER_H
 #define IEVENTPOLLER_H
 
-class Message;
+struct Message;
 
 class IEventPoller
 {
