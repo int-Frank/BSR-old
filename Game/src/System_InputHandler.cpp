@@ -30,7 +30,7 @@ System_InputHandler::~System_InputHandler()
 bool System_InputHandler::HandleMessage(Message const & a_msg)
 {
   bool result = true;
-  if (a_msg.type & MC_Text)
+  if (a_msg.type & MC_TextEvent)
     HandleTextEvent(a_msg);
   else if (a_msg.type & MC_Keyboard)
     HandleKeyEvent(a_msg);
@@ -134,7 +134,12 @@ void System_InputHandler::_SetProfile<System_InputHandler::BP_TextInput>()
 {
   m_bindings.clear();
 
-  m_bindings.insert(PackKey(0, MT_TextEvent), MT_TextInput);
+  m_bindings.insert(PackKey(0, MT_TextEvent), MT_Text);
+
+  m_bindings.insert(PackKey(IC_KEY_ENTER, MT_KeyDown), MT_Select);
+  m_bindings.insert(PackKey(IC_KEY_BACKSPACE, MT_KeyDown), MT_Backspace);
+  m_bindings.insert(PackKey(IC_KEY_BACKSPACE, MT_KeyDown_Repeat), MT_Backspace);
+  m_bindings.insert(PackKey(IC_KEY_ESC, MT_KeyDown), MT_Window_Close);
 
   m_mouseController->Release();
 }
@@ -177,7 +182,7 @@ void System_InputHandler::HandleTextEvent(Message const & a_msg)
   if (it != m_bindings.end())
   {
     Message msg;
-    msg.type = MT_TextInput;
+    msg.type = MT_Text;
     strncpy(msg.text.text, a_msg.text.text, TEXT_INPUT_TEXT_SIZE);
 
     Post(msg);

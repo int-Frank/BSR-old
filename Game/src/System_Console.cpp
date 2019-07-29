@@ -25,7 +25,6 @@ bool System_Console::HandleMessage(Message const & a_msg)
   {
     case MT_None:                 {LOG_MESSAGE("MESSAGE: MT_None"); break;}
     case MT_GoBack:               {LOG_MESSAGE("MESSAGE: MT_GoBack"); break;}
-    case MT_TextInput:            {LOG_MESSAGE("MESSAGE: MT_TextInput, '{}'", a_msg.text.text); break;}
     
     case MT_Window_Shown:         {LOG_MESSAGE("MESSAGE: MT_Window_Shown"); break;}
     case MT_Window_Hidden:        {LOG_MESSAGE("MESSAGE: MT_Window_Hidden"); break;}
@@ -43,6 +42,9 @@ bool System_Console::HandleMessage(Message const & a_msg)
     case MT_Window_Close:         {LOG_MESSAGE("MESSAGE: MT_Window_Close"); break;}
     case MT_Window_Take_Focus:    {LOG_MESSAGE("MESSAGE: MT_Window_Take_Focus"); break;}
     case MT_Window_Hit_Test:      {LOG_MESSAGE("MESSAGE: MT_Window_Hit_Test"); break;}
+
+    case MT_Backspace:            {LOG_MESSAGE("MESSAGE: MT_Backspace"); break;}
+    case MT_Text:                 {LOG_MESSAGE("MESSAGE: MT_Text, '{}'", a_msg.text.text); break;}
 
     case MT_KeyUp:                {LOG_MESSAGE("MESSAGE: MT_KeyUp"); break;}
     case MT_KeyDown:              {LOG_MESSAGE("MESSAGE: MT_KeyDown"); break;}

@@ -16,6 +16,7 @@ enum MessageClass : uint32_t
   MC_Unspecified  = BIT(COUNTER),
   MC_Window       = BIT(COUNTER),
   MC_Input        = BIT(COUNTER),
+  MC_TextEvent    = BIT(COUNTER),
   MC_Text         = BIT(COUNTER),
   MC_Keyboard     = BIT(COUNTER),
   MC_Mouse        = BIT(COUNTER),
@@ -31,7 +32,6 @@ INIT_COUNTER(0)
 enum MessageType : uint32_t
 {
   MT_None                 = (COUNTER | MC_Unspecified),
-  MT_TextInput            = (COUNTER | MC_Unspecified),
   MT_GoBack               = (COUNTER | MC_Unspecified),       //typically at least bound to escape key
 
   MT_Window_Shown         = (COUNTER | MC_Window), //< Window has been shown 
@@ -51,7 +51,10 @@ enum MessageType : uint32_t
   MT_Window_Take_Focus    = (COUNTER | MC_Window), //< Window is being offered a focus (should SetWindowInputFocus() on itself or a subwindow: or ignore) 
   MT_Window_Hit_Test      = (COUNTER | MC_Window), //< Window had a hit test that wasn't SDL_HITTEST_NORMAL. 
 
-  MT_TextEvent            = (COUNTER | MC_Input | MC_Text),
+  MT_Text                 = (COUNTER | MC_Text),
+  MT_Backspace            = (COUNTER | MC_Text),
+
+  MT_TextEvent            = (COUNTER | MC_Input | MC_TextEvent),
   MT_KeyUp                = (COUNTER | MC_Input | MC_Keyboard),
   MT_KeyDown              = (COUNTER | MC_Input | MC_Keyboard),
   MT_KeyDown_Repeat       = (COUNTER | MC_Input | MC_Keyboard),
@@ -149,12 +152,6 @@ struct MouseData
 //-----------------------------------------------------------------------------------
 // Translated input data
 //-----------------------------------------------------------------------------------
-struct TMouseMoveData
-{
-  uint32_t type;
-  int16_t x;
-  int16_t y;
-};
 
 struct RotateData
 {
@@ -187,7 +184,6 @@ struct Message
     KeyData         key;
     TextInput       text;
     WindowData      window;
-    TMouseMoveData  tMouseMove;
     RotateData      rotate;
   };
 };
