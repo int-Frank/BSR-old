@@ -1,7 +1,7 @@
 #ifndef INPUTCODES_H
 #define INPUTCODES_H
 
-#include "Utility.h"
+#include <stdint.h>
 
 enum InputCode : uint16_t
 {

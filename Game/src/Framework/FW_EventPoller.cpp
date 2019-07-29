@@ -287,86 +287,95 @@ static uint32_t TranslateWindowCode(uint8_t a_code)
 
 bool FW_EventPoller::NextEvent(Message & a_message)
 {
-  SDL_Event event;
-  if (SDL_PollEvent(&event) == 0)
-    return false;
-
-  bool result = true;
-  switch (event.type)
+  bool validEvent = false;
+  while (!validEvent)
   {
-    case SDL_TEXTINPUT:
-    {
-      a_message.type = MT_TextInput;
-      static_assert(TEXT_INPUT_TEXT_SIZE == SDL_TEXTINPUTEVENT_TEXT_SIZE, "text container incorrect size");
-      strncpy(a_message.text.text, event.text.text, TEXT_INPUT_TEXT_SIZE);
+    SDL_Event event;
+    if (SDL_PollEvent(&event) == 0)
       break;
-    }
-    case SDL_KEYDOWN:
-    case SDL_KEYUP:
+
+    switch (event.type)
     {
-      a_message.type = TranslateKeyState(event);
-      a_message.key.code = TranslateKeyCode(event.key.keysym.scancode);
-      break;
-    }
-    case SDL_MOUSEBUTTONDOWN:
-    case SDL_MOUSEBUTTONUP:
-    {
-      a_message.type = TranslateKeyState(event);
-      a_message.mouse.code = TranslateMouseButtonCode(event.button.button);
-      a_message.mouse.x = event.button.x;
-      a_message.mouse.y = event.button.y;
-      break;
-    }
-    case SDL_MOUSEWHEEL:
-    {
-      if (event.wheel.y > 0)
+      case SDL_TEXTINPUT:
+      {
+        a_message.type = MT_TextEvent;
+        static_assert(TEXT_INPUT_TEXT_SIZE == SDL_TEXTINPUTEVENT_TEXT_SIZE, "text container incorrect size");
+        strncpy(a_message.text.text, event.text.text, TEXT_INPUT_TEXT_SIZE);
+        validEvent = true;
+        break;
+      }
+      case SDL_KEYDOWN:
+      case SDL_KEYUP:
+      {
+        a_message.type = TranslateKeyState(event);
+        a_message.key.code = TranslateKeyCode(event.key.keysym.scancode);
+        validEvent = true;
+        break;
+      }
+      case SDL_MOUSEBUTTONDOWN:
+      case SDL_MOUSEBUTTONUP:
+      {
+        a_message.type = TranslateKeyState(event);
+        a_message.mouse.code = TranslateMouseButtonCode(event.button.button);
+        a_message.mouse.x = event.button.x;
+        a_message.mouse.y = event.button.y;
+        validEvent = true;
+        break;
+      }
+      case SDL_MOUSEWHEEL:
+      {
+        if (event.wheel.y > 0)
+        {
+          a_message.type = MT_OtherMouseEvent;
+          a_message.mouse.code = IC_MOUSE_WHEEL_UP;
+        }
+        else
+        {
+          a_message.type = MT_OtherMouseEvent;
+          a_message.mouse.code = IC_MOUSE_WHEEL_DOWN;
+        }
+        validEvent = true;
+        break;
+      }
+      case SDL_MOUSEMOTION:
       {
         a_message.type = MT_OtherMouseEvent;
-        a_message.mouse.code = IC_MOUSE_WHEEL_UP;
+        a_message.mouse.code = IC_MOUSE_MOTION;
+        if (SDL_GetRelativeMouseMode() == SDL_TRUE)
+        {
+          a_message.mouse.x = event.motion.xrel;
+          a_message.mouse.y = event.motion.yrel;
+        }
+        else
+        {
+          a_message.mouse.x = event.motion.x;
+          a_message.mouse.y = event.motion.y;
+        }
+        validEvent = true;
+        break;
       }
-      else
+      case SDL_WINDOWEVENT:
       {
-        a_message.type = MT_OtherMouseEvent;
-        a_message.mouse.code = IC_MOUSE_WHEEL_DOWN;
+        //Handle and send to window system
+        a_message.type = TranslateWindowCode(event.window.event);
+        a_message.window.data1 = event.window.data1;
+        a_message.window.data2 = event.window.data2;
+        validEvent = true;
+        break;
       }
-      break;
-    }
-    case SDL_MOUSEMOTION:
-    {
-      a_message.type = MT_OtherMouseEvent;
-      a_message.mouse.code = IC_MOUSE_MOTION;
-      if (SDL_GetRelativeMouseMode() == SDL_TRUE)
+      case SDL_QUIT:
       {
-        a_message.mouse.x = event.motion.xrel;
-        a_message.mouse.y = event.motion.yrel;
+        //Handle quit request
+        a_message.type = MT_Window_Close;
+        validEvent = true;
+        break;
       }
-      else
+      default:
       {
-        a_message.mouse.x = event.motion.x;
-        a_message.mouse.y = event.motion.y;
+        break;
       }
-      break;
-    }
-    case SDL_WINDOWEVENT:
-    {
-      //Handle and send to window system
-      a_message.type = TranslateWindowCode(event.window.event);
-      a_message.window.data1 = event.window.data1;
-      a_message.window.data2 = event.window.data2;
-      break;
-    }
-    case SDL_QUIT:
-    {
-      //Handle quit request
-      a_message.type = MT_Window_Close;
-      break;
-    }
-    default:
-    {
-      result = false;
-      break;
     }
   }
 
-  return result;
+  return validEvent;
 }
