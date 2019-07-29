@@ -6,6 +6,10 @@
 #include "Framework/Framework.h"
 #include "IWindow.h"
 
+#include "System_Console.h"
+#include "System_InputHandler.h"
+#include "System_Window.h"
+
 Game * Game::s_instance = nullptr;
 
 void Game::InitWindow()
@@ -22,18 +26,26 @@ void Game::InitWindow()
 void Game::Init()
 {
   impl::Logger::Init("BSR");
-  s_instance = new Game();
 
   if (Framework::Init() != EC_None)
     throw std::runtime_error("Failed to initialise framework!");
 
-  s_instance->InitWindow();
+  s_instance = new Game();
+  s_instance->_Init();
 
-  //Set up Window system and add to stack
+  LOG_TRACE("Init complete!");
+}
 
-  //Set up Input system and add to stack
+void Game::_Init()
+{
+  InitWindow();
 
-  LOG_DEBUG("Init complete!");
+  auto pInputHandler = new System_InputHandler(&m_msgBus);
+  pInputHandler->SetProfile(System_InputHandler::BP_TextInput);
+  m_systemStack.PushSystem(pInputHandler);
+
+  m_systemStack.PushSystem(new System_Window(&m_msgBus, m_window));
+  m_systemStack.PushSystem(new System_Console(&m_msgBus));
 }
 
 void Game::ShutDown()
@@ -44,7 +56,7 @@ void Game::ShutDown()
   delete s_instance;
   s_instance = nullptr;
 
-  LOG_DEBUG("Shutdown complete!");
+  LOG_TRACE("Shutdown complete!");
 }
 
 Game * Game::Instance()
@@ -75,7 +87,12 @@ void Game::Run()
 {
   while (!m_shouldQuit)
   {
-  
+    m_msgBus.DispatchMessages();
+
+    for (auto it = m_systemStack.begin(); it != m_systemStack.end(); it++)
+    {
+      it->second->Update();
+    }
   }
 }
 

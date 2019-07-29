@@ -4,30 +4,35 @@
 #include <stdint.h>
 #include "Utility.h"
 
+#define TEXT_INPUT_TEXT_SIZE 32
+
 #define START_BIT 13
-enum MessageClass
+#undef NEW_COUNTER
+#define NEW_COUNTER MessageClassCounter
+INIT_COUNTER(START_BIT)
+
+enum MessageClass : uint32_t
 {
-  MC_Unspecified  = BIT((START_BIT)),
-  MC_Window       = BIT((START_BIT + 1)),
-  MC_Input        = BIT((START_BIT + 2)),
-  MC_Keyboard     = BIT((START_BIT + 3)),
-  MC_Mouse        = BIT((START_BIT + 4)),
-  MC_State        = BIT((START_BIT + 5)),
-  MC_Menu         = BIT((START_BIT + 6)),
-  MC_Game         = BIT((START_BIT + 7)),
+  MC_Unspecified  = BIT(COUNTER),
+  MC_Window       = BIT(COUNTER),
+  MC_Input        = BIT(COUNTER),
+  MC_Text         = BIT(COUNTER),
+  MC_Keyboard     = BIT(COUNTER),
+  MC_Mouse        = BIT(COUNTER),
+  MC_State        = BIT(COUNTER),
+  MC_Menu         = BIT(COUNTER),
+  MC_Game         = BIT(COUNTER),
 };
 
-namespace impl
-{
-  int const MESSAGE_COUNTER_BASE = __COUNTER__;
-}
+#undef NEW_COUNTER
+#define NEW_COUNTER MessageTypeCounter
+INIT_COUNTER(0)
 
-#define COUNTER (__COUNTER__ - impl::MESSAGE_COUNTER_BASE - 1)
-enum MessageType
+enum MessageType : uint32_t
 {
   MT_None                 = (COUNTER | MC_Unspecified),
+  MT_TextInput            = (COUNTER | MC_Unspecified),
   MT_GoBack               = (COUNTER | MC_Unspecified),       //typically at least bound to escape key
-  MT_RawTextKey           = (COUNTER | MC_Unspecified),
 
   MT_Window_Shown         = (COUNTER | MC_Window), //< Window has been shown 
   MT_Window_Hidden        = (COUNTER | MC_Window), //< Window has been hidden 
@@ -46,8 +51,10 @@ enum MessageType
   MT_Window_Take_Focus    = (COUNTER | MC_Window), //< Window is being offered a focus (should SetWindowInputFocus() on itself or a subwindow: or ignore) 
   MT_Window_Hit_Test      = (COUNTER | MC_Window), //< Window had a hit test that wasn't SDL_HITTEST_NORMAL. 
 
+  MT_TextEvent            = (COUNTER | MC_Input | MC_Text),
   MT_KeyUp                = (COUNTER | MC_Input | MC_Keyboard),
   MT_KeyDown              = (COUNTER | MC_Input | MC_Keyboard),
+  MT_KeyDown_Repeat       = (COUNTER | MC_Input | MC_Keyboard),
 
   MT_ButtonUp             = (COUNTER | MC_Input | MC_Mouse),
   MT_ButtonDown           = (COUNTER | MC_Input | MC_Mouse),
@@ -61,6 +68,7 @@ enum MessageType
   MT_State_DebugOverlay   = (COUNTER | MC_State),
   MT_State_Elevator       = (COUNTER | MC_State),
 
+  MT_PointSelect          = (COUNTER | MC_Menu),
   MT_Select               = (COUNTER | MC_Menu),
   MT_MouseMove            = (COUNTER | MC_Menu),
   MT_NextItem             = (COUNTER | MC_Menu),
@@ -95,8 +103,7 @@ enum MessageType
   MT_ToggleMap            = (COUNTER | MC_Game),
   MT_GoToLevel            = (COUNTER | MC_Game),
 };
-static_assert(COUNTER < (1 << START_BIT), "Need more bits to store message enum values. Try to increment START_BIT");
-#undef COUNTER
+static_assert(COUNTER < (1 << START_BIT), "Need more bits to store message enum values. Try incrementing START_BIT");
 #undef START_BIT
 
 inline bool IsOfClass(MessageType a_type, MessageClass a_class)
@@ -121,17 +128,22 @@ struct LocationalEvent
 //-----------------------------------------------------------------------------------
 struct KeyData
 {
-  uint32_t type;
-  uint16_t code;
-  bool     repeat;
+  uint32_t  type;
+  uint16_t  code;
+};
+
+struct TextInput
+{
+  uint32_t  type;
+  char      text[TEXT_INPUT_TEXT_SIZE];
 };
 
 struct MouseData
 {
   uint32_t type;
   uint16_t code;
-  int16_t x;  //absolute/relative depending on if mouse grabbed
-  int16_t y;
+  int32_t x;  //absolute/relative depending on if mouse grabbed
+  int32_t y;
 };
 
 //-----------------------------------------------------------------------------------
@@ -173,6 +185,7 @@ struct Message
     //Message specific storage
     MouseData       mouse;
     KeyData         key;
+    TextInput       text;
     WindowData      window;
     TMouseMoveData  tMouseMove;
     RotateData      rotate;

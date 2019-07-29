@@ -25,6 +25,7 @@ class IMouseController;
 
 class System_InputHandler : public System
 {
+  public:
 #define ITEM(x) x,
   enum BindingProfile
   {
@@ -55,10 +56,9 @@ private:
   void ReleaseMouse();
   void SetMouseLookRate(float xRate, float yRate);
 
-  void SetKeyRepeat(bool);
-
   uint64_t PackKey(uint32_t inputCode, uint32_t eventType);
   void UnpackKey(uint64_t mapKey, uint32_t & inputCode, uint32_t & eventType);
+  void HandleTextEvent(Message const &);
   void HandleKeyEvent(Message const &);
   void HandleMouseEvent(Message const &);
 
@@ -67,10 +67,10 @@ protected:
   IEventPoller *      m_eventPoller;
   IMouseController *  m_mouseController;
 
-  bool                               m_useKeyRepeat;
-  float                              m_xMouseRotRate;
-  float                              m_yMouseRotRate;
-  Dg::Map_AVL<uint64_t, MessageType> m_bindings;
+  float                               m_xMouseRotRate;
+  float                               m_yMouseRotRate;
+  Dg::Map_AVL<uint64_t, MessageType>  m_bindings;
+  
 };
 
 #endif

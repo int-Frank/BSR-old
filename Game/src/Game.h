@@ -26,6 +26,9 @@ public:
   void RequestQuit();
 
 private:
+
+  void _Init();
+
   Game(Game const &) = delete;
   Game & operator=(Game const &) = delete;
 

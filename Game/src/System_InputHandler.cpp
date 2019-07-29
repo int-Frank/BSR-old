@@ -1,4 +1,6 @@
 
+#include <cstring>
+
 #include "System_InputHandler.h"
 #include "Framework/Framework.h"
 #include "Log.h"
@@ -16,7 +18,6 @@ System_InputHandler::System_InputHandler(MessageBus * a_pMsgBus)
   , m_mouseController(Framework::Instance()->GetMouseController())
   , m_xMouseRotRate(1.0f)
   , m_yMouseRotRate(1.0f)
-  , m_useKeyRepeat(false)
 {
 
 }
@@ -29,6 +30,8 @@ System_InputHandler::~System_InputHandler()
 bool System_InputHandler::HandleMessage(Message const & a_msg)
 {
   bool result = true;
+  if (a_msg.type & MC_Text)
+    HandleTextEvent(a_msg);
   if (a_msg.type & MC_Keyboard)
     HandleKeyEvent(a_msg);
   else if (a_msg.type & MC_Mouse)
@@ -91,14 +94,12 @@ template<>
 void System_InputHandler::_SetProfile<System_InputHandler::BP_None>()
 {
   m_bindings.clear();
-  SetKeyRepeat(false);
 }
 
 template<>
 void System_InputHandler::_SetProfile<System_InputHandler::BP_Loading>()
 {
   m_bindings.clear();
-  SetKeyRepeat(false);
   m_mouseController->Grab();
 }
 
@@ -106,16 +107,25 @@ template<>
 void System_InputHandler::_SetProfile<System_InputHandler::BP_Menu>()
 {
   m_bindings.clear();
-  m_bindings.insert(PackKey(IC_UP, MT_KeyDown), MT_PreviousItem);
-  m_bindings.insert(PackKey(IC_DOWN, MT_KeyDown), MT_NextItem);
-  m_bindings.insert(PackKey(IC_LEFT, MT_KeyDown), MT_ModifyDown);
-  m_bindings.insert(PackKey(IC_RIGHT, MT_KeyDown), MT_ModifyUp);
-  m_bindings.insert(PackKey(IC_MOUSEWHEEL_UP, MT_OtherMouseEvent), MT_ModifyUp);
-  m_bindings.insert(PackKey(IC_MOUSEWHEEL_DOWN, MT_OtherMouseEvent), MT_ModifyDown);
-  m_bindings.insert(PackKey(IC_MOUSEBUTTON_LEFT, MT_KeyDown), MT_Select);
-  m_bindings.insert(PackKey(IC_RETURN, MT_KeyDown), MT_Select);
-  m_bindings.insert(PackKey(IC_ESCAPE, MT_KeyDown), MT_GoBack);
-  SetKeyRepeat(false);
+
+  m_bindings.insert(PackKey(IC_MOUSE_MOTION, MT_OtherMouseEvent), MT_MouseMove);
+  m_bindings.insert(PackKey(IC_MOUSE_WHEEL_UP, MT_OtherMouseEvent), MT_ModifyUp);
+  m_bindings.insert(PackKey(IC_MOUSE_WHEEL_DOWN, MT_OtherMouseEvent), MT_ModifyDown);
+  m_bindings.insert(PackKey(IC_MOUSE_BUTTON_LEFT, MT_ButtonDown), MT_PointSelect);
+
+  m_bindings.insert(PackKey(IC_KEY_UP, MT_KeyDown), MT_PreviousItem);
+  m_bindings.insert(PackKey(IC_KEY_DOWN, MT_KeyDown), MT_NextItem);
+  m_bindings.insert(PackKey(IC_KEY_LEFT, MT_KeyDown), MT_ModifyDown);
+  m_bindings.insert(PackKey(IC_KEY_RIGHT, MT_KeyDown), MT_ModifyUp);
+
+  m_bindings.insert(PackKey(IC_KEY_UP, MT_KeyDown_Repeat), MT_PreviousItem);
+  m_bindings.insert(PackKey(IC_KEY_DOWN, MT_KeyDown_Repeat), MT_NextItem);
+  m_bindings.insert(PackKey(IC_KEY_LEFT, MT_KeyDown_Repeat), MT_ModifyDown);
+  m_bindings.insert(PackKey(IC_KEY_RIGHT, MT_KeyDown_Repeat), MT_ModifyUp);
+
+  m_bindings.insert(PackKey(IC_KEY_ENTER, MT_KeyDown), MT_Select);
+  m_bindings.insert(PackKey(IC_KEY_ESC, MT_KeyDown), MT_GoBack);
+
   m_mouseController->Release();
 }
 
@@ -123,16 +133,9 @@ template<>
 void System_InputHandler::_SetProfile<System_InputHandler::BP_TextInput>()
 {
   m_bindings.clear();
-  m_bindings.insert(PackKey(IC_ESCAPE, MT_KeyDown), MT_GoBack);
-  for (int i = IC_BACKSPACE; i <= IC_z; i++)
-    m_bindings.insert(PackKey(InputCode(i), MT_KeyDown), MT_RawTextKey);
-  for (int i = IC_a; i <= IC_z; i++)
-  {
-    m_bindings.insert(PackKey(InputCode(i | KM_LSHIFT), MT_KeyDown), MT_RawTextKey);
-    m_bindings.insert(PackKey(InputCode(i | KM_RSHIFT), MT_KeyDown), MT_RawTextKey);
-  }
 
-  SetKeyRepeat(true);
+  m_bindings.insert(PackKey(0, MT_TextInput), MT_TextInput);
+
   m_mouseController->Release();
 }
 
@@ -140,7 +143,6 @@ template<>
 void System_InputHandler::_SetProfile<System_InputHandler::BP_DebugOverlay>()
 {
   m_bindings.clear();
-  SetKeyRepeat(false);
   m_mouseController->Release();
 }
 
@@ -148,7 +150,6 @@ template<>
 void System_InputHandler::_SetProfile<System_InputHandler::BP_Game>()
 {
   m_bindings.clear();
-  SetKeyRepeat(false);
   m_mouseController->Grab();
 }
 
@@ -156,7 +157,6 @@ template<>
 void System_InputHandler::_SetProfile<System_InputHandler::BP_Elevator>()
 {
   m_bindings.clear();
-  SetKeyRepeat(false);
   m_mouseController->Release();
 }
 
@@ -170,25 +170,28 @@ void System_InputHandler::Update()
   }
 }
 
-void System_InputHandler::SetKeyRepeat(bool a_val)
+void System_InputHandler::HandleTextEvent(Message const & a_msg)
 {
-  m_useKeyRepeat = a_val;
+  uint64_t mapKey = PackKey(0, MT_TextInput);
+  auto it = m_bindings.find(mapKey);
+  if (it != m_bindings.end())
+  {
+    Message msg;
+    msg.type = MT_TextInput;
+    strncpy(msg.text.text, a_msg.text.text, TEXT_INPUT_TEXT_SIZE);
+
+    Post(msg);
+  }
 }
 
 void System_InputHandler::HandleKeyEvent(Message const & a_msg)
 {
-  if (a_msg.key.repeat && ! m_useKeyRepeat)
-    return;
-
   uint64_t mapKey = PackKey(uint32_t(a_msg.key.code), uint32_t(a_msg.type));
   auto it = m_bindings.find(mapKey);
   if (it != m_bindings.end())
   {
     Message msg;
     msg.type = it->second;
-
-    if (it->second == MT_RawTextKey)
-      msg.key.code = a_msg.key.code;
 
     Post(msg);
   }
@@ -202,7 +205,14 @@ void System_InputHandler::HandleMouseEvent(Message const & a_msg)
   {
     Message msg;
     msg.type = it->second;
-    if (a_msg.mouse.code == IC_MOUSE_MOTION)
+    uint32_t mask = IC_MOUSE_MOTION 
+      | IC_MOUSE_BUTTON_LEFT
+      | IC_MOUSE_BUTTON_MIDDLE
+      | IC_MOUSE_BUTTON_RIGHT
+      | IC_MOUSE_BUTTON_X1
+      | IC_MOUSE_BUTTON_X2;
+
+    if ((a_msg.mouse.code & mask) != 0)
     {
       msg.mouse.x = a_msg.mouse.x;
       msg.mouse.y = a_msg.mouse.y;
