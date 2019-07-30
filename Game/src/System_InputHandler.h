@@ -8,6 +8,7 @@
 #include "MessageBus.h"
 #include "Message.h"
 #include "System.h"
+#include "InputCodes.h"
 
 class IEventPoller;
 class IMouseController;
@@ -61,6 +62,9 @@ private:
   void HandleTextEvent(Message const &);
   void HandleKeyEvent(Message const &);
   void HandleMouseEvent(Message const &);
+
+  void Bind(InputCode inputCode, MessageType event, MessageType binding);
+  void BindKeyDown(InputCode inputCode, bool repeat, MessageType binding);
 
 protected:
 

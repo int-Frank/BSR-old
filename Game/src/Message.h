@@ -16,7 +16,6 @@ enum MessageClass : uint32_t
   MC_Unspecified  = BIT(COUNTER),
   MC_Window       = BIT(COUNTER),
   MC_Input        = BIT(COUNTER),
-  MC_TextEvent    = BIT(COUNTER),
   MC_Text         = BIT(COUNTER),
   MC_Keyboard     = BIT(COUNTER),
   MC_Mouse        = BIT(COUNTER),
@@ -54,7 +53,7 @@ enum MessageType : uint32_t
   MT_Text                 = (COUNTER | MC_Text),
   MT_Backspace            = (COUNTER | MC_Text),
 
-  MT_TextEvent            = (COUNTER | MC_Input | MC_TextEvent),
+  MT_TextEvent            = (COUNTER | MC_Input | MC_Text),
   MT_KeyUp                = (COUNTER | MC_Input | MC_Keyboard),
   MT_KeyDown              = (COUNTER | MC_Input | MC_Keyboard),
   MT_KeyDown_Repeat       = (COUNTER | MC_Input | MC_Keyboard),
