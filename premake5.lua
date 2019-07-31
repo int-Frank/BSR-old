@@ -18,9 +18,17 @@ projOutputInt = "%{wks.location}/build/intermediate/%{prj.name}-%{cfg.buildcfg}"
 IncludeDir = {}
 IncludeDir["Glad"] = "Vendor/GLAD/include"
 IncludeDir["SDL2"] = "Vendor/SDL2-2.0.9/include"
+IncludeDir["imgui"] = "Vendor/imgui"
 
 group "Depenencies"
   include "Vendor/GLAD/premake5_GLAD.lua"
+  
+  project "imgui"
+    location "Vendor/imgui"
+    kind "StaticLib"
+    targetdir (projOutput)
+    objdir (projOutputInt)
+    include "Vendor/imgui/premake5.lua"
   
 group ""
 
@@ -44,6 +52,7 @@ project "Game"
     "DgLib",
     "Glad",
     "Core",
+    "imgui",
     "Vendor/SDL2-2.0.9/lib/x64/SDL2.lib",
     "Vendor/SDL2-2.0.9/lib/x64/SDL2main.lib"
   }
@@ -54,7 +63,8 @@ project "Game"
     "%{wks.location}/Core/src",
     "%{wks.location}/Vendor/spdlog/include",
 		"%{IncludeDir.Glad}",
-		"%{IncludeDir.SDL2}"
+		"%{IncludeDir.SDL2}",
+		"%{IncludeDir.imgui}"
   }
   
   filter "configurations:Debug"
