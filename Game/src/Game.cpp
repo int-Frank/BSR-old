@@ -6,9 +6,9 @@
 #include "Framework/Framework.h"
 #include "IWindow.h"
 
-#include "System_Console.h"
-#include "System_InputHandler.h"
-#include "System_Window.h"
+#include "Layer_Console.h"
+#include "Layer_InputHandler.h"
+#include "Layer_Window.h"
 
 Game * Game::s_instance = nullptr;
 
@@ -40,12 +40,12 @@ void Game::_Init()
 {
   InitWindow();
 
-  auto pInputHandler = new System_InputHandler(&m_msgBus);
-  pInputHandler->SetProfile(System_InputHandler::BP_TextInput);
-  m_systemStack.PushSystem(pInputHandler);
+  auto pInputHandler = new Layer_InputHandler(&m_msgBus);
+  pInputHandler->SetProfile(Layer_InputHandler::BP_TextInput);
+  m_layerStack.PushLayer(pInputHandler);
 
-  m_systemStack.PushSystem(new System_Window(&m_msgBus, m_window));
-  m_systemStack.PushSystem(new System_Console(&m_msgBus));
+  m_layerStack.PushLayer(new Layer_Window(&m_msgBus, m_window));
+  m_layerStack.PushLayer(new Layer_Console(&m_msgBus));
 }
 
 void Game::ShutDown()
@@ -71,7 +71,7 @@ bool Game::IsInitialised()
 }
 
 Game::Game()
-  : m_msgBus(m_systemStack)
+  : m_msgBus(m_layerStack)
   , m_window(nullptr)
   , m_shouldQuit(false)
 {
@@ -89,7 +89,7 @@ void Game::Run()
   {
     m_msgBus.DispatchMessages();
 
-    for (auto it = m_systemStack.begin(); it != m_systemStack.end(); it++)
+    for (auto it = m_layerStack.begin(); it != m_layerStack.end(); it++)
     {
       it->second->Update();
     }

@@ -3,10 +3,10 @@
 
 #include "Types.h"
 #include "MessageBus.h"
-#include "SystemStack.h"
+#include "LayerStack.h"
 #include "Framework/Framework.h"
 
-class System;
+class Layer;
 class IWindow;
 
 class Game
@@ -43,7 +43,7 @@ private:
   bool m_shouldQuit;
   IWindow * m_window;
 
-  SystemStack m_systemStack;
+  LayerStack  m_layerStack;
   MessageBus  m_msgBus;
 };
 

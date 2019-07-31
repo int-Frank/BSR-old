@@ -1,5 +1,5 @@
-#ifndef SYSTEM_H
-#define SYSTEM_H
+#ifndef LAYER_H
+#define LAYER_H
 
 class MessageBus;
 struct Message;
@@ -7,12 +7,12 @@ struct Message;
 //TODO Subscribers should collect messages and process them on a single call
 //     to Update(). This way, we can throw the subscriber on a separate thread
 //     and update.
-class System
+class Layer
 {
 public: 
 
-  System(MessageBus * a_pMsgBus);
-  virtual ~System();
+  Layer(MessageBus * a_pMsgBus);
+  virtual ~Layer();
 
   virtual void OnAttach(){}
   virtual void OnDetach(){}
@@ -29,8 +29,8 @@ public:
 
 private:
 
-  System(System const &);
-  System & operator=(System const &);
+  Layer(Layer const &);
+  Layer & operator=(Layer const &);
 
   MessageBus * m_pMsgBus;
 };

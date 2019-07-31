@@ -2,14 +2,14 @@
 #define SYSTEM_CONSOLE_H
 
 #include "Message.h"
-#include "System.h"
+#include "Layer.h"
 
-class System_Console : public System
+class Layer_Console : public Layer
 {
 public:
 
-  System_Console(MessageBus *);
-  ~System_Console();
+  Layer_Console(MessageBus *);
+  ~Layer_Console();
 
   bool HandleMessage(Message const &);
   void Update();

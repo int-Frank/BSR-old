@@ -7,7 +7,7 @@
 
 #include "MessageBus.h"
 #include "Message.h"
-#include "System.h"
+#include "Layer.h"
 #include "InputCodes.h"
 
 class IEventPoller;
@@ -24,7 +24,7 @@ class IMouseController;
   ITEM(BP_Elevator)
 #undef ITEM
 
-class System_InputHandler : public System
+class Layer_InputHandler : public Layer
 {
   public:
 #define ITEM(x) x,
@@ -35,8 +35,8 @@ class System_InputHandler : public System
 #undef ITEM
 public:
 
-  System_InputHandler(MessageBus *);
-  ~System_InputHandler();
+  Layer_InputHandler(MessageBus *);
+  ~Layer_InputHandler();
 
   void SetProfile(BindingProfile);
   void ClearBindings();

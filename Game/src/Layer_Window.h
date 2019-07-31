@@ -1,17 +1,17 @@
-#ifndef SYSTEM_WINDOW_H
-#define SYSTEM_WINDOW_H
+#ifndef LAYER_WINDOW_H
+#define LAYER_WINDOW_H
 
 #include "ErrorCodes.h"
-#include "System.h"
+#include "Layer.h"
 
 class IWindow;
 
-class System_Window : public System
+class Layer_Window : public Layer
 {
 public:
 
-  System_Window(MessageBus * a_pMsgBus, IWindow *);
-  ~System_Window();
+  Layer_Window(MessageBus * a_pMsgBus, IWindow *);
+  ~Layer_Window();
 
   void OnAttach();
   void OnDetach();

@@ -1,7 +1,7 @@
 
 #include <cstring>
 
-#include "System_InputHandler.h"
+#include "Layer_InputHandler.h"
 #include "Framework/Framework.h"
 #include "Log.h"
 #include "InputCodes.h"
@@ -12,8 +12,8 @@
 
 #define DO_CASE(x) case x:{_SetProfile<x>();break;}
 
-System_InputHandler::System_InputHandler(MessageBus * a_pMsgBus)
-  : System(a_pMsgBus)
+Layer_InputHandler::Layer_InputHandler(MessageBus * a_pMsgBus)
+  : Layer(a_pMsgBus)
   , m_eventPoller(Framework::Instance()->GetEventPoller())
   , m_mouseController(Framework::Instance()->GetMouseController())
   , m_xMouseRotRate(1.0f)
@@ -22,12 +22,12 @@ System_InputHandler::System_InputHandler(MessageBus * a_pMsgBus)
 
 }
 
-System_InputHandler::~System_InputHandler()
+Layer_InputHandler::~Layer_InputHandler()
 {
 
 }
 
-bool System_InputHandler::HandleMessage(Message const & a_msg)
+bool Layer_InputHandler::HandleMessage(Message const & a_msg)
 {
   bool result = true;
   if ((a_msg.type & MC_Input))
@@ -47,28 +47,28 @@ bool System_InputHandler::HandleMessage(Message const & a_msg)
   return result;
 }
 
-void System_InputHandler::GrabMouse()
+void Layer_InputHandler::GrabMouse()
 {
   m_mouseController->Grab();
 }
 
-void System_InputHandler::ReleaseMouse()
+void Layer_InputHandler::ReleaseMouse()
 {
   m_mouseController->Release();
 }
 
-void System_InputHandler::SetMouseLookRate(float a_xRate, float a_yRate)
+void Layer_InputHandler::SetMouseLookRate(float a_xRate, float a_yRate)
 {
   m_xMouseRotRate = a_xRate;
   m_yMouseRotRate = a_yRate;
 }
 
-uint64_t System_InputHandler::PackKey(uint32_t a_inputCode, uint32_t a_eventType)
+uint64_t Layer_InputHandler::PackKey(uint32_t a_inputCode, uint32_t a_eventType)
 {
   return (uint64_t(a_inputCode) << 32) | a_eventType;
 }
 
-void System_InputHandler::UnpackKey(uint64_t a_mapKey, 
+void Layer_InputHandler::UnpackKey(uint64_t a_mapKey, 
                                     uint32_t & a_inputCode, 
                                     uint32_t & a_eventType)
 {
@@ -76,7 +76,7 @@ void System_InputHandler::UnpackKey(uint64_t a_mapKey,
   a_eventType = uint32_t(a_mapKey);
 }
 
-void System_InputHandler::SetProfile(BindingProfile a_prof)
+void Layer_InputHandler::SetProfile(BindingProfile a_prof)
 {
   switch (a_prof)
   {
@@ -91,17 +91,17 @@ void System_InputHandler::SetProfile(BindingProfile a_prof)
   }
 }
 
-void System_InputHandler::ClearBindings()
+void Layer_InputHandler::ClearBindings()
 {
   _SetProfile<BP_None>();
 }
 
-void System_InputHandler::Bind(InputCode a_inputCode, MessageType a_event, MessageType a_binding)
+void Layer_InputHandler::Bind(InputCode a_inputCode, MessageType a_event, MessageType a_binding)
 {
   m_bindings.insert(PackKey(a_inputCode, a_event), a_binding);
 }
 
-void System_InputHandler::BindKeyDown(InputCode a_inputCode, bool a_repeat, MessageType a_binding)
+void Layer_InputHandler::BindKeyDown(InputCode a_inputCode, bool a_repeat, MessageType a_binding)
 {
   m_bindings.insert(PackKey(a_inputCode, MT_KeyDown), a_binding);
   if (a_repeat)
@@ -109,20 +109,20 @@ void System_InputHandler::BindKeyDown(InputCode a_inputCode, bool a_repeat, Mess
 }
 
 template<>
-void System_InputHandler::_SetProfile<System_InputHandler::BP_None>()
+void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_None>()
 {
   m_bindings.clear();
 }
 
 template<>
-void System_InputHandler::_SetProfile<System_InputHandler::BP_Loading>()
+void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_Loading>()
 {
   m_bindings.clear();
   m_mouseController->Grab();
 }
 
 template<>
-void System_InputHandler::_SetProfile<System_InputHandler::BP_Menu>()
+void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_Menu>()
 {
   m_bindings.clear();
 
@@ -143,7 +143,7 @@ void System_InputHandler::_SetProfile<System_InputHandler::BP_Menu>()
 }
 
 template<>
-void System_InputHandler::_SetProfile<System_InputHandler::BP_TextInput>()
+void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_TextInput>()
 {
   m_bindings.clear();
 
@@ -157,27 +157,27 @@ void System_InputHandler::_SetProfile<System_InputHandler::BP_TextInput>()
 }
 
 template<>
-void System_InputHandler::_SetProfile<System_InputHandler::BP_DebugOverlay>()
+void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_DebugOverlay>()
 {
   m_bindings.clear();
   m_mouseController->Release();
 }
 
 template<>
-void System_InputHandler::_SetProfile<System_InputHandler::BP_Game>()
+void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_Game>()
 {
   m_bindings.clear();
   m_mouseController->Grab();
 }
 
 template<>
-void System_InputHandler::_SetProfile<System_InputHandler::BP_Elevator>()
+void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_Elevator>()
 {
   m_bindings.clear();
   m_mouseController->Release();
 }
 
-void System_InputHandler::Update()
+void Layer_InputHandler::Update()
 {
   Message msg;
   while (m_eventPoller->NextEvent(msg))
@@ -187,7 +187,7 @@ void System_InputHandler::Update()
   }
 }
 
-void System_InputHandler::HandleTextEvent(Message const & a_msg)
+void Layer_InputHandler::HandleTextEvent(Message const & a_msg)
 {
   uint64_t mapKey = PackKey(IC_UNKNOWN, MT_TextEvent);
   auto it = m_bindings.find(mapKey);
@@ -201,7 +201,7 @@ void System_InputHandler::HandleTextEvent(Message const & a_msg)
   }
 }
 
-void System_InputHandler::HandleKeyEvent(Message const & a_msg)
+void Layer_InputHandler::HandleKeyEvent(Message const & a_msg)
 {
   uint64_t mapKey = PackKey(uint32_t(a_msg.key.code), uint32_t(a_msg.type));
   auto it = m_bindings.find(mapKey);
@@ -214,7 +214,7 @@ void System_InputHandler::HandleKeyEvent(Message const & a_msg)
   }
 }
 
-void System_InputHandler::HandleMouseEvent(Message const & a_msg)
+void Layer_InputHandler::HandleMouseEvent(Message const & a_msg)
 {
   uint64_t mapKey = PackKey(uint32_t(a_msg.mouse.code), uint32_t(a_msg.type));
   auto it = m_bindings.find(mapKey);

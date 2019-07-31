@@ -1,25 +1,25 @@
-#include "System_Console.h"
+#include "Layer_Console.h"
 #include "Log.h"
 
 #define LOG_MESSAGE(...) LOG_TRACE(__VA_ARGS__)
 
-System_Console::System_Console(MessageBus * a_msgBus)
-  : System(a_msgBus)
+Layer_Console::Layer_Console(MessageBus * a_msgBus)
+  : Layer(a_msgBus)
 {
 
 }
 
-System_Console::~System_Console()
+Layer_Console::~Layer_Console()
 {
 
 }
 
-void System_Console::Update()
+void Layer_Console::Update()
 {
 
 }
 
-bool System_Console::HandleMessage(Message const & a_msg)
+bool Layer_Console::HandleMessage(Message const & a_msg)
 {
   switch (a_msg.type)
   {

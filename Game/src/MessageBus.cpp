@@ -1,11 +1,11 @@
 
 #include "Message.h"
 #include "MessageBus.h"
-#include "System.h"
-#include "SystemStack.h"
+#include "Layer.h"
+#include "LayerStack.h"
 
-MessageBus::MessageBus(SystemStack & a_ss)
-  : m_systemStack(a_ss)
+MessageBus::MessageBus(LayerStack & a_ss)
+  : m_layerStack(a_ss)
 {
 
 }
@@ -41,8 +41,8 @@ void MessageBus::DispatchMessages()
     if (shouldBreak)
       break;
 
-    auto it = m_systemStack.begin();
-    for (; it != m_systemStack.end(); it++)
+    auto it = m_layerStack.begin();
+    for (; it != m_layerStack.end(); it++)
     {
       if (it->second->HandleMessage(msg))
         continue;

@@ -1,35 +1,35 @@
-#include "System_Window.h"
+#include "Layer_Window.h"
 #include "Message.h"
 #include "Game.h"
 
-System_Window::System_Window(MessageBus * a_pMsgBus, IWindow * a_pWindow)
-  : System(a_pMsgBus)
+Layer_Window::Layer_Window(MessageBus * a_pMsgBus, IWindow * a_pWindow)
+  : Layer(a_pMsgBus)
   , m_pWindow(a_pWindow)
 {
 
 }
 
-System_Window::~System_Window()
+Layer_Window::~Layer_Window()
 {
 
 }
 
-void System_Window::OnAttach()
+void Layer_Window::OnAttach()
 {
 
 }
 
-void System_Window::OnDetach()
+void Layer_Window::OnDetach()
 {
 
 }
 
-void System_Window::Update()
+void Layer_Window::Update()
 {
 
 }
 
-bool System_Window::HandleMessage(Message const & a_msg)
+bool Layer_Window::HandleMessage(Message const & a_msg)
 {
   if (!(a_msg.type & MC_Window))
     return false;

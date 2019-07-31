@@ -7,15 +7,15 @@
 #include "DgDoublyLinkedList.h"
 #include "Message.h"
 
-class System;
-class SystemStack;
+class Layer;
+class LayerStack;
 
 class MessageBus
 {
 
 public:
 
-  MessageBus(SystemStack &);
+  MessageBus(LayerStack &);
 
   //Add message to the queue to be processed at a later time
   void Register(Message const &);
@@ -27,7 +27,7 @@ private:
 
   std::mutex                    m_mutex;       
   Dg::DoublyLinkedList<Message> m_messageQueue;
-  SystemStack &                 m_systemStack;
+  LayerStack &                  m_layerStack;
 };
 
 #endif
