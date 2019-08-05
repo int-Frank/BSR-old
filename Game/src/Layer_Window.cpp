@@ -26,7 +26,7 @@ void Layer_Window::OnDetach()
 
 void Layer_Window::Update()
 {
-
+  m_pWindow->Update();
 }
 
 bool Layer_Window::HandleMessage(Message const & a_msg)

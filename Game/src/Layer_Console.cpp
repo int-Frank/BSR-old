@@ -46,6 +46,7 @@ bool Layer_Console::HandleMessage(Message const & a_msg)
     case MT_Backspace:            {LOG_MESSAGE("MESSAGE: MT_Backspace"); break;}
     case MT_Text:                 {LOG_MESSAGE("MESSAGE: MT_Text, '{}'", a_msg.text.text); break;}
 
+    case MT_TextEvent:            {LOG_MESSAGE("MESSAGE: MT_TextEvent, '{}'", a_msg.text.text); break;}
     case MT_KeyUp:                {LOG_MESSAGE("MESSAGE: MT_KeyUp"); break;}
     case MT_KeyDown:              {LOG_MESSAGE("MESSAGE: MT_KeyDown"); break;}
     case MT_KeyDown_Repeat:       {LOG_MESSAGE("MESSAGE: MT_KeyDown_Repeat"); break;}

@@ -10,6 +10,8 @@ class Layer_Window : public Layer
 {
 public:
 
+  ASSIGN_ID
+
   Layer_Window(MessageBus * a_pMsgBus, IWindow *);
   ~Layer_Window();
 

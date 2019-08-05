@@ -4,6 +4,9 @@
 #include "../Log.h"
 #include "Framework.h"
 
+#include "imgui.h"
+#include "imgui_impl_opengl3.h"
+
 class Framework::PIMPL
 {
 public:
@@ -43,6 +46,8 @@ Framework::Framework()
 Framework::~Framework()
 {
   delete m_pimpl;
+
+  ImGui_ImplOpenGL3_Shutdown();
 }
 
 Framework * Framework::Instance()
@@ -73,7 +78,7 @@ ErrorCode Framework::Init()
     //-----------------------------------------------------------------------------------------
     //Init Modules...
     //-----------------------------------------------------------------------------------------
-    s_instance->InitWindow();
+    s_instance->InitWindow(); //Init window, create OpenGL context, init GLAD
     s_instance->InitEventPoller();
     s_instance->InitMouseController();
 
@@ -110,15 +115,31 @@ IMouseController * Framework::GetMouseController()
 
 void Framework::SetWindow(IWindow * a_window)
 {
+  BSR_ASSERT(m_pimpl->window == nullptr, "Window already exists!");
   m_pimpl->window = a_window;
 }
 
 void Framework::SetEventPoller(IEventPoller * a_ep)
 {
+  BSR_ASSERT(m_pimpl->eventPoller == nullptr, "EventPoller already exists!");
   m_pimpl->eventPoller = a_ep;
 }
 
 void Framework::SetMouseController(IMouseController * a_mc)
 {
+  BSR_ASSERT(m_pimpl->mouseController == nullptr, "MouseController already exists!");
   m_pimpl->mouseController = a_mc;
+}
+
+bool Framework::InitImGui()
+{
+  ImGui::CreateContext();
+  ImGui_ImplOpenGL3_Init("#version 410");
+
+  ImGuiIO& io = ImGui::GetIO();
+
+  io.DisplaySize = ImVec2(1024.f, 768.f);
+  io.DisplayFramebufferScale = ImVec2(1.f, 1.f);
+
+  return true;
 }

@@ -300,7 +300,7 @@ bool FW_EventPoller::NextEvent(Message & a_message)
       {
         a_message.type = MT_TextEvent;
         static_assert(TEXT_INPUT_TEXT_SIZE == SDL_TEXTINPUTEVENT_TEXT_SIZE, "text container incorrect size");
-        strncpy(a_message.text.text, event.text.text, TEXT_INPUT_TEXT_SIZE);
+        strncpy_s(a_message.text.text, event.text.text, TEXT_INPUT_TEXT_SIZE);
         validEvent = true;
         break;
       }

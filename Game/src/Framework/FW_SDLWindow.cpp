@@ -6,6 +6,9 @@
 #include "../Log.h"
 #include "../IWindow.h"
 
+#define OPENGL_MAJOR 4
+#define OPENGL_MINOR 6
+
 class FW_SDLWindow : public IWindow
 {
 public:
@@ -47,7 +50,7 @@ FW_SDLWindow::~FW_SDLWindow()
 
 void FW_SDLWindow::Update()
 {
-
+  SDL_GL_SwapWindow(m_window);
 }
 
 void FW_SDLWindow::SetVSync(bool a_val)
@@ -73,8 +76,8 @@ ErrorCode FW_SDLWindow::Init(WindowProps const & a_props)
   BSR_ASSERT(m_window == nullptr && m_glContext == nullptr, "FW_SDLWindow already initialised!");
 
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, OPENGL_MAJOR);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, OPENGL_MINOR);
 
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -95,6 +98,18 @@ ErrorCode FW_SDLWindow::Init(WindowProps const & a_props)
     LOG_ERROR("Failed to create opengl context!");
     return EC_Error;
   }
+
+  LOG_TRACE("Opengl loaded");
+  if (gladLoadGLLoader(SDL_GL_GetProcAddress) == 0)
+  {
+    LOG_ERROR("Glad failed to log");
+    return EC_Error;
+  }
+
+  LOG_TRACE("Vendor:   {}", glGetString(GL_VENDOR));
+  LOG_TRACE("Renderer: {}", glGetString(GL_RENDERER));
+  LOG_TRACE("Version:  {}", glGetString(GL_VERSION));
+
   return EC_None;
 }
 

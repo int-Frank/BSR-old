@@ -29,22 +29,19 @@ Layer_InputHandler::~Layer_InputHandler()
 
 bool Layer_InputHandler::HandleMessage(Message const & a_msg)
 {
-  bool result = true;
+  bool consumed = false;
   if ((a_msg.type & MC_Input))
   {
+    consumed = true;
     if (a_msg.type & MC_Text)
       HandleTextEvent(a_msg);
     else if (a_msg.type & MC_Keyboard)
       HandleKeyEvent(a_msg);
     else if (a_msg.type & MC_Mouse)
       HandleMouseEvent(a_msg);
-    else
-      result = false;
   }
-  else
-    result = false;
 
-  return result;
+  return consumed;
 }
 
 void Layer_InputHandler::GrabMouse()
@@ -195,7 +192,7 @@ void Layer_InputHandler::HandleTextEvent(Message const & a_msg)
   {
     Message msg;
     msg.type = MT_Text;
-    strncpy(msg.text.text, a_msg.text.text, TEXT_INPUT_TEXT_SIZE);
+    strncpy_s(msg.text.text, a_msg.text.text, TEXT_INPUT_TEXT_SIZE);
 
     Post(msg);
   }

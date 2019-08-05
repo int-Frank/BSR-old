@@ -1,5 +1,5 @@
-#ifndef SYSTEM_INPUTHANDLER_H
-#define SYSTEM_INPUTHANDLER_H
+#ifndef LAYER_INPUTHANDLER_H
+#define LAYER_INPUTHANDLER_H
 
 #include <stdint.h>
 
@@ -34,6 +34,8 @@ class Layer_InputHandler : public Layer
   };
 #undef ITEM
 public:
+
+  ASSIGN_ID
 
   Layer_InputHandler(MessageBus *);
   ~Layer_InputHandler();

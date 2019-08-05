@@ -9,6 +9,7 @@
 #include "Layer_Console.h"
 #include "Layer_InputHandler.h"
 #include "Layer_Window.h"
+#include "Layer_ImGui.h"
 
 Game * Game::s_instance = nullptr;
 
@@ -39,13 +40,15 @@ void Game::Init()
 void Game::_Init()
 {
   InitWindow();
+  Framework::Instance()->InitImGui();
 
   auto pInputHandler = new Layer_InputHandler(&m_msgBus);
   pInputHandler->SetProfile(Layer_InputHandler::BP_TextInput);
-  m_layerStack.PushLayer(pInputHandler);
+  m_layerStack.PushLayer(pInputHandler, Layer_InputHandler::GetID());
 
-  m_layerStack.PushLayer(new Layer_Window(&m_msgBus, m_window));
-  m_layerStack.PushLayer(new Layer_Console(&m_msgBus));
+  m_layerStack.PushLayer(new Layer_Window(&m_msgBus, m_window), Layer_Window::GetID());
+  m_layerStack.PushLayer(new Layer_Console(&m_msgBus), Layer_Console::GetID());
+  m_layerStack.PushLayer(new Layer_imgui(&m_msgBus), Layer_imgui::GetID());
 }
 
 void Game::ShutDown()
@@ -92,6 +95,13 @@ void Game::Run()
     for (auto it = m_layerStack.begin(); it != m_layerStack.end(); it++)
     {
       it->second->Update();
+    }
+
+    auto it = m_layerStack.end();
+    while (it != m_layerStack.begin())
+    {
+      it--;
+      it->second->Render();
     }
   }
 }

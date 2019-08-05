@@ -29,6 +29,9 @@ public:
   //IDraw *        GetDraw();
   //IAudio *       GetAudio();
 
+  //These can only be initialized after the window has been created.
+  bool InitImGui();
+
 private:
 
   //These are implemented in the relevent cpp files

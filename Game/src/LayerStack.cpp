@@ -2,7 +2,6 @@
 #include "Layer.h"
 
 LayerStack::LayerStack()
-  : m_nextID(1)
 {
 
 }
@@ -12,12 +11,13 @@ LayerStack::~LayerStack()
   Clear();
 }
 
-LayerStack::LayerID LayerStack::PushLayer(Layer * a_layer)
+bool LayerStack::PushLayer(Layer * a_layer, LayerID a_ID)
 {
-  m_layerStack.insert(m_nextID, a_layer);
-  LayerID val = m_nextID;
-  m_nextID++;
-  return val;
+  if (m_layerStack.find(a_ID) != m_layerStack.end())
+    return false;
+
+  m_layerStack.insert(a_ID, a_layer);
+  return true;
 }
 
 void LayerStack::PopLayer(LayerID a_ID)

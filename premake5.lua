@@ -23,12 +23,56 @@ IncludeDir["imgui"] = "Vendor/imgui"
 group "Depenencies"
   include "Vendor/GLAD/premake5_GLAD.lua"
   
+  filter "configurations:Debug"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Dist"
+		runtime "Release"
+		optimize "on"
+  
   project "imgui"
     location "Vendor/imgui"
     kind "StaticLib"
     targetdir (projOutput)
     objdir (projOutputInt)
     include "Vendor/imgui/premake5.lua"
+    
+    filter "configurations:Debug"
+		  runtime "Debug"
+		  symbols "on"
+
+	  filter "configurations:Release"
+		  runtime "Release"
+		  optimize "on"
+
+	  filter "configurations:Dist"
+		  runtime "Release"
+		  optimize "on"
+    
+  project "DgLib"
+    location "Vendor/DgLib"
+    kind "StaticLib"
+    targetdir (projOutput)
+    objdir (projOutputInt)
+    systemversion "latest"
+    include "Vendor/DgLib/premake5_DgLib.lua"
+    
+    filter "configurations:Debug"
+		  runtime "Debug"
+		  symbols "on"
+
+	  filter "configurations:Release"
+		  runtime "Release"
+		  optimize "on"
+
+	  filter "configurations:Dist"
+		  runtime "Release"
+		  optimize "on"
   
 group ""
 
@@ -165,11 +209,4 @@ project "Tools"
 		runtime "Release"
 		optimize "on"
   
- project "DgLib"
-  location "Vendor/DgLib"
-  kind "StaticLib"
-  targetdir (projOutput)
-  objdir (projOutputInt)
-  systemversion "latest"
-  
-  include "Vendor/DgLib/premake5_DgLib.lua"
+ 

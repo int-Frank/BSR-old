@@ -1,6 +1,9 @@
 #ifndef LAYER_H
 #define LAYER_H
 
+#include <stdint.h>
+#define ASSIGN_ID static uint32_t GetID() {return uint32_t(__COUNTER__);}
+
 class MessageBus;
 struct Message;
 
@@ -18,6 +21,7 @@ public:
   virtual void OnDetach(){}
 
   virtual void Update() =0;
+  virtual void Render() {}
 
   //Return bool: consumed
   virtual bool HandleMessage(Message const &) =0;
