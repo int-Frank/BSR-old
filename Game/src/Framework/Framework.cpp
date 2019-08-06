@@ -3,6 +3,7 @@
 #include "../Options.h"
 #include "../Log.h"
 #include "Framework.h"
+#include "../InputCodes.h"
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -131,15 +132,38 @@ void Framework::SetMouseController(IMouseController * a_mc)
   m_pimpl->mouseController = a_mc;
 }
 
-bool Framework::InitImGui()
+bool Framework::InitImGui(ImGui_InitData const & a_data)
 {
   ImGui::CreateContext();
   ImGui_ImplOpenGL3_Init("#version 410");
 
   ImGuiIO& io = ImGui::GetIO();
 
-  io.DisplaySize = ImVec2(1024.f, 768.f);
+  io.DisplaySize = ImVec2(float(a_data.window_w), float(a_data.window_h));
   io.DisplayFramebufferScale = ImVec2(1.f, 1.f);
+
+  io.KeyMap[ImGuiKey_Tab] = IC_KEY_TAB;
+  io.KeyMap[ImGuiKey_LeftArrow] = IC_KEY_LEFT;
+  io.KeyMap[ImGuiKey_RightArrow] = IC_KEY_RIGHT;
+  io.KeyMap[ImGuiKey_UpArrow] = IC_KEY_UP;
+  io.KeyMap[ImGuiKey_DownArrow] = IC_KEY_DOWN;
+  io.KeyMap[ImGuiKey_PageUp] = IC_KEY_PAGEUP;
+  io.KeyMap[ImGuiKey_PageDown] = IC_KEY_PAGEDOWN;
+  io.KeyMap[ImGuiKey_Home] = IC_KEY_HOME;
+  io.KeyMap[ImGuiKey_End] = IC_KEY_END;
+  io.KeyMap[ImGuiKey_Insert] = IC_KEY_INSERT;
+  io.KeyMap[ImGuiKey_Delete] = IC_KEY_DELETE;
+  io.KeyMap[ImGuiKey_Backspace] = IC_KEY_BACKSPACE;
+  io.KeyMap[ImGuiKey_Space] = IC_KEY_SPACE;
+  io.KeyMap[ImGuiKey_Enter] = IC_KEY_ENTER;
+  io.KeyMap[ImGuiKey_Escape] = IC_KEY_ESC;
+  io.KeyMap[ImGuiKey_KeyPadEnter] = IC_KEY_KPENTER;
+  io.KeyMap[ImGuiKey_A] = IC_KEY_A;
+  io.KeyMap[ImGuiKey_C] = IC_KEY_C;
+  io.KeyMap[ImGuiKey_V] = IC_KEY_V;
+  io.KeyMap[ImGuiKey_X] = IC_KEY_X;
+  io.KeyMap[ImGuiKey_Y] = IC_KEY_Y;
+  io.KeyMap[ImGuiKey_Z] = IC_KEY_Z;
 
   return true;
 }

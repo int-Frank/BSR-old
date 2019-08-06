@@ -207,13 +207,13 @@ static uint32_t TranslateKeyState(SDL_Event a_event)
   switch (a_event.type)
   {
     case SDL_KEYUP:
-      return MT_KeyUp;
+      return MT_Input_KeyUp;
     case SDL_MOUSEBUTTONUP:
-      return MT_ButtonUp;
+      return MT_Input_ButtonUp;
     case SDL_KEYDOWN:
-      return (a_event.key.repeat == 0 ? MT_KeyDown : MT_KeyDown_Repeat);
+      return (a_event.key.repeat == 0 ? MT_Input_KeyDown : MT_Input_KeyDown_Repeat);
     case SDL_MOUSEBUTTONDOWN:
-      return MT_ButtonDown;
+      return MT_Input_ButtonDown;
     default:
       return MT_None;
   }
@@ -262,29 +262,6 @@ static uint32_t TranslateWindowCode(uint8_t a_code)
   return uint32_t(a_code);
 }
 
-//static char GetCharacter(SDL_Scancode a_code)
-//{
-//  SDL_Keymod km = SDL_GetModState();
-//  bool capslock = (km & KMOD_CAPS) != 0;
-//  bool shift = (km & KMOD_SHIFT) != 0;
-//
-//  //letters
-//  if (a_code >= SDL_SCANCODE_A && a_code <= SDL_SCANCODE_Z)
-//  {
-//    bool upper = (capslock ^ shift);
-//    char offset = upper ? 'A' - char(IC_KEY_A) : 'a' - char(IC_KEY_A);
-//    return char(a_code) + offset;
-//  }
-//
-//  //numbers
-//  if (a_code >= SDL_SCANCODE_1 && a_code <= SDL_SCANCODE_0)
-//  {
-//    bool upper = (capslock ^ shift);
-//    char offset = upper ? 'A' - char(IC_KEY_A) : 'a' - char(IC_KEY_A);
-//    return char(a_code) + offset;
-//  }
-//}
-
 bool FW_EventPoller::NextEvent(Message & a_message)
 {
   bool validEvent = false;
@@ -298,7 +275,7 @@ bool FW_EventPoller::NextEvent(Message & a_message)
     {
       case SDL_TEXTINPUT:
       {
-        a_message.type = MT_TextEvent;
+        a_message.type = MT_Input_Text;
         static_assert(TEXT_INPUT_TEXT_SIZE == SDL_TEXTINPUTEVENT_TEXT_SIZE, "text container incorrect size");
         strncpy_s(a_message.text.text, event.text.text, TEXT_INPUT_TEXT_SIZE);
         validEvent = true;
@@ -326,12 +303,12 @@ bool FW_EventPoller::NextEvent(Message & a_message)
       {
         if (event.wheel.y > 0)
         {
-          a_message.type = MT_OtherMouseEvent;
+          a_message.type = MT_Input_OtherMouseEvent;
           a_message.mouse.code = IC_MOUSE_WHEEL_UP;
         }
         else
         {
-          a_message.type = MT_OtherMouseEvent;
+          a_message.type = MT_Input_OtherMouseEvent;
           a_message.mouse.code = IC_MOUSE_WHEEL_DOWN;
         }
         validEvent = true;
@@ -339,7 +316,7 @@ bool FW_EventPoller::NextEvent(Message & a_message)
       }
       case SDL_MOUSEMOTION:
       {
-        a_message.type = MT_OtherMouseEvent;
+        a_message.type = MT_Input_OtherMouseEvent;
         a_message.mouse.code = IC_MOUSE_MOTION;
         if (SDL_GetRelativeMouseMode() == SDL_TRUE)
         {

@@ -40,10 +40,13 @@ void Game::Init()
 void Game::_Init()
 {
   InitWindow();
-  Framework::Instance()->InitImGui();
+
+  Framework::ImGui_InitData imguiData;
+  m_window->GetDimensions(imguiData.window_w, imguiData.window_h);
+  Framework::Instance()->InitImGui(imguiData);
 
   auto pInputHandler = new Layer_InputHandler(&m_msgBus);
-  pInputHandler->SetProfile(Layer_InputHandler::BP_TextInput);
+  pInputHandler->SetProfile(Layer_InputHandler::BP_Menu);
   m_layerStack.PushLayer(pInputHandler, Layer_InputHandler::GetID());
 
   m_layerStack.PushLayer(new Layer_Window(&m_msgBus, m_window), Layer_Window::GetID());
@@ -90,11 +93,13 @@ void Game::Run()
 {
   while (!m_shouldQuit)
   {
+    float dt = 1.0f / 60.0f;
+
     m_msgBus.DispatchMessages();
 
     for (auto it = m_layerStack.begin(); it != m_layerStack.end(); it++)
     {
-      it->second->Update();
+      it->second->Update(dt);
     }
 
     auto it = m_layerStack.end();

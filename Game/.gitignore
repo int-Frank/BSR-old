@@ -1,2 +1,3 @@
 /crash-report.txt
 *.vcxproj.filters
+/imgui.ini

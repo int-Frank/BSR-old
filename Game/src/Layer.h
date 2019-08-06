@@ -20,7 +20,7 @@ public:
   virtual void OnAttach(){}
   virtual void OnDetach(){}
 
-  virtual void Update() =0;
+  virtual void Update(float dt) =0;
   virtual void Render() {}
 
   //Return bool: consumed

@@ -14,10 +14,12 @@ public:
   ~Layer_imgui();
 
   bool HandleMessage(Message const &);
-  void Update();
+  void Update(float);
   void Render();
 
 private:
+
+  void SetMouseButton(uint32_t button, bool down);
 
   void HandleMouseButtonPressed(Message const &);
   void HandleMouseButtonReleased(Message const &);

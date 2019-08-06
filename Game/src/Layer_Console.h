@@ -14,7 +14,7 @@ public:
   ~Layer_Console();
 
   bool HandleMessage(Message const &);
-  void Update();
+  void Update(float);
 
 };
 

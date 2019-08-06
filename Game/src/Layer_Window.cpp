@@ -24,7 +24,7 @@ void Layer_Window::OnDetach()
 
 }
 
-void Layer_Window::Update()
+void Layer_Window::Update(float a_dt)
 {
   m_pWindow->Update();
 }

@@ -18,7 +18,7 @@ public:
   void OnAttach();
   void OnDetach();
 
-  void Update();
+  void Update(float);
 
   //Return bool: consumed
   bool HandleMessage(Message const &);

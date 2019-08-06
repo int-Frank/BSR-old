@@ -14,7 +14,7 @@ Layer_Console::~Layer_Console()
 
 }
 
-void Layer_Console::Update()
+void Layer_Console::Update(float a_dt)
 {
 
 }
@@ -43,17 +43,16 @@ bool Layer_Console::HandleMessage(Message const & a_msg)
     case MT_Window_Take_Focus:    {LOG_MESSAGE("MESSAGE: MT_Window_Take_Focus"); break;}
     case MT_Window_Hit_Test:      {LOG_MESSAGE("MESSAGE: MT_Window_Hit_Test"); break;}
 
-    case MT_Backspace:            {LOG_MESSAGE("MESSAGE: MT_Backspace"); break;}
-    case MT_Text:                 {LOG_MESSAGE("MESSAGE: MT_Text, '{}'", a_msg.text.text); break;}
+    case MT_GUI_Backspace:        {LOG_MESSAGE("MESSAGE: MT_Backspace"); break;}
+    case MT_GUI_Text:             {LOG_MESSAGE("MESSAGE: MT_Text, '{}'", a_msg.text.text); break;}
 
-    case MT_TextEvent:            {LOG_MESSAGE("MESSAGE: MT_TextEvent, '{}'", a_msg.text.text); break;}
-    case MT_KeyUp:                {LOG_MESSAGE("MESSAGE: MT_KeyUp"); break;}
-    case MT_KeyDown:              {LOG_MESSAGE("MESSAGE: MT_KeyDown"); break;}
-    case MT_KeyDown_Repeat:       {LOG_MESSAGE("MESSAGE: MT_KeyDown_Repeat"); break;}
-
-    case MT_ButtonUp:             {LOG_MESSAGE("MESSAGE: MT_ButtonUp"); break;}
-    case MT_ButtonDown:           {LOG_MESSAGE("MESSAGE: MT_ButtonDown"); break;}
-    case MT_OtherMouseEvent:      {LOG_MESSAGE("MESSAGE: MT_OtherMouseEvent"); break;}
+    //These never reach the message bus, but are pulled directly from the event poller to the input handler
+    //case MT_Input_KeyUp:                {LOG_MESSAGE("MESSAGE: MT_KeyUp"); break;}
+    //case MT_Input_KeyDown:              {LOG_MESSAGE("MESSAGE: MT_KeyDown"); break;}
+    //case MT_Input_KeyDown_Repeat:       {LOG_MESSAGE("MESSAGE: MT_KeyDown_Repeat"); break;}
+    //case MT_Input_ButtonUp:             {LOG_MESSAGE("MESSAGE: MT_ButtonUp"); break;}
+    //case MT_Input_ButtonDown:           {LOG_MESSAGE("MESSAGE: MT_ButtonDown"); break;}
+    //case MT_Input_OtherMouseEvent:      {LOG_MESSAGE("MESSAGE: MT_OtherMouseEvent"); break;}
 
     case MT_State_None:           {LOG_MESSAGE("MESSAGE: MT_State_None"); break;}
     case MT_State_Loading:        {LOG_MESSAGE("MESSAGE: MT_State_Loading"); break;}
@@ -63,13 +62,16 @@ bool Layer_Console::HandleMessage(Message const & a_msg)
     case MT_State_DebugOverlay:   {LOG_MESSAGE("MESSAGE: MT_State_DebugOverlay"); break;}
     case MT_State_Elevator:       {LOG_MESSAGE("MESSAGE: MT_State_Elevator"); break;}
 
-    case MT_PointSelect:          {LOG_MESSAGE("MESSAGE: MT_PointSelect, x: {}, y: {}", a_msg.mouse.x, a_msg.mouse.y); break;}
-    case MT_Select:               {LOG_MESSAGE("MESSAGE: MT_Select"); break;}
-    case MT_MouseMove:            {LOG_MESSAGE("MESSAGE: MT_MouseMove, x: {}, y: {}", a_msg.mouse.x, a_msg.mouse.y); break;}
-    case MT_NextItem:             {LOG_MESSAGE("MESSAGE: MT_NextItem"); break;}
-    case MT_PreviousItem:         {LOG_MESSAGE("MESSAGE: MT_PreviousItem"); break;}
-    case MT_ModifyUp:             {LOG_MESSAGE("MESSAGE: MT_ModifyUp"); break;}
-    case MT_ModifyDown:           {LOG_MESSAGE("MESSAGE: MT_ModifyDown"); break;}
+    case MT_GUI_MouseButtonUp:    {LOG_MESSAGE("MESSAGE: MT_GUI_MouseButtonUp, button: {}, x: {}, y: {}", a_msg.mouse.code, a_msg.mouse.x, a_msg.mouse.y); break;}
+    case MT_GUI_MouseButtonDown:  {LOG_MESSAGE("MESSAGE: MT_GUI_MouseButtonDown, button: {}, x: {}, y: {}", a_msg.mouse.code, a_msg.mouse.x, a_msg.mouse.y); break;}
+    case MT_GUI_Enter:            {LOG_MESSAGE("MESSAGE: MT_Select"); break;}
+    case MT_GUI_MouseMove:        {LOG_MESSAGE("MESSAGE: MT_GUI_MouseMove, x: {}, y: {}", a_msg.mouse.x, a_msg.mouse.y); break;}
+    case MT_GUI_Key_Up:           {LOG_MESSAGE("MESSAGE: MT_NextItem"); break;}
+    case MT_GUI_Key_Down:         {LOG_MESSAGE("MESSAGE: MT_PreviousItem"); break;}
+    case MT_GUI_Key_Left:         {LOG_MESSAGE("MESSAGE: MT_ModifyUp"); break;}
+    case MT_GUI_Key_Right:        {LOG_MESSAGE("MESSAGE: MT_ModifyDown"); break;}
+    case MT_GUI_MouseWheel_Up:    {LOG_MESSAGE("MESSAGE: MT_NextItem"); break;}
+    case MT_GUI_MouseWheel_Down:  {LOG_MESSAGE("MESSAGE: MT_PreviousItem"); break;}
     default:                      {LOG_MESSAGE("MESSAGE: UNRECOGNISED");}
   }
 

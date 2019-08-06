@@ -100,9 +100,9 @@ void Layer_InputHandler::Bind(InputCode a_inputCode, MessageType a_event, Messag
 
 void Layer_InputHandler::BindKeyDown(InputCode a_inputCode, bool a_repeat, MessageType a_binding)
 {
-  m_bindings.insert(PackKey(a_inputCode, MT_KeyDown), a_binding);
+  m_bindings.insert(PackKey(a_inputCode, MT_Input_KeyDown), a_binding);
   if (a_repeat)
-    m_bindings.insert(PackKey(a_inputCode, MT_KeyDown_Repeat), a_binding);
+    m_bindings.insert(PackKey(a_inputCode, MT_Input_KeyDown_Repeat), a_binding);
 }
 
 template<>
@@ -123,18 +123,14 @@ void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_Menu>()
 {
   m_bindings.clear();
 
-  Bind(IC_MOUSE_MOTION, MT_OtherMouseEvent, MT_MouseMove);
-  Bind(IC_MOUSE_WHEEL_UP, MT_OtherMouseEvent, MT_ModifyUp);
-  Bind(IC_MOUSE_WHEEL_DOWN, MT_OtherMouseEvent, MT_ModifyDown);
-  Bind(IC_MOUSE_BUTTON_LEFT, MT_ButtonDown, MT_PointSelect);
+  Bind(IC_MOUSE_MOTION, MT_Input_OtherMouseEvent, MT_GUI_MouseMove);
+  Bind(IC_MOUSE_WHEEL_UP, MT_Input_OtherMouseEvent, MT_GUI_MouseWheel_Up);
+  Bind(IC_MOUSE_WHEEL_DOWN, MT_Input_OtherMouseEvent, MT_GUI_MouseWheel_Down);
+  Bind(IC_MOUSE_BUTTON_LEFT, MT_Input_ButtonDown, MT_GUI_MouseButtonDown);
+  Bind(IC_MOUSE_BUTTON_LEFT, MT_Input_ButtonUp, MT_GUI_MouseButtonUp);
 
-  BindKeyDown(IC_KEY_UP, true, MT_PreviousItem);
-  BindKeyDown(IC_KEY_DOWN, true, MT_NextItem);
-  BindKeyDown(IC_KEY_LEFT, true, MT_ModifyDown);
-  BindKeyDown(IC_KEY_RIGHT, true, MT_ModifyUp);
-
-  Bind(IC_KEY_ENTER, MT_KeyDown, MT_Select);
-  Bind(IC_KEY_ESC, MT_KeyDown, MT_GoBack);
+  Bind(IC_KEY_ENTER, MT_Input_KeyDown, MT_GUI_Enter);
+  Bind(IC_KEY_ESC, MT_Input_KeyDown, MT_GoBack);
 
   m_mouseController->Release();
 }
@@ -144,10 +140,10 @@ void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_TextInput>()
 {
   m_bindings.clear();
 
-  Bind(IC_UNKNOWN, MT_TextEvent, MT_Text);
+  //Bind(IC_UNKNOWN, MT_Text, MT_Text);
 
-  BindKeyDown(IC_KEY_ENTER, false, MT_Select);
-  BindKeyDown(IC_KEY_BACKSPACE, true, MT_Backspace);
+  BindKeyDown(IC_KEY_ENTER, false, MT_GUI_Enter);
+  BindKeyDown(IC_KEY_BACKSPACE, true, MT_GUI_Backspace);
   BindKeyDown(IC_KEY_ESC, false, MT_Window_Close);
 
   m_mouseController->Release();
@@ -174,7 +170,7 @@ void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_Elevator>()
   m_mouseController->Release();
 }
 
-void Layer_InputHandler::Update()
+void Layer_InputHandler::Update(float a_dt)
 {
   Message msg;
   while (m_eventPoller->NextEvent(msg))
@@ -186,12 +182,12 @@ void Layer_InputHandler::Update()
 
 void Layer_InputHandler::HandleTextEvent(Message const & a_msg)
 {
-  uint64_t mapKey = PackKey(IC_UNKNOWN, MT_TextEvent);
+  uint64_t mapKey = PackKey(IC_UNKNOWN, MT_GUI_Text);
   auto it = m_bindings.find(mapKey);
   if (it != m_bindings.end())
   {
     Message msg;
-    msg.type = MT_Text;
+    msg.type = MT_GUI_Text;
     strncpy_s(msg.text.text, a_msg.text.text, TEXT_INPUT_TEXT_SIZE);
 
     Post(msg);
@@ -219,14 +215,16 @@ void Layer_InputHandler::HandleMouseEvent(Message const & a_msg)
   {
     Message msg;
     msg.type = it->second;
-    uint32_t mask = IC_MOUSE_MOTION 
-      | IC_MOUSE_BUTTON_LEFT
-      | IC_MOUSE_BUTTON_MIDDLE
-      | IC_MOUSE_BUTTON_RIGHT
-      | IC_MOUSE_BUTTON_X1
-      | IC_MOUSE_BUTTON_X2;
+    msg.mouse.code = a_msg.mouse.code;
+    bool hasXY = false;
+    if (a_msg.mouse.code == IC_MOUSE_MOTION)              hasXY = true;
+    else if (a_msg.mouse.code == IC_MOUSE_BUTTON_LEFT)    hasXY = true;
+    else if (a_msg.mouse.code == IC_MOUSE_BUTTON_MIDDLE)  hasXY = true;
+    else if (a_msg.mouse.code == IC_MOUSE_BUTTON_RIGHT)   hasXY = true;
+    else if (a_msg.mouse.code == IC_MOUSE_BUTTON_X1)      hasXY = true;
+    else if (a_msg.mouse.code == IC_MOUSE_BUTTON_X2)      hasXY = true;
 
-    if ((a_msg.mouse.code & mask) != 0)
+    if (hasXY)
     {
       msg.mouse.x = a_msg.mouse.x;
       msg.mouse.y = a_msg.mouse.y;

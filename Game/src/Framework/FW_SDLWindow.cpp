@@ -25,6 +25,8 @@ public:
   ErrorCode Init(WindowProps const & props = WindowProps());
   void Destroy();
 
+  void GetDimensions(int & w, int & h);
+
 private:
 
   SDL_Window *  m_window;
@@ -51,6 +53,7 @@ FW_SDLWindow::~FW_SDLWindow()
 void FW_SDLWindow::Update()
 {
   SDL_GL_SwapWindow(m_window);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void FW_SDLWindow::SetVSync(bool a_val)
@@ -119,4 +122,9 @@ void FW_SDLWindow::Destroy()
   SDL_DestroyWindow(m_window);
   m_window = nullptr;
   m_glContext = nullptr;
+}
+
+void FW_SDLWindow::GetDimensions(int & a_w, int & a_h)
+{
+  SDL_GetWindowSize(m_window, &a_w, &a_h);
 }

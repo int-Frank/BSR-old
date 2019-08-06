@@ -11,6 +11,14 @@ class Framework
 {
 public:
 
+  struct ImGui_InitData
+  {
+    int window_w;
+    int window_h;
+  };
+
+public:
+
   Framework();
   ~Framework();
 
@@ -30,7 +38,7 @@ public:
   //IAudio *       GetAudio();
 
   //These can only be initialized after the window has been created.
-  bool InitImGui();
+  bool InitImGui(ImGui_InitData const &);
 
 private:
 

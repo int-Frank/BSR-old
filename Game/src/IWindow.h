@@ -34,6 +34,8 @@ public:
   virtual ErrorCode Init(WindowProps const & props = WindowProps()) = 0;
   virtual void Destroy() = 0;
 
+  virtual void GetDimensions(int & w, int & h) = 0;
+
 private:
 
 };

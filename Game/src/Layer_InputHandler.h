@@ -44,7 +44,7 @@ public:
   void ClearBindings();
 
   bool HandleMessage(Message const &);
-  void Update();
+  void Update(float);
 
 private:
 
@@ -68,7 +68,7 @@ private:
   void Bind(InputCode inputCode, MessageType event, MessageType binding);
   void BindKeyDown(InputCode inputCode, bool repeat, MessageType binding);
 
-protected:
+private:
 
   IEventPoller *      m_eventPoller;
   IMouseController *  m_mouseController;
