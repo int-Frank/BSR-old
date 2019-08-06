@@ -2,6 +2,31 @@
 #define INPUTCODES_H
 
 #include <stdint.h>
+#include "Utility.h"
+
+#undef NEW_COUNTER
+#define NEW_COUNTER KeyModCounter
+INIT_COUNTER(0)
+
+#define KM_SHIFT (KM_LSHIFT | KM_RSHIFT)
+#define KM_CTRL (KM_LCTRL | KM_RCTRL)
+#define KM_ALT  (KM_LALT | KM_RALT)
+#define KM_GUI  (KM_LGUI | KM_RGUI)
+
+enum KeyMod : uint16_t
+{
+  KM_LSHIFT   = BIT(COUNTER),
+  KM_LCTRL    = BIT(COUNTER),
+  KM_LALT     = BIT(COUNTER),
+  KM_LGUI     = BIT(COUNTER),
+  KM_RSHIFT   = BIT(COUNTER),
+  KM_RCTRL    = BIT(COUNTER),
+  KM_RALT     = BIT(COUNTER),
+  KM_RGUI     = BIT(COUNTER),
+  KM_NUM      = BIT(COUNTER),
+  KM_CAPS     = BIT(COUNTER),
+  KM_MODE     = BIT(COUNTER)
+};
 
 enum InputCode : uint16_t
 {

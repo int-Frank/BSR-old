@@ -8,6 +8,8 @@
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 
+static char*        g_ClipboardTextData = nullptr;
+
 class Framework::PIMPL
 {
 public:
@@ -94,6 +96,10 @@ ErrorCode Framework::ShutDown()
   delete s_instance;
   s_instance = nullptr;
 
+  if (g_ClipboardTextData)
+    SDL_free(g_ClipboardTextData);
+  g_ClipboardTextData = nullptr;
+
   SDL_Quit();
 
   return result;
@@ -132,6 +138,19 @@ void Framework::SetMouseController(IMouseController * a_mc)
   m_pimpl->mouseController = a_mc;
 }
 
+static const char* ImGui_ImplSDL2_GetClipboardText(void*)
+{
+  if (g_ClipboardTextData)
+    SDL_free(g_ClipboardTextData);
+  g_ClipboardTextData = SDL_GetClipboardText();
+  return g_ClipboardTextData;
+}
+
+static void ImGui_ImplSDL2_SetClipboardText(void*, const char* text)
+{
+  SDL_SetClipboardText(text);
+}
+
 bool Framework::InitImGui(ImGui_InitData const & a_data)
 {
   ImGui::CreateContext();
@@ -164,6 +183,10 @@ bool Framework::InitImGui(ImGui_InitData const & a_data)
   io.KeyMap[ImGuiKey_X] = IC_KEY_X;
   io.KeyMap[ImGuiKey_Y] = IC_KEY_Y;
   io.KeyMap[ImGuiKey_Z] = IC_KEY_Z;
+
+  io.SetClipboardTextFn = ImGui_ImplSDL2_SetClipboardText;
+  io.GetClipboardTextFn = ImGui_ImplSDL2_GetClipboardText;
+  io.ClipboardUserData = nullptr;
 
   return true;
 }

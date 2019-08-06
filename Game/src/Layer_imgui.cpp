@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "Framework/imgui_impl_opengl3.h"
 #include "InputCodes.h"
+#include "Options.h"
 
 Layer_imgui::Layer_imgui(MessageBus * a_msgBus)
   : Layer(a_msgBus)
@@ -29,15 +30,31 @@ bool Layer_imgui::HandleMessage(Message const & a_msg)
     {
       SetMouseButton(a_msg.mouse.code, false);
     }
-    else if (a_msg.type == MT_GUI_MouseWheel_Up)
+    else if (a_msg.type == MT_GUI_MouseWheelUp)
     {
       ImGuiIO& io = ImGui::GetIO();
       io.MouseWheel += 1;
     }
-    else if (a_msg.type == MT_GUI_MouseWheel_Down)
+    else if (a_msg.type == MT_GUI_MouseWheelDown)
     {
       ImGuiIO& io = ImGui::GetIO();
       io.MouseWheel -= 1;
+    }
+    else if (a_msg.type == MT_GUI_KeyDown 
+          || a_msg.type == MT_GUI_KeyUp)
+    {
+      ImGuiIO& io = ImGui::GetIO();
+      BSR_ASSERT(a_msg.key.code >= 0 && a_msg.key.code < IM_ARRAYSIZE(io.KeysDown));
+      io.KeysDown[a_msg.key.code] = (a_msg.type == MT_GUI_KeyDown);
+      io.KeyShift = ((a_msg.key.modState & KM_SHIFT) != 0);
+      io.KeyCtrl = ((a_msg.key.modState & KM_CTRL) != 0);
+      io.KeyAlt = ((a_msg.key.modState & KM_ALT) != 0);
+      io.KeySuper = ((a_msg.key.modState & KM_GUI) != 0);
+    }
+    else if (a_msg.type == MT_GUI_Text)
+    {
+      ImGuiIO& io = ImGui::GetIO();
+      io.AddInputCharactersUTF8(a_msg.text.text);
     }
   }
 

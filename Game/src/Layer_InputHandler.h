@@ -18,7 +18,6 @@ class IMouseController;
   ITEM(BP_None)\
   ITEM(BP_Loading)\
   ITEM(BP_Menu)\
-  ITEM(BP_TextInput)\
   ITEM(BP_DebugOverlay)\
   ITEM(BP_Game)\
   ITEM(BP_Elevator)

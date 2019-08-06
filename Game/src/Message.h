@@ -35,16 +35,12 @@ enum MessageType : uint32_t
   MT_GUI_MouseMove          = (COUNTER | MC_GUI),
   MT_GUI_MouseButtonUp      = (COUNTER | MC_GUI),
   MT_GUI_MouseButtonDown    = (COUNTER | MC_GUI),
-  MT_GUI_Enter              = (COUNTER | MC_GUI),
-  MT_GUI_Key_Up             = (COUNTER | MC_GUI),
-  MT_GUI_Key_Down           = (COUNTER | MC_GUI),
-  MT_GUI_Key_Left           = (COUNTER | MC_GUI),
-  MT_GUI_Key_Right          = (COUNTER | MC_GUI),
-  MT_GUI_MouseWheel_Up      = (COUNTER | MC_GUI),
-  MT_GUI_MouseWheel_Down    = (COUNTER | MC_GUI),
+  MT_GUI_KeyUp              = (COUNTER | MC_GUI),
+  MT_GUI_KeyDown            = (COUNTER | MC_GUI),
+  MT_GUI_MouseWheelUp       = (COUNTER | MC_GUI),
+  MT_GUI_MouseWheelDown     = (COUNTER | MC_GUI),
 
   MT_GUI_Text               = (COUNTER | MC_GUI | MC_Text),
-  MT_GUI_Backspace          = (COUNTER | MC_GUI | MC_Text),
 
   MT_Window_Shown           = (COUNTER | MC_Window), //< Window has been shown 
   MT_Window_Hidden          = (COUNTER | MC_Window), //< Window has been hidden 
@@ -76,7 +72,6 @@ enum MessageType : uint32_t
   MT_State_Loading          = (COUNTER | MC_State),
   MT_State_Game             = (COUNTER | MC_State),
   MT_State_Menu             = (COUNTER | MC_State),
-  MT_State_TextInput        = (COUNTER | MC_State),
   MT_State_DebugOverlay     = (COUNTER | MC_State),
   MT_State_Elevator         = (COUNTER | MC_State),
 
@@ -134,6 +129,7 @@ struct KeyData
 {
   uint32_t  type;
   uint16_t  code;
+  uint16_t  modState;
 };
 
 struct TextInput

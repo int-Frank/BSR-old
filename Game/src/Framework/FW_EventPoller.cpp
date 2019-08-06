@@ -19,7 +19,51 @@ public:
   ~FW_EventPoller();
   bool NextEvent(Message &);
 
+private:
+
+  void UpdateModState(SDL_Event const & a_event);
+
+private:
+
+  uint16_t m_modState;
 };
+
+void FW_EventPoller::UpdateModState(SDL_Event const & a_event)
+{
+  if (a_event.type == SDL_KEYDOWN)
+  {
+    switch (a_event.key.keysym.sym)
+    {
+      case SDLK_LSHIFT:       m_modState |= KM_LSHIFT; break;
+      case SDLK_LCTRL:        m_modState |= KM_LCTRL; break;
+      case SDLK_LALT:         m_modState |= KM_LALT; break;
+      case SDLK_LGUI:         m_modState |= KM_LGUI; break;
+      case SDLK_RSHIFT:       m_modState |= KM_RSHIFT; break;
+      case SDLK_RCTRL:        m_modState |= KM_RCTRL; break;
+      case SDLK_RALT:         m_modState |= KM_RALT; break;
+      case SDLK_RGUI:         m_modState |= KM_RGUI; break;
+      case SDLK_NUMLOCKCLEAR: m_modState &= ~KM_NUM; break;
+      case SDLK_CAPSLOCK:     m_modState &= ~KM_CAPS; break;
+      case SDLK_MODE:         m_modState &= ~KM_MODE; break;
+      default: break;
+    }
+  }
+  else if (a_event.type == SDL_KEYUP)
+  {
+    switch (a_event.key.keysym.sym)
+    {
+      case SDLK_LSHIFT:       m_modState &= ~KM_LSHIFT; break;
+      case SDLK_LCTRL:        m_modState &= ~KM_LCTRL; break;
+      case SDLK_LALT:         m_modState &= ~KM_LALT; break;
+      case SDLK_LGUI:         m_modState &= ~KM_LGUI; break;
+      case SDLK_RSHIFT:       m_modState &= ~KM_RSHIFT; break;
+      case SDLK_RCTRL:        m_modState &= ~KM_RCTRL; break;
+      case SDLK_RALT:         m_modState &= ~KM_RALT; break;
+      case SDLK_RGUI:         m_modState &= ~KM_RGUI; break;
+      default: break;
+    }
+  }
+}
 
 void Framework::InitEventPoller()
 {
@@ -27,8 +71,13 @@ void Framework::InitEventPoller()
 }
 
 FW_EventPoller::FW_EventPoller()
+  : m_modState(0)
 {
-  
+  SDL_Keymod modState = SDL_GetModState();
+  if ((modState & KMOD_CAPS) != 0)
+    m_modState |= KM_CAPS;
+  if ((modState & KMOD_NUM) != 0)
+    m_modState |= KM_NUM;
 }
 
 FW_EventPoller::~FW_EventPoller()
@@ -279,13 +328,15 @@ bool FW_EventPoller::NextEvent(Message & a_message)
         static_assert(TEXT_INPUT_TEXT_SIZE == SDL_TEXTINPUTEVENT_TEXT_SIZE, "text container incorrect size");
         strncpy_s(a_message.text.text, event.text.text, TEXT_INPUT_TEXT_SIZE);
         validEvent = true;
-        break;
+        break; 
       }
       case SDL_KEYDOWN:
       case SDL_KEYUP:
       {
+        UpdateModState(event);
         a_message.type = TranslateKeyState(event);
         a_message.key.code = TranslateKeyCode(event.key.keysym.scancode);
+        a_message.key.modState = m_modState;
         validEvent = true;
         break;
       }

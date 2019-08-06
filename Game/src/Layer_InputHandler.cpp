@@ -114,7 +114,7 @@ void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_None>()
 template<>
 void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_Loading>()
 {
-  m_bindings.clear();
+  m_bindings.clear(); 
   m_mouseController->Grab();
 }
 
@@ -124,27 +124,58 @@ void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_Menu>()
   m_bindings.clear();
 
   Bind(IC_MOUSE_MOTION, MT_Input_OtherMouseEvent, MT_GUI_MouseMove);
-  Bind(IC_MOUSE_WHEEL_UP, MT_Input_OtherMouseEvent, MT_GUI_MouseWheel_Up);
-  Bind(IC_MOUSE_WHEEL_DOWN, MT_Input_OtherMouseEvent, MT_GUI_MouseWheel_Down);
+  Bind(IC_MOUSE_WHEEL_UP, MT_Input_OtherMouseEvent, MT_GUI_MouseWheelUp);
+  Bind(IC_MOUSE_WHEEL_DOWN, MT_Input_OtherMouseEvent, MT_GUI_MouseWheelDown);
   Bind(IC_MOUSE_BUTTON_LEFT, MT_Input_ButtonDown, MT_GUI_MouseButtonDown);
   Bind(IC_MOUSE_BUTTON_LEFT, MT_Input_ButtonUp, MT_GUI_MouseButtonUp);
 
-  Bind(IC_KEY_ENTER, MT_Input_KeyDown, MT_GUI_Enter);
+  Bind(IC_UNKNOWN, MT_Input_Text, MT_GUI_Text);
+
+  BindKeyDown(IC_KEY_TAB, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_LEFT, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_RIGHT, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_UP, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_DOWN, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_PAGEUP, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_PAGEDOWN, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_HOME, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_END, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_INSERT, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_DELETE, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_BACKSPACE, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_SPACE, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_ENTER, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_KPENTER, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_A, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_C, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_V, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_X, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_Y, true, MT_GUI_KeyDown);
+  BindKeyDown(IC_KEY_Z, true, MT_GUI_KeyDown);
+
+  Bind(IC_KEY_TAB, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_LEFT, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_RIGHT, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_UP, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_DOWN, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_PAGEUP, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_PAGEDOWN, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_HOME, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_END, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_INSERT, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_DELETE, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_BACKSPACE, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_SPACE, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_ENTER, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_KPENTER, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_A, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_C, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_V, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_X, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_Y, MT_Input_KeyUp, MT_GUI_KeyUp);
+  Bind(IC_KEY_Z, MT_Input_KeyUp, MT_GUI_KeyUp);
+
   Bind(IC_KEY_ESC, MT_Input_KeyDown, MT_GoBack);
-
-  m_mouseController->Release();
-}
-
-template<>
-void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_TextInput>()
-{
-  m_bindings.clear();
-
-  //Bind(IC_UNKNOWN, MT_Text, MT_Text);
-
-  BindKeyDown(IC_KEY_ENTER, false, MT_GUI_Enter);
-  BindKeyDown(IC_KEY_BACKSPACE, true, MT_GUI_Backspace);
-  BindKeyDown(IC_KEY_ESC, false, MT_Window_Close);
 
   m_mouseController->Release();
 }
@@ -182,7 +213,7 @@ void Layer_InputHandler::Update(float a_dt)
 
 void Layer_InputHandler::HandleTextEvent(Message const & a_msg)
 {
-  uint64_t mapKey = PackKey(IC_UNKNOWN, MT_GUI_Text);
+  uint64_t mapKey = PackKey(IC_UNKNOWN, MT_Input_Text);
   auto it = m_bindings.find(mapKey);
   if (it != m_bindings.end())
   {
@@ -202,6 +233,8 @@ void Layer_InputHandler::HandleKeyEvent(Message const & a_msg)
   {
     Message msg;
     msg.type = it->second;
+    msg.key.code = a_msg.key.code;
+    msg.key.modState = a_msg.key.modState;
 
     Post(msg);
   }
