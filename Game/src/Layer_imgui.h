@@ -4,6 +4,8 @@
 #include "Message.h"
 #include "Layer.h"
 
+//The imgui layer is not responsible for initialising imgui, this is done in the
+//Framework class. The imgui layer is responsible for handling input and rendering.
 class Layer_imgui : public Layer
 {
 public:
@@ -16,6 +18,9 @@ public:
   bool HandleMessage(Message const &);
   void Update(float);
   void Render();
+  void NewFrame();
+
+  void DoImGui();
 
 private:
 
@@ -31,6 +36,9 @@ private:
   void HandleTextInput(Message const &);
   void HandleWindowEvent(Message const &);
 
+private:
+
+  float m_dt;
 };
 
 #endif

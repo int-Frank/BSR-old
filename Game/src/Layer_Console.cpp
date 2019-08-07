@@ -70,7 +70,7 @@ bool Layer_Console::HandleMessage(Message const & a_msg)
     //case MT_GUI_Key_Right:        {LOG_MESSAGE("MESSAGE: MT_ModifyDown"); break;}
     //case MT_GUI_MouseWheel_Up:    {LOG_MESSAGE("MESSAGE: MT_NextItem"); break;}
     //case MT_GUI_MouseWheel_Down:  {LOG_MESSAGE("MESSAGE: MT_PreviousItem"); break;}
-    default:                      {LOG_MESSAGE("MESSAGE: UNRECOGNISED");}
+    default:                        {LOG_MESSAGE("MESSAGE: UNRECOGNISED");}
   }
 
   return false;

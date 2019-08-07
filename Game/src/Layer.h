@@ -22,6 +22,7 @@ public:
 
   virtual void Update(float dt) =0;
   virtual void Render() {}
+  virtual void DoImGui(){}
 
   //Return bool: consumed
   virtual bool HandleMessage(Message const &) =0;

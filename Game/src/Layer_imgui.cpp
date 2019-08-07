@@ -6,6 +6,7 @@
 
 Layer_imgui::Layer_imgui(MessageBus * a_msgBus)
   : Layer(a_msgBus)
+  , m_dt(1.0f / 60.0f)
 {
 }
 
@@ -80,21 +81,28 @@ void Layer_imgui::SetMouseButton(uint32_t a_button, bool a_down)
 
 void Layer_imgui::Update(float a_dt)
 {
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui::NewFrame();
-
-  ImGuiIO& io = ImGui::GetIO();
-  io.DeltaTime = a_dt;
-
-  static bool show = true;
-  ImGui::ShowDemoWindow(&show);
-
+  m_dt = a_dt;
 }
 
 void Layer_imgui::Render()
 {
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void Layer_imgui::NewFrame()
+{
+  ImGui_ImplOpenGL3_NewFrame();
+  ImGui::NewFrame();
+
+  ImGuiIO& io = ImGui::GetIO();
+  io.DeltaTime = m_dt;
+}
+
+void Layer_imgui::DoImGui()
+{
+  static bool show = true;
+  ImGui::ShowDemoWindow(&show);
 }
 
 void Layer_imgui::HandleMouseButtonPressed(Message const&)

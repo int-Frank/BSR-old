@@ -98,9 +98,12 @@ void Game::Run()
     m_msgBus.DispatchMessages();
 
     for (auto it = m_layerStack.begin(); it != m_layerStack.end(); it++)
-    {
       it->second->Update(dt);
-    }
+
+    Layer_imgui * imguiLayer = static_cast<Layer_imgui*>(m_layerStack.GetLayer(Layer_imgui::GetID()));
+    imguiLayer->NewFrame();
+    for (auto it = m_layerStack.begin(); it != m_layerStack.end(); it++)
+      it->second->DoImGui();
 
     auto it = m_layerStack.end();
     while (it != m_layerStack.begin())
