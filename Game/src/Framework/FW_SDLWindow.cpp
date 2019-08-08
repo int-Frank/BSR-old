@@ -5,6 +5,8 @@
 #include "../Options.h"
 #include "../Log.h"
 #include "../IWindow.h"
+#include "../BSR_Assert.h"
+#include "OpenGLContext.h"
 
 #define OPENGL_MAJOR 4
 #define OPENGL_MINOR 6
@@ -29,8 +31,8 @@ public:
 
 private:
 
-  SDL_Window *  m_window;
-  SDL_GLContext m_glContext;
+  SDL_Window *        m_pWindow;
+  IGraphicsContext *  m_pContext;
 };
 
 void Framework::InitWindow()
@@ -39,8 +41,8 @@ void Framework::InitWindow()
 }
 
 FW_SDLWindow::FW_SDLWindow()
-  : m_window(nullptr)
-  , m_glContext(nullptr)
+  : m_pWindow(nullptr)
+  , m_pContext(nullptr)
 {
 
 }
@@ -52,8 +54,7 @@ FW_SDLWindow::~FW_SDLWindow()
 
 void FW_SDLWindow::Update()
 {
-  SDL_GL_SwapWindow(m_window);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  m_pContext->SwapBuffers();
 }
 
 void FW_SDLWindow::SetVSync(bool a_val)
@@ -71,12 +72,12 @@ bool FW_SDLWindow::IsVSync() const
 
 bool FW_SDLWindow::IsInit() const
 {
-  return m_window != nullptr;
+  return m_pWindow != nullptr;
 }
 
 ErrorCode FW_SDLWindow::Init(WindowProps const & a_props)
 {
-  BSR_ASSERT(m_window == nullptr && m_glContext == nullptr, "FW_SDLWindow already initialised!");
+  BSR_ASSERT(m_pWindow == nullptr && m_pContext == nullptr, "FW_SDLWindow already initialised!");
 
   SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, OPENGL_MAJOR);
@@ -86,45 +87,35 @@ ErrorCode FW_SDLWindow::Init(WindowProps const & a_props)
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
   // Create window
-  m_window = SDL_CreateWindow(a_props.name.c_str(), 100, 100,
+  m_pWindow = SDL_CreateWindow(a_props.name.c_str(), 100, 100,
                               a_props.width, a_props.height, SDL_WINDOW_OPENGL);
-  if(m_window == NULL)
+  if(m_pWindow == nullptr)
   {
     LOG_ERROR("Failed to create window!");
     return EC_Error;
   }
 
-  // Create OpenGL context
-  m_glContext = SDL_GL_CreateContext(m_window);
-  if(m_glContext == NULL)
+  m_pContext = new OpenGLContext(m_pWindow);
+  if (m_pContext->Init() != EC_None)
   {
     LOG_ERROR("Failed to create opengl context!");
+    Destroy();
     return EC_Error;
   }
-
-  LOG_TRACE("Opengl loaded");
-  if (gladLoadGLLoader(SDL_GL_GetProcAddress) == 0)
-  {
-    LOG_ERROR("Glad failed to log");
-    return EC_Error;
-  }
-
-  LOG_TRACE("Vendor:   {}", glGetString(GL_VENDOR));
-  LOG_TRACE("Renderer: {}", glGetString(GL_RENDERER));
-  LOG_TRACE("Version:  {}", glGetString(GL_VERSION));
 
   return EC_None;
 }
 
 void FW_SDLWindow::Destroy()
 {
-  SDL_GL_DeleteContext(m_glContext);
-  SDL_DestroyWindow(m_window);
-  m_window = nullptr;
-  m_glContext = nullptr;
+  delete m_pContext;
+  m_pContext = nullptr;
+
+  SDL_DestroyWindow(m_pWindow);
+  m_pWindow = nullptr;
 }
 
 void FW_SDLWindow::GetDimensions(int & a_w, int & a_h)
 {
-  SDL_GetWindowSize(m_window, &a_w, &a_h);
+  SDL_GetWindowSize(m_pWindow, &a_w, &a_h);
 }

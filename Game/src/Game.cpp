@@ -5,6 +5,7 @@
 #include "Log.h"
 #include "Framework/Framework.h"
 #include "IWindow.h"
+#include "BSR_Assert.h"
 
 #include "Layer_Console.h"
 #include "Layer_InputHandler.h"
@@ -15,11 +16,11 @@ Game * Game::s_instance = nullptr;
 
 void Game::InitWindow()
 {
-  m_window = Framework::Instance()->GetWindow();
-  if (m_window == nullptr)
+  m_pWindow = Framework::Instance()->GetWindow();
+  if (m_pWindow == nullptr)
     throw std::runtime_error("GetWindow() has returned a null pointer!");
 
-  if (m_window->Init() != EC_None)
+  if (m_pWindow->Init() != EC_None)
     throw std::runtime_error("Failed to initialise window!");
 }
 
@@ -42,14 +43,14 @@ void Game::_Init()
   InitWindow();
 
   Framework::ImGui_InitData imguiData;
-  m_window->GetDimensions(imguiData.window_w, imguiData.window_h);
+  m_pWindow->GetDimensions(imguiData.window_w, imguiData.window_h);
   Framework::Instance()->InitImGui(imguiData);
 
   auto pInputHandler = new Layer_InputHandler(&m_msgBus);
   pInputHandler->SetProfile(Layer_InputHandler::BP_Menu);
   m_layerStack.PushLayer(pInputHandler, Layer_InputHandler::GetID());
 
-  m_layerStack.PushLayer(new Layer_Window(&m_msgBus, m_window), Layer_Window::GetID());
+  m_layerStack.PushLayer(new Layer_Window(&m_msgBus, m_pWindow), Layer_Window::GetID());
   m_layerStack.PushLayer(new Layer_Console(&m_msgBus), Layer_Console::GetID());
   m_layerStack.PushLayer(new Layer_imgui(&m_msgBus), Layer_imgui::GetID());
 }
@@ -78,7 +79,7 @@ bool Game::IsInitialised()
 
 Game::Game()
   : m_msgBus(m_layerStack)
-  , m_window(nullptr)
+  , m_pWindow(nullptr)
   , m_shouldQuit(false)
 {
 

@@ -2,13 +2,6 @@
 #define OPTIONS_H
 
 #include "LogLevel.h"
-#include "DgAssert.h"
-
-#ifdef BSR_DEBUG
-#define BSR_ASSERT(...) DG_ASSERT(__VA_ARGS__)
-#else
-#define BSR_ASSERT(...)
-#endif
 
 //----------------------------------------------------------------------------
 // Switches

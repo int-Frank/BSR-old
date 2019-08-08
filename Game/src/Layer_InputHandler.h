@@ -69,8 +69,8 @@ private:
 
 private:
 
-  IEventPoller *      m_eventPoller;
-  IMouseController *  m_mouseController;
+  std::shared_ptr<IEventPoller>       m_eventPoller;
+  std::shared_ptr<IMouseController>   m_mouseController;
 
   float                               m_xMouseRotRate;
   float                               m_yMouseRotRate;

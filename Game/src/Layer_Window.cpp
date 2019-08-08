@@ -1,8 +1,11 @@
+
+#include <memory>
+
 #include "Layer_Window.h"
 #include "Message.h"
 #include "Game.h"
 
-Layer_Window::Layer_Window(MessageBus * a_pMsgBus, IWindow * a_pWindow)
+Layer_Window::Layer_Window(MessageBus * a_pMsgBus, std::shared_ptr<IWindow> a_pWindow)
   : Layer(a_pMsgBus)
   , m_pWindow(a_pWindow)
 {

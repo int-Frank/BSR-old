@@ -1,11 +1,15 @@
 #ifndef FRAMEWORK_H
 #define FRAMEWORK_H
 
+#include <memory>
+#include <string>
+
 #include "ErrorCodes.h"
 
 #include "../IWindow.h"
 #include "../IEventPoller.h"
 #include "../IMouseController.h"
+#include "../IShader.h"
 
 class Framework
 {
@@ -30,11 +34,13 @@ public:
   //Do NOT delete these! All internal objects will
   //Destroyed on calling DestroyInstance();
 
-  IWindow *      GetWindow();
-  IEventPoller * GetEventPoller();
-  IMouseController * GetMouseController();
+  //There can only be one of these objects...
+  std::shared_ptr<IWindow>          GetWindow();
+  std::shared_ptr<IEventPoller>     GetEventPoller();
+  std::shared_ptr<IMouseController> GetMouseController();
 
-  //IDraw *        GetDraw();
+  IShader * GetShader(std::string const & vs, std::string const & fs);
+
   //IAudio *       GetAudio();
 
   //These can only be initialized after the window has been created.

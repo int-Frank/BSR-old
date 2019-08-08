@@ -4,6 +4,7 @@
 #include "../Log.h"
 #include "Framework.h"
 #include "../InputCodes.h"
+#include "..//BSR_Assert.h"
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -24,18 +25,12 @@ public:
 
   ~PIMPL()
   {
-    delete window;
-    delete eventPoller;
-    delete mouseController;
 
-    window = nullptr;
-    eventPoller = nullptr;
-    mouseController = nullptr;
   }
 
-  IWindow *       window;
-  IEventPoller *  eventPoller;
-  IMouseController * mouseController;
+  std::shared_ptr<IWindow>          window;
+  std::shared_ptr<IEventPoller>     eventPoller;
+  std::shared_ptr<IMouseController> mouseController;
 };
 
 Framework * Framework::s_instance(nullptr);
@@ -105,17 +100,17 @@ ErrorCode Framework::ShutDown()
   return result;
 }
 
-IWindow * Framework::GetWindow()
+std::shared_ptr<IWindow> Framework::GetWindow()
 {
   return m_pimpl->window;
 }
 
-IEventPoller * Framework::GetEventPoller()
+std::shared_ptr<IEventPoller> Framework::GetEventPoller()
 {
   return m_pimpl->eventPoller;
 }
 
-IMouseController * Framework::GetMouseController()
+std::shared_ptr<IMouseController> Framework::GetMouseController()
 {
   return m_pimpl->mouseController;
 }
@@ -123,19 +118,19 @@ IMouseController * Framework::GetMouseController()
 void Framework::SetWindow(IWindow * a_window)
 {
   BSR_ASSERT(m_pimpl->window == nullptr, "Window already exists!");
-  m_pimpl->window = a_window;
+  m_pimpl->window = std::shared_ptr<IWindow>(a_window);
 }
 
 void Framework::SetEventPoller(IEventPoller * a_ep)
 {
   BSR_ASSERT(m_pimpl->eventPoller == nullptr, "EventPoller already exists!");
-  m_pimpl->eventPoller = a_ep;
+  m_pimpl->eventPoller = std::shared_ptr<IEventPoller>(a_ep);
 }
 
 void Framework::SetMouseController(IMouseController * a_mc)
 {
   BSR_ASSERT(m_pimpl->mouseController == nullptr, "MouseController already exists!");
-  m_pimpl->mouseController = a_mc;
+  m_pimpl->mouseController = std::shared_ptr<IMouseController>(a_mc);
 }
 
 static const char* ImGui_ImplSDL2_GetClipboardText(void*)

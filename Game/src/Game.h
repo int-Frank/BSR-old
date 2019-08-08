@@ -41,7 +41,7 @@ private:
 private:
 
   bool m_shouldQuit;
-  IWindow * m_window;
+  std::shared_ptr<IWindow> m_pWindow;
 
   LayerStack  m_layerStack;
   MessageBus  m_msgBus;

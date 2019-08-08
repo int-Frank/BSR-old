@@ -1,6 +1,8 @@
 #ifndef LAYER_WINDOW_H
 #define LAYER_WINDOW_H
 
+#include <memory>
+
 #include "ErrorCodes.h"
 #include "Layer.h"
 
@@ -12,7 +14,7 @@ public:
 
   ASSIGN_ID
 
-  Layer_Window(MessageBus * a_pMsgBus, IWindow *);
+  Layer_Window(MessageBus * a_pMsgBus, std::shared_ptr<IWindow>);
   ~Layer_Window();
 
   void OnAttach();
@@ -25,7 +27,7 @@ public:
 
 private:
 
-   IWindow * m_pWindow;
+  std::shared_ptr<IWindow> m_pWindow;
 };
 
 #endif

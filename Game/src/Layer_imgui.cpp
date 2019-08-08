@@ -3,6 +3,7 @@
 #include "Framework/imgui_impl_opengl3.h"
 #include "InputCodes.h"
 #include "Options.h"
+#include "BSR_Assert.h"
 
 Layer_imgui::Layer_imgui(MessageBus * a_msgBus)
   : Layer(a_msgBus)
