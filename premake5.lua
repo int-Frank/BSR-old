@@ -180,5 +180,52 @@ project "Editor"
 		defines "BSR_DIST"
 		runtime "Release"
 		optimize "on"
+    
+  project "Game"
+    location "Game"
+    kind "ConsoleApp"
+    targetdir (projOutput)
+    objdir (projOutputInt)
+    systemversion "latest"
+    language "C++"
+    cppdialect "C++17"
+    
+    files 
+    {
+      "Game/src/**.h",
+      "Game/src/**.cpp",
+    }
+    
+    includedirs
+    {
+      "%{wks.location}/Common/src",
+      "%{wks.location}/Engine/src",
+      "%{wks.location}/Engine/src/Engine",
+      "%{IncludeDir.spdlog}",
+      "%{IncludeDir.DgLib}",
+      "%{IncludeDir.imgui}"
+    }
+    
+    links
+    {
+      "Engine",
+      "DgLib",
+      "Common"
+    }
+    
+    filter "configurations:Debug"
+      defines "BSR_DEBUG"
+      runtime "Debug"
+      symbols "on"
+
+    filter "configurations:Release"
+      defines "BSR_RELEASE"
+      runtime "Release"
+      optimize "on"
+
+    filter "configurations:Dist"
+      defines "BSR_DIST"
+      runtime "Release"
+      optimize "on"
   
  

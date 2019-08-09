@@ -4,7 +4,7 @@
 #include <fstream>
 #include <exception>
 
-extern Engine::Application* Engine::CreateApplication();
+extern Engine::Application * Engine::CreateApplication();
 
 int main(int argc, char** argv)
 {
@@ -23,31 +23,31 @@ int main(int argc, char** argv)
   {
     std::ofstream ofs(CRASH_REPORT_FILE);
     ofs << "Game failed to initialise: " << e.what();
+    goto epilogue;
   }
   catch (...)
   {
     std::ofstream ofs(CRASH_REPORT_FILE);
     ofs << "Game failed to intialise, no error reported.";
+    goto epilogue;
   }
   
-  if (app->IsInitialised())
+  try
   {
-    try
-    {
-      app->Run();
-    }
-    catch (std::exception & e)
-    {
-      std::ofstream ofs(CRASH_REPORT_FILE);
-      ofs << "Game has thrown exception: " << e.what();
-    }
-    catch (...)
-    {
-      std::ofstream ofs(CRASH_REPORT_FILE);
-      ofs << "Game has thrown an unknown exception";
-    }
+    app->Run();
+  }
+  catch (std::exception & e)
+  {
+    std::ofstream ofs(CRASH_REPORT_FILE);
+    ofs << "Game has thrown exception: " << e.what();
+  }
+  catch (...)
+  {
+    std::ofstream ofs(CRASH_REPORT_FILE);
+    ofs << "Game has thrown an unknown exception";
   }
   
+  epilogue:
   delete app;
   return 0;
 }

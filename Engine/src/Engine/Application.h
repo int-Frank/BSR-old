@@ -42,6 +42,9 @@ namespace Engine
     LayerStack  m_layerStack;
     MessageBus  m_msgBus;
   };
+
+  // To be defined in CLIENT
+  Application * CreateApplication();
 }
 
 #endif
