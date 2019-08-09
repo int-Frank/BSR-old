@@ -16,43 +16,16 @@ projOutputInt = "%{wks.location}/build/intermediate/%{prj.name}-%{cfg.buildcfg}"
 
 -- Include directories relative to root folder (solution directory)
 IncludeDir = {}
-IncludeDir["Glad"] = "Vendor/GLAD/include"
-IncludeDir["SDL2"] = "Vendor/SDL2-2.0.9/include"
-IncludeDir["imgui"] = "Vendor/imgui"
+IncludeDir["Glad"] = "%{wks.location}/Vendor/GLAD/include"
+IncludeDir["SDL2"] = "%{wks.location}/Vendor/SDL2-2.0.9/include"
+IncludeDir["imgui"] = "%{wks.location}/Vendor/imgui"
+IncludeDir["spdlog"] = "%{wks.location}/Vendor/spdlog/include"
+IncludeDir["DgLib"] = "%{wks.location}/Vendor/DgLib/src"
 
 group "Depenencies"
+
   include "Vendor/GLAD/premake5_GLAD.lua"
-  
-  filter "configurations:Debug"
-		runtime "Debug"
-		symbols "on"
-
-	filter "configurations:Release"
-		runtime "Release"
-		optimize "on"
-
-	filter "configurations:Dist"
-		runtime "Release"
-		optimize "on"
-  
-  project "imgui"
-    location "Vendor/imgui"
-    kind "StaticLib"
-    targetdir (projOutput)
-    objdir (projOutputInt)
-    include "Vendor/imgui/premake5.lua"
-    
-    filter "configurations:Debug"
-		  runtime "Debug"
-		  symbols "on"
-
-	  filter "configurations:Release"
-		  runtime "Release"
-		  optimize "on"
-
-	  filter "configurations:Dist"
-		  runtime "Release"
-		  optimize "on"
+  include "Vendor/imgui/premake5_imgui.lua"
     
   project "DgLib"
     location "Vendor/DgLib"
@@ -76,9 +49,9 @@ group "Depenencies"
   
 group ""
 
-project "Game"
-  location "Game"
-  kind "ConsoleApp"
+project "Engine"
+  location "Engine"
+  kind "StaticLib"
   targetdir (projOutput)
   objdir (projOutputInt)
   systemversion "latest"
@@ -87,15 +60,14 @@ project "Game"
   
   files 
   {
-    "Game/src/**.h",
-    "Game/src/**.cpp",
+    "Engine/src/**.h",
+    "Engine/src/**.cpp",
   }
 
   links
   {
     "DgLib",
     "Glad",
-    "Core",
     "imgui",
     "Vendor/SDL2-2.0.9/lib/x64/SDL2.lib",
     "Vendor/SDL2-2.0.9/lib/x64/SDL2main.lib"
@@ -103,9 +75,8 @@ project "Game"
 
   includedirs
   {
-    "%{wks.location}/Vendor/DgLib/src",
-    "%{wks.location}/Core/src",
-    "%{wks.location}/Vendor/spdlog/include",
+		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.DgLib}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.SDL2}",
 		"%{IncludeDir.imgui}"
@@ -126,8 +97,8 @@ project "Game"
 		runtime "Release"
 		optimize "on"
 
-project "Core"
-  location "Core"
+project "Common"
+  location "Common"
   kind "StaticLib"
   targetdir (projOutput)
   objdir (projOutputInt)
@@ -137,8 +108,8 @@ project "Core"
   
   files 
   {
-    "Core/src/**.h",
-    "Core/src/**.cpp",
+    "Common/src/**.h",
+    "Common/src/**.cpp",
   }
   
   links
@@ -148,8 +119,7 @@ project "Core"
   
   includedirs
   {
-    "%{wks.location}/Vendor/DgLib/src",
-    "%{wks.location}/Vendor/spdlog/include"
+		"%{IncludeDir.DgLib}"
   }
   
   filter "configurations:Debug"
@@ -164,8 +134,8 @@ project "Core"
 		runtime "Release"
 		optimize "on"
     
-project "Tools"
-  location "Tools"
+project "Editor"
+  location "Editor"
   kind "ConsoleApp"
   targetdir (projOutput)
   objdir (projOutputInt)
@@ -175,23 +145,25 @@ project "Tools"
   
   files 
   {
-    "Tools/src/**.h",
-    "Tools/src/**.cpp",
+    "Editor/src/**.h",
+    "Editor/src/**.cpp",
   }
   
   includedirs
   {
-    "%{wks.location}/Vendor/DgLib/src",
-    "%{wks.location}/Core/src",
+    "%{wks.location}/Common/src",
+    "%{IncludeDir.spdlog}",
+		"%{IncludeDir.DgLib}",
 		"%{IncludeDir.Glad}",
-		"%{IncludeDir.SDL2}"
+		"%{IncludeDir.SDL2}",
+		"%{IncludeDir.imgui}"
   }
   
   links
   {
     "DgLib",
     "Glad",
-    "Core"
+    "Common"
   }
   
   filter "configurations:Debug"
