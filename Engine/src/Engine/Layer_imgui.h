@@ -17,7 +17,15 @@ namespace Engine
       Layer_imgui(MessageBus *);
     ~Layer_imgui();
 
-    bool HandleMessage(Message const &);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_MouseMove> *);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_MouseButtonDown> *);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_MouseButtonUp> *);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_KeyDown> *);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_KeyUp> *);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_MouseWheelDown> *);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_MouseWheelUp> *);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_Text> *);
+
     void Update(float);
     void Render();
     void NewFrame();
@@ -27,16 +35,6 @@ namespace Engine
   private:
 
     void SetMouseButton(uint32_t button, bool down);
-
-    void HandleMouseButtonPressed(Message const &);
-    void HandleMouseButtonReleased(Message const &);
-    void HandleMouseScrollUp(Message const &);
-    void HandleMouseScrollDown(Message const &);
-    void HandleMouseMove(Message const &);
-    void HandleKeyPressed(Message const &);
-    void HandleKeyReleased(Message const &);
-    void HandleTextInput(Message const &);
-    void HandleWindowEvent(Message const &);
 
   private:
 

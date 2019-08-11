@@ -34,26 +34,79 @@ namespace Engine
     m_pWindow->Update();
   }
 
-  bool Layer_Window::HandleMessage(Message const & a_msg)
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Shown>*)
   {
-    if (!(a_msg.type & MC_Window))
-      return false;
+    return MessageHandlerReturnCode::None;
+  }
 
-    bool result = true;
-    switch (a_msg.type)
-    {
-      case MT_Window_Close:
-      {
-        Application::Instance()->RequestQuit();
-        break;
-      }
-      default:
-      {
-        result = false;
-        break;
-      }
-    }
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Hidden>*)
+  {
+    return MessageHandlerReturnCode::None;
+  }
 
-    return result;
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Exposed>*)
+  {
+    return MessageHandlerReturnCode::None;
+  }
+
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Moved>*)
+  {
+    return MessageHandlerReturnCode::None;
+  }
+
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Resized>*)
+  {
+    return MessageHandlerReturnCode::None;
+  }
+
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Size_Changed>*)
+  {
+    return MessageHandlerReturnCode::None;
+  }
+
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Minimized>*)
+  {
+    return MessageHandlerReturnCode::None;
+  }
+
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Maximized>*)
+  {
+    return MessageHandlerReturnCode::None;
+  }
+
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Restored>*)
+  {
+    return MessageHandlerReturnCode::None;
+  }
+
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Enter>*)
+  {
+    return MessageHandlerReturnCode::None;
+  }
+
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Leave>*)
+  {
+    return MessageHandlerReturnCode::None;
+  }
+
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Focus_Gained>*)
+  {
+    return MessageHandlerReturnCode::None;
+  }
+
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Focus_Lost>*)
+  {
+    return MessageHandlerReturnCode::None;
+  }
+
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Close>*)
+  {
+    Application::Instance()->RequestQuit();
+    return MessageHandlerReturnCode::Consumed;
+  }
+
+  MessageHandlerReturnCode Layer_Window::HandleMessage(MessageSub<MT_Window_Take_Focus>*)
+  {
+    return MessageHandlerReturnCode::None;
   }
 }

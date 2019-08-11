@@ -10,16 +10,6 @@
 #include "Layer.h"
 #include "InputCodes.h"
 
-#define ITEM
-#define BINDING_PROFILES \
-  ITEM(BP_None)\
-  ITEM(BP_Loading)\
-  ITEM(BP_Menu)\
-  ITEM(BP_DebugOverlay)\
-  ITEM(BP_Game)\
-  ITEM(BP_Elevator)
-#undef ITEM
-
 namespace Engine
 {
   class IEventPoller;
@@ -28,55 +18,40 @@ namespace Engine
   class Layer_InputHandler : public Layer
   {
   public:
-#define ITEM(x) x,
-    enum BindingProfile
-    {
-      BINDING_PROFILES
-    };
-#undef ITEM
-  public:
 
     ASSIGN_ID
 
-      Layer_InputHandler(MessageBus *);
+    Layer_InputHandler(MessageBus *);
     ~Layer_InputHandler();
 
-    void SetProfile(BindingProfile);
     void ClearBindings();
-
-    bool HandleMessage(Message const &);
     void Update(float);
 
-  private:
-
-    template<int BINDING>
-    void _SetProfile(){}
-
-#define ITEM(x) template<> void _SetProfile<x>();
-    BINDING_PROFILES
-#undef ITEM
-
-      void GrabMouse();
+    void GrabMouse();
     void ReleaseMouse();
     void SetMouseLookRate(float xRate, float yRate);
 
-    uint64_t PackKey(uint32_t inputCode, uint32_t eventType);
-    void UnpackKey(uint64_t mapKey, uint32_t & inputCode, uint32_t & eventType);
-    void HandleTextEvent(Message const &);
-    void HandleKeyEvent(Message const &);
-    void HandleMouseEvent(Message const &);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_Text>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_KeyUp>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_KeyDown>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_MouseButtonUp>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_MouseButtonDown>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_MouseWheelUp>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_MouseWheelDown>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_MouseMove>*);
 
-    void Bind(InputCode inputCode, MessageType event, MessageType binding);
-    void BindKeyDown(InputCode inputCode, bool repeat, MessageType binding);
+    void Bind(InputCode inputCode, MessageType event, Message * binding);
 
   private:
 
-    std::shared_ptr<IEventPoller>       m_eventPoller;
-    std::shared_ptr<IMouseController>   m_mouseController;
+    uint64_t PackKey(uint32_t inputCode, MessageType MessageType);
 
-    float                               m_xMouseRotRate;
-    float                               m_yMouseRotRate;
-    Dg::Map_AVL<uint64_t, MessageType>  m_bindings;
+    std::shared_ptr<IEventPoller>                   m_eventPoller;
+    std::shared_ptr<IMouseController>               m_mouseController;
+
+    float                                           m_xMouseRotRate;
+    float                                           m_yMouseRotRate;
+    Dg::Map_AVL<uint64_t, std::shared_ptr<Message>> m_bindings;
 
   };
 }

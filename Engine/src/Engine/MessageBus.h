@@ -20,16 +20,16 @@ namespace Engine
     MessageBus(LayerStack &);
 
     //Add message to the queue to be processed at a later time
-    void Register(Message const &);
+    void Register(Message *);
 
     void DispatchMessages();
     size_t MessageCount();
 
   private:
 
-    std::mutex                    m_mutex;       
-    Dg::DoublyLinkedList<Message> m_messageQueue;
-    LayerStack &                  m_layerStack;
+    std::mutex                      m_mutex;       
+    Dg::DoublyLinkedList<Message *> m_messageQueue;
+    LayerStack &                    m_layerStack;
   };
 }
 

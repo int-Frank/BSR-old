@@ -3,14 +3,16 @@
 
 namespace Engine
 {
-  struct Message;
+  class Message;
 
   class IEventPoller
   {
   public:
 
     ~IEventPoller(){}
-    virtual bool NextEvent(Message &) =0;
+
+    //Returns nullptr if no new event
+    virtual Message * NextEvent() =0;
 
   };
 }

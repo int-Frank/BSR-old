@@ -6,6 +6,7 @@
 #include "Log.h"
 #include "InputCodes.h"
 #include "Message.h"
+#include "MessageTranslator.h"
 
 #include "IEventPoller.h"
 #include "IMouseController.h"
@@ -21,7 +22,15 @@ namespace Engine
     , m_xMouseRotRate(1.0f)
     , m_yMouseRotRate(1.0f)
   {
+    Bind(IC_MOUSE_MOTION, MT_Input_MouseMove, new MessageSub<MT_GUI_MouseMove>());
+    Bind(IC_MOUSE_WHEEL_UP, MT_Input_MouseWheelUp, new MessageSub<MT_GUI_MouseWheelUp>());
+    Bind(IC_MOUSE_WHEEL_DOWN, MT_Input_MouseWheelDown, new MessageSub<MT_GUI_MouseWheelDown>());
+    Bind(IC_MOUSE_BUTTON_LEFT, MT_Input_MouseButtonDown, new MessageSub<MT_GUI_MouseButtonDown>());
+    Bind(IC_MOUSE_BUTTON_LEFT, MT_Input_MouseButtonUp, new MessageSub<MT_GUI_MouseButtonUp>());
+    Bind(IC_MOUSE_BUTTON_RIGHT, MT_Input_MouseButtonDown, new MessageSub<MT_GUI_MouseButtonDown>());
+    Bind(IC_MOUSE_BUTTON_RIGHT, MT_Input_MouseButtonUp, new MessageSub<MT_GUI_MouseButtonUp>());
 
+    Bind(IC_UNKNOWN, MT_Input_Text, new MessageSub<MT_GUI_Text>());
   }
 
   Layer_InputHandler::~Layer_InputHandler()
@@ -29,21 +38,108 @@ namespace Engine
 
   }
 
-  bool Layer_InputHandler::HandleMessage(Message const & a_msg)
+  MessageHandlerReturnCode Layer_InputHandler::HandleMessage(MessageSub<MT_Input_Text> * a_pMsg)
   {
-    bool consumed = false;
-    if ((a_msg.type & MC_Input))
+    uint64_t mapKey = PackKey(IC_UNKNOWN, MT_Input_Text);
+    auto it = m_bindings.find(mapKey);
+    if (it != m_bindings.end())
     {
-      consumed = true;
-      if (a_msg.type & MC_Text)
-        HandleTextEvent(a_msg);
-      else if (a_msg.type & MC_Keyboard)
-        HandleKeyEvent(a_msg);
-      else if (a_msg.type & MC_Mouse)
-        HandleMouseEvent(a_msg);
+      Message * pMsg = it->second->Clone();
+      TranslateMessage(pMsg, a_pMsg);
+      Post(pMsg);
     }
+    return MessageHandlerReturnCode::Consumed;
+  }
 
-    return consumed;
+  MessageHandlerReturnCode  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_KeyUp> * a_pMsg)
+  {
+    uint64_t mapKey = PackKey(a_pMsg->keyCode, MT_Input_KeyUp);
+    auto it = m_bindings.find(mapKey);
+    if (it != m_bindings.end())
+    {
+      Message * pMsg = it->second->Clone();
+      TranslateMessage(pMsg, a_pMsg);
+      Post(pMsg);
+    }
+    return MessageHandlerReturnCode::Consumed;
+  }
+
+  MessageHandlerReturnCode  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_KeyDown> * a_pMsg)
+  {
+    uint64_t mapKey = PackKey(a_pMsg->keyCode, MT_Input_KeyDown);
+    auto it = m_bindings.find(mapKey);
+    if (it != m_bindings.end())
+    {
+      Message * pMsg = it->second->Clone();
+      TranslateMessage(pMsg, a_pMsg);
+      Post(pMsg);
+    }
+    return MessageHandlerReturnCode::Consumed;
+  }
+
+  MessageHandlerReturnCode  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseButtonUp> * a_pMsg)
+  {
+    uint64_t mapKey = PackKey(a_pMsg->button, MT_Input_MouseButtonUp);
+    auto it = m_bindings.find(mapKey);
+    if (it != m_bindings.end())
+    {
+      Message * pMsg = it->second->Clone();
+      TranslateMessage(pMsg, a_pMsg);
+      Post(pMsg);
+    }
+    return MessageHandlerReturnCode::Consumed;
+  }
+
+  MessageHandlerReturnCode  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseButtonDown> * a_pMsg)
+  {
+    uint64_t mapKey = PackKey(a_pMsg->button, MT_Input_MouseButtonDown);
+    auto it = m_bindings.find(mapKey);
+    if (it != m_bindings.end())
+    {
+      Message * pMsg = it->second->Clone();
+      TranslateMessage(pMsg, a_pMsg);
+      Post(pMsg);
+    }
+    return MessageHandlerReturnCode::Consumed;
+  }
+
+  MessageHandlerReturnCode  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseWheelUp> * a_pMsg)
+  {
+    uint64_t mapKey = PackKey(IC_MOUSE_WHEEL_UP, MT_Input_MouseWheelUp);
+    auto it = m_bindings.find(mapKey);
+    if (it != m_bindings.end())
+    {
+      Message * pMsg = it->second->Clone();
+      TranslateMessage(pMsg, a_pMsg);
+      Post(pMsg);
+    }
+    return MessageHandlerReturnCode::Consumed;
+  }
+
+  MessageHandlerReturnCode  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseWheelDown> * a_pMsg)
+  {
+    uint64_t mapKey = PackKey(IC_MOUSE_WHEEL_DOWN, MT_Input_MouseWheelDown);
+    auto it = m_bindings.find(mapKey);
+    if (it != m_bindings.end())
+    {
+      Message * pMsg = it->second->Clone();
+      TranslateMessage(pMsg, a_pMsg);
+      Post(pMsg);
+    }
+    return MessageHandlerReturnCode::Consumed;
+  }
+
+  MessageHandlerReturnCode  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseMove> * a_pMsg)
+  {
+    uint64_t mapKey = PackKey(IC_MOUSE_MOTION, MT_Input_MouseMove);
+    auto it = m_bindings.find(mapKey);
+    if (it != m_bindings.end())
+    {
+      Message * pMsg = it->second->Clone();
+      TranslateMessage(pMsg, a_pMsg);
+      Post(pMsg);
+    }
+    return MessageHandlerReturnCode::Consumed;
   }
 
   void Layer_InputHandler::GrabMouse()
@@ -62,65 +158,22 @@ namespace Engine
     m_yMouseRotRate = a_yRate;
   }
 
-  uint64_t Layer_InputHandler::PackKey(uint32_t a_inputCode, uint32_t a_eventType)
+  uint64_t Layer_InputHandler::PackKey(uint32_t a_inputCode, MessageType a_messageType)
   {
-    return (uint64_t(a_inputCode) << 32) | a_eventType;
-  }
-
-  void Layer_InputHandler::UnpackKey(uint64_t a_mapKey, 
-    uint32_t & a_inputCode, 
-    uint32_t & a_eventType)
-  {
-    a_inputCode = uint32_t(a_mapKey >> 32);
-    a_eventType = uint32_t(a_mapKey);
-  }
-
-  void Layer_InputHandler::SetProfile(BindingProfile a_prof)
-  {
-    switch (a_prof)
-    {
-#define ITEM(x) case x:{_SetProfile<x>();break;}
-      BINDING_PROFILES
-#undef ITEM
-      default:
-      {
-        LOG_WARN("Unrecognised binding profile: {}", a_prof);
-        break;
-      }
-    }
+    return (uint64_t(a_inputCode) << 32) | a_messageType;
   }
 
   void Layer_InputHandler::ClearBindings()
   {
-    _SetProfile<BP_None>();
-  }
-
-  void Layer_InputHandler::Bind(InputCode a_inputCode, MessageType a_event, MessageType a_binding)
-  {
-    m_bindings.insert(PackKey(a_inputCode, a_event), a_binding);
-  }
-
-  void Layer_InputHandler::BindKeyDown(InputCode a_inputCode, bool a_repeat, MessageType a_binding)
-  {
-    m_bindings.insert(PackKey(a_inputCode, MT_Input_KeyDown), a_binding);
-    if (a_repeat)
-      m_bindings.insert(PackKey(a_inputCode, MT_Input_KeyDown_Repeat), a_binding);
-  }
-
-  template<>
-  void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_None>()
-  {
     m_bindings.clear();
   }
 
-  template<>
-  void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_Loading>()
+  void Layer_InputHandler::Bind(InputCode a_inputCode, MessageType a_event, Message * a_binding)
   {
-    m_bindings.clear(); 
-    m_mouseController->Grab();
+    m_bindings.insert(PackKey(a_inputCode, a_event), std::shared_ptr<Message>(a_binding));
   }
 
-  template<>
+  /*template<>
   void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_Menu>()
   {
     m_bindings.clear();
@@ -180,91 +233,20 @@ namespace Engine
     Bind(IC_KEY_ESC, MT_Input_KeyDown, MT_GoBack);
 
     m_mouseController->Release();
-  }
-
-  template<>
-  void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_DebugOverlay>()
-  {
-    m_bindings.clear();
-    m_mouseController->Release();
-  }
-
-  template<>
-  void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_Game>()
-  {
-    m_bindings.clear();
-    m_mouseController->Grab();
-  }
-
-  template<>
-  void Layer_InputHandler::_SetProfile<Layer_InputHandler::BP_Elevator>()
-  {
-    m_bindings.clear();
-    m_mouseController->Release();
-  }
+  }*/
 
   void Layer_InputHandler::Update(float a_dt)
   {
-    Message msg;
-    while (m_eventPoller->NextEvent(msg))
+    while (true)
     {
-      if (!HandleMessage(msg))
-        Post(msg);
-    }
-  }
+      Message * pMsg = m_eventPoller->NextEvent();
+      if (pMsg == nullptr)
+        break;
 
-  void Layer_InputHandler::HandleTextEvent(Message const & a_msg)
-  {
-    uint64_t mapKey = PackKey(IC_UNKNOWN, MT_Input_Text);
-    auto it = m_bindings.find(mapKey);
-    if (it != m_bindings.end())
-    {
-      Message msg;
-      msg.type = MT_GUI_Text;
-      strncpy_s(msg.text.text, a_msg.text.text, TEXT_INPUT_TEXT_SIZE);
-
-      Post(msg);
-    }
-  }
-
-  void Layer_InputHandler::HandleKeyEvent(Message const & a_msg)
-  {
-    uint64_t mapKey = PackKey(uint32_t(a_msg.key.code), uint32_t(a_msg.type));
-    auto it = m_bindings.find(mapKey);
-    if (it != m_bindings.end())
-    {
-      Message msg;
-      msg.type = it->second;
-      msg.key.code = a_msg.key.code;
-      msg.key.modState = a_msg.key.modState;
-
-      Post(msg);
-    }
-  }
-
-  void Layer_InputHandler::HandleMouseEvent(Message const & a_msg)
-  {
-    uint64_t mapKey = PackKey(uint32_t(a_msg.mouse.code), uint32_t(a_msg.type));
-    auto it = m_bindings.find(mapKey);
-    if (it != m_bindings.end())
-    {
-      Message msg;
-      msg.type = it->second;
-      msg.mouse.code = a_msg.mouse.code;
-      bool hasXY = false;
-      if (a_msg.mouse.code == IC_MOUSE_MOTION)              hasXY = true;
-      else if (a_msg.mouse.code == IC_MOUSE_BUTTON_LEFT)    hasXY = true;
-      else if (a_msg.mouse.code == IC_MOUSE_BUTTON_MIDDLE)  hasXY = true;
-      else if (a_msg.mouse.code == IC_MOUSE_BUTTON_RIGHT)   hasXY = true;
-      else if (a_msg.mouse.code == IC_MOUSE_BUTTON_X1)      hasXY = true;
-      else if (a_msg.mouse.code == IC_MOUSE_BUTTON_X2)      hasXY = true;
-
-      if (hasXY)
-      {
-        msg.mouse.x = a_msg.mouse.x;
-        msg.mouse.y = a_msg.mouse.y;
-      }
-      Post(msg);
+      if (pMsg->Submit(this) == MessageHandlerReturnCode::Consumed)
+        delete pMsg;
+      else
+        Post(pMsg);
     }
   }
 }

@@ -18,7 +18,7 @@ namespace Engine
     return m_messageQueue.size();
   }
 
-  void MessageBus::Register(Message const & a_message)
+  void MessageBus::Register(Message * a_message)
   {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_messageQueue.push_back(a_message);
@@ -28,12 +28,12 @@ namespace Engine
   {
     while (true)
     {
-      Message msg;
+      Message * pMsg;
       bool shouldBreak = false;
       m_mutex.lock();
       if (m_messageQueue.size() > 0)
       {
-        msg = m_messageQueue.front();
+        pMsg = m_messageQueue.front();
         m_messageQueue.pop_front();
       }
       else
@@ -46,9 +46,11 @@ namespace Engine
       auto it = m_layerStack.begin();
       for (; it != m_layerStack.end(); it++)
       {
-        if (it->second->HandleMessage(msg))
+        if (pMsg->Submit(it->second) == MessageHandlerReturnCode::Consumed)
           continue;
       }
+
+      delete pMsg;
     }
   }
 }

@@ -24,8 +24,21 @@ namespace Engine
 
     void Update(float);
 
-    //Return bool: consumed
-    bool HandleMessage(Message const &);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Shown>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Hidden>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Exposed>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Moved>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Resized>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Size_Changed>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Minimized>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Maximized>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Restored>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Enter>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Leave>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Focus_Gained>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Focus_Lost>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Close>*);
+    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Take_Focus>*);
 
   private:
 

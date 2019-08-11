@@ -11,6 +11,9 @@
 
 #include "../Engine/IEventPoller.h"
 
+
+static_assert(TEXT_INPUT_TEXT_SIZE == SDL_TEXTINPUTEVENT_TEXT_SIZE, "text container incorrect size");
+
 namespace Engine
 {
   class FW_EventPoller : public IEventPoller
@@ -19,7 +22,7 @@ namespace Engine
 
     FW_EventPoller();
     ~FW_EventPoller();
-    bool NextEvent(Message &);
+    Message * NextEvent();
 
   private:
 
@@ -228,7 +231,7 @@ namespace Engine
       case SDL_SCANCODE_RSHIFT:
       case SDL_SCANCODE_RALT:
       case SDL_SCANCODE_RGUI:
-        return a_key;
+        return uint32_t(a_key);
       default:
         return IC_UNKNOWN;
     }
@@ -253,70 +256,62 @@ namespace Engine
     }
   }
 
-  static uint32_t TranslateKeyState(SDL_Event a_event)
+  static Message * TranslateWindowEvent(SDL_WindowEvent const & a_event)
   {
-    switch (a_event.type)
-    {
-      case SDL_KEYUP:
-        return MT_Input_KeyUp;
-      case SDL_MOUSEBUTTONUP:
-        return MT_Input_ButtonUp;
-      case SDL_KEYDOWN:
-        return (a_event.key.repeat == 0 ? MT_Input_KeyDown : MT_Input_KeyDown_Repeat);
-      case SDL_MOUSEBUTTONDOWN:
-        return MT_Input_ButtonDown;
-      default:
-        return MT_None;
-    }
-  }
-
-  static uint32_t TranslateWindowCode(uint8_t a_code)
-  {
-    switch (a_code)
+    switch (a_event.event)
     {
       case  SDL_WINDOWEVENT_SHOWN:
-        return MT_Window_Shown;
+        return new MessageSub<MT_Window_Shown>();
       case  SDL_WINDOWEVENT_HIDDEN:
-        return MT_Window_Hidden;
+        return new MessageSub<MT_Window_Hidden>();
       case  SDL_WINDOWEVENT_EXPOSED:
-        return MT_Window_Exposed;
+        return new MessageSub<MT_Window_Exposed>();
       case  SDL_WINDOWEVENT_MOVED:
-        return MT_Window_Moved;
+      {
+        auto pMsg = new MessageSub<MT_Window_Moved>();
+        pMsg->x = a_event.data1;
+        pMsg->y = a_event.data2;
+      }
       case  SDL_WINDOWEVENT_RESIZED:
-        return MT_Window_Resized;
+      {
+        auto pMsg = new MessageSub<MT_Window_Resized>();
+        pMsg->w = a_event.data1;
+        pMsg->h = a_event.data2;
+      }
       case  SDL_WINDOWEVENT_SIZE_CHANGED:
-        return MT_Window_Sized_Changed;
+      {
+        auto pMsg = new MessageSub<MT_Window_Resized>();
+        pMsg->w = a_event.data1;
+        pMsg->h = a_event.data2;
+      }
       case  SDL_WINDOWEVENT_MINIMIZED:
-        return MT_Window_Minimized;
+        return new MessageSub<MT_Window_Minimized>();
       case  SDL_WINDOWEVENT_MAXIMIZED:
-        return MT_Window_Maximized;
+        return new MessageSub<MT_Window_Maximized>();
       case  SDL_WINDOWEVENT_RESTORED:
-        return MT_Window_Restored;
+        return new MessageSub<MT_Window_Restored>();
       case  SDL_WINDOWEVENT_ENTER:
-        return MT_Window_Enter;
+        return new MessageSub<MT_Window_Enter>();
       case  SDL_WINDOWEVENT_LEAVE:
-        return MT_Window_Leave;
+        return new MessageSub<MT_Window_Leave>();
       case  SDL_WINDOWEVENT_FOCUS_GAINED:
-        return MT_Window_Focus_Gained;
+        return new MessageSub<MT_Window_Focus_Gained>();
       case  SDL_WINDOWEVENT_FOCUS_LOST:
-        return MT_Window_Focus_Lost;
+        return new MessageSub<MT_Window_Focus_Lost>();
       case  SDL_WINDOWEVENT_CLOSE:
-        return MT_Window_Close;
+        return new MessageSub<MT_Window_Close>();
       case  SDL_WINDOWEVENT_TAKE_FOCUS:
-        return MT_Window_Take_Focus;
-      case  SDL_WINDOWEVENT_HIT_TEST:
-        return MT_Window_Hit_Test;
+        return new MessageSub<MT_Window_Take_Focus>();
       default:
-        return MT_None;
+        return new MessageSub<MT_None>();
     }
 
-    return uint32_t(a_code);
+    return new MessageSub<MT_None>();
   }
 
-  bool FW_EventPoller::NextEvent(Message & a_message)
+  Message * FW_EventPoller::NextEvent()
   {
-    bool validEvent = false;
-    while (!validEvent)
+    while (true)
     {
       SDL_Event event;
       if (SDL_PollEvent(&event) == 0)
@@ -326,87 +321,75 @@ namespace Engine
       {
         case SDL_TEXTINPUT:
         {
-          a_message.type = MT_Input_Text;
-          static_assert(TEXT_INPUT_TEXT_SIZE == SDL_TEXTINPUTEVENT_TEXT_SIZE, "text container incorrect size");
-          strncpy_s(a_message.text.text, event.text.text, TEXT_INPUT_TEXT_SIZE);
-          validEvent = true;
-          break; 
+          MessageSub<MT_Input_Text> * pMsg= new MessageSub<MT_Input_Text>();
+          strncpy_s(pMsg->text, event.text.text, TEXT_INPUT_TEXT_SIZE);
+          return pMsg;
         }
         case SDL_KEYDOWN:
+        {
+          if (event.key.repeat)
+            break;
+
+          UpdateModState(event);
+          MessageSub<MT_Input_KeyDown> * pMsg = new MessageSub<MT_Input_KeyDown>();
+          pMsg->keyCode = TranslateKeyCode(event.key.keysym.scancode);
+          pMsg->modState = m_modState;
+          return pMsg;
+        }
         case SDL_KEYUP:
         {
           UpdateModState(event);
-          a_message.type = TranslateKeyState(event);
-          a_message.key.code = TranslateKeyCode(event.key.keysym.scancode);
-          a_message.key.modState = m_modState;
-          validEvent = true;
-          break;
+          MessageSub<MT_Input_KeyUp> * pMsg = new MessageSub<MT_Input_KeyUp>();
+          pMsg->keyCode = TranslateKeyCode(event.key.keysym.scancode);
+          pMsg->modState = m_modState;
+          return pMsg;
         }
         case SDL_MOUSEBUTTONDOWN:
+        {
+          MessageSub<MT_Input_MouseButtonDown> * pMsg = new MessageSub<MT_Input_MouseButtonDown>();
+          pMsg->button = TranslateMouseButtonCode(event.button.button);
+          pMsg->x = event.button.x;
+          pMsg->y = event.button.y;
+          return pMsg;
+        }
         case SDL_MOUSEBUTTONUP:
         {
-          a_message.type = TranslateKeyState(event);
-          a_message.mouse.code = TranslateMouseButtonCode(event.button.button);
-          a_message.mouse.x = event.button.x;
-          a_message.mouse.y = event.button.y;
-          validEvent = true;
-          break;
+          MessageSub<MT_Input_MouseButtonUp> * pMsg = new MessageSub<MT_Input_MouseButtonUp>();
+          pMsg->button = TranslateMouseButtonCode(event.button.button);
+          pMsg->x = event.button.x;
+          pMsg->y = event.button.y;
+          return pMsg;
         }
         case SDL_MOUSEWHEEL:
         {
           if (event.wheel.y > 0)
-          {
-            a_message.type = MT_Input_OtherMouseEvent;
-            a_message.mouse.code = IC_MOUSE_WHEEL_UP;
-          }
+            return new MessageSub<MT_Input_MouseWheelUp>();
           else
-          {
-            a_message.type = MT_Input_OtherMouseEvent;
-            a_message.mouse.code = IC_MOUSE_WHEEL_DOWN;
-          }
-          validEvent = true;
-          break;
+            return new MessageSub<MT_Input_MouseWheelDown>();
         }
         case SDL_MOUSEMOTION:
         {
-          a_message.type = MT_Input_OtherMouseEvent;
-          a_message.mouse.code = IC_MOUSE_MOTION;
+          MessageSub<MT_Input_MouseMove> * pMsg = new MessageSub<MT_Input_MouseMove>();
           if (SDL_GetRelativeMouseMode() == SDL_TRUE)
           {
-            a_message.mouse.x = event.motion.xrel;
-            a_message.mouse.y = event.motion.yrel;
+            pMsg->x = event.motion.xrel;
+            pMsg->y = event.motion.yrel;
           }
           else
           {
-            a_message.mouse.x = event.motion.x;
-            a_message.mouse.y = event.motion.y;
+            pMsg->x = event.motion.x;
+            pMsg->y = event.motion.y;
           }
-          validEvent = true;
-          break;
+          return pMsg;
         }
         case SDL_WINDOWEVENT:
-        {
-          //Handle and send to window system
-          a_message.type = TranslateWindowCode(event.window.event);
-          a_message.window.data1 = event.window.data1;
-          a_message.window.data2 = event.window.data2;
-          validEvent = true;
-          break;
-        }
+          return TranslateWindowEvent(event.window);
         case SDL_QUIT:
-        {
-          //Handle quit request
-          a_message.type = MT_Window_Close;
-          validEvent = true;
-          break;
-        }
+          return new MessageSub<MT_Window_Close>();
         default:
-        {
           break;
-        }
       }
     }
-
-    return validEvent;
+    return nullptr;
   }
 }

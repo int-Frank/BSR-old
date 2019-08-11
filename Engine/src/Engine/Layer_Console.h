@@ -12,10 +12,13 @@ namespace Engine
 
     ASSIGN_ID
 
-      Layer_Console(MessageBus *);
+    Layer_Console(MessageBus *);
     ~Layer_Console();
 
-    bool HandleMessage(Message const &);
+#undef ITEM
+#define ITEM(x) virtual MessageHandlerReturnCode HandleMessage(MessageSub<MT_##x> *);
+    MESSAGE_TYPES;
+
     void Update(float);
 
   };

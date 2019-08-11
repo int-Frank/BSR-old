@@ -51,7 +51,6 @@ namespace Engine
     Framework::Instance()->InitImGui(imguiData);
 
     auto pInputHandler = new Layer_InputHandler(&m_msgBus);
-    pInputHandler->SetProfile(Layer_InputHandler::BP_Menu);
     m_layerStack.PushLayer(pInputHandler, Layer_InputHandler::GetID());
 
     m_layerStack.PushLayer(new Layer_Window(&m_msgBus, m_pWindow), Layer_Window::GetID());
