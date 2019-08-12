@@ -6,6 +6,7 @@
 #include "../Framework/Framework.h"
 #include "IWindow.h"
 #include "BSR_Assert.h"
+#include "Message.h"
 
 #include "Layer_Console.h"
 #include "Layer_InputHandler.h"
@@ -14,6 +15,9 @@
 
 namespace Engine
 {
+  //------------------------------------------------------------------------------------
+  // Application...
+  //------------------------------------------------------------------------------------
   Application * Application::s_instance = nullptr;
 
   void Application::InitWindow()
@@ -40,6 +44,8 @@ namespace Engine
     s_instance = this;
 
     impl::Logger::Init("BSR");
+
+    MessageTranslator::AddDefaultTranslators();
 
     if (Framework::Init() != EC_None)
       throw std::runtime_error("Failed to initialise framework!");

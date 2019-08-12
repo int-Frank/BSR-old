@@ -39,8 +39,8 @@ namespace Engine
     bool m_shouldQuit;
     std::shared_ptr<IWindow> m_pWindow;
 
-    LayerStack  m_layerStack;
-    MessageBus  m_msgBus;
+    LayerStack        m_layerStack;
+    MessageBus        m_msgBus;
   };
 
   // To be defined in CLIENT

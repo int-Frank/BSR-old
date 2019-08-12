@@ -1,6 +1,10 @@
-#ifndef UTILITY_H
-#define UTILITY_H
+#ifndef CORE_H
+#define CORE_H
 
+//--- Types ------------------------------------------------------------------
+
+
+//--- Macros -----------------------------------------------------------------
 #define BIT(x) (1 << x)
 
 // 2 steps to initialise: 1) define a new NEW_COUNTER name (this is just used internally)

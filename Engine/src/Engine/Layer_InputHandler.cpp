@@ -6,12 +6,9 @@
 #include "Log.h"
 #include "InputCodes.h"
 #include "Message.h"
-#include "MessageTranslator.h"
 
 #include "IEventPoller.h"
 #include "IMouseController.h"
-
-#define DO_CASE(x) case x:{_SetProfile<x>();break;}
 
 namespace Engine
 {
@@ -45,7 +42,7 @@ namespace Engine
     if (it != m_bindings.end())
     {
       Message * pMsg = it->second->Clone();
-      TranslateMessage(pMsg, a_pMsg);
+      MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
     a_pMsg->handled = true;
@@ -58,7 +55,7 @@ namespace Engine
     if (it != m_bindings.end())
     {
       Message * pMsg = it->second->Clone();
-      TranslateMessage(pMsg, a_pMsg);
+      MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
     a_pMsg->handled = true;
@@ -71,7 +68,7 @@ namespace Engine
     if (it != m_bindings.end())
     {
       Message * pMsg = it->second->Clone();
-      TranslateMessage(pMsg, a_pMsg);
+      MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
     a_pMsg->handled = true;
@@ -84,7 +81,7 @@ namespace Engine
     if (it != m_bindings.end())
     {
       Message * pMsg = it->second->Clone();
-      TranslateMessage(pMsg, a_pMsg);
+      MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
     a_pMsg->handled = true;
@@ -97,7 +94,7 @@ namespace Engine
     if (it != m_bindings.end())
     {
       Message * pMsg = it->second->Clone();
-      TranslateMessage(pMsg, a_pMsg);
+      MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
     a_pMsg->handled = true;
@@ -110,7 +107,7 @@ namespace Engine
     if (it != m_bindings.end())
     {
       Message * pMsg = it->second->Clone();
-      TranslateMessage(pMsg, a_pMsg);
+      MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
     a_pMsg->handled = true;
@@ -123,7 +120,7 @@ namespace Engine
     if (it != m_bindings.end())
     {
       Message * pMsg = it->second->Clone();
-      TranslateMessage(pMsg, a_pMsg);
+      MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
     a_pMsg->handled = true;
@@ -136,7 +133,7 @@ namespace Engine
     if (it != m_bindings.end())
     {
       Message * pMsg = it->second->Clone();
-      TranslateMessage(pMsg, a_pMsg);
+      MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
     a_pMsg->handled = true;

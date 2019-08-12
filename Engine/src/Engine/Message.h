@@ -258,5 +258,20 @@ namespace Engine
     int32_t x;
     int32_t y;
   };
+
+  //-----------------------------------------------------------------------------------
+  // Message translators
+  //-----------------------------------------------------------------------------------
+  
+  namespace MessageTranslator
+  {
+    typedef void (*MessageTranslatorFn)(Message * dest, Message const * src);
+
+    void Clear();
+    bool Exists(MessageType, MessageType);
+    void AddTranslator(MessageType, MessageType, MessageTranslatorFn); //Will override
+    void Translate(Message * dest, Message const * src);
+    void AddDefaultTranslators();
+  }
 }
 #endif

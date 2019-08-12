@@ -2,7 +2,7 @@
 #define INPUTCODES_H
 
 #include <stdint.h>
-#include "Utility.h"
+#include "Core.h"
 
 #undef NEW_COUNTER
 #define NEW_COUNTER KeyModCounter

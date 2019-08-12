@@ -5,7 +5,7 @@
 #include "Engine/Layer.h"
 #include "Engine/Log.h"
 #include "Engine/BSR_Assert.h"
-#include "Engine/Utility.h"
+#include "Engine/Core.h"
 #include "Engine/Options.h"
 #include "Engine/InputCodes.h"
 #include "Engine/Message.h"
