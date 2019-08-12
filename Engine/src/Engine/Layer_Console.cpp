@@ -22,11 +22,8 @@ namespace Engine
   }
 
 #undef ITEM
-#define ITEM(x) MessageHandlerReturnCode Layer_Console::HandleMessage(MessageSub<MT_##x> * a_pMsg)\
-{\
-  LOG_TRACE(a_pMsg->ToString());\
-  return MessageHandlerReturnCode::None;\
-}
+#define ITEM(x) void Layer_Console::HandleMessage(MessageSub<MT_##x> * a_pMsg)\
+{LOG_TRACE(a_pMsg->ToString());}
   MESSAGE_TYPES
 
 }

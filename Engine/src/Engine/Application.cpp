@@ -50,9 +50,7 @@ namespace Engine
     m_pWindow->GetDimensions(imguiData.window_w, imguiData.window_h);
     Framework::Instance()->InitImGui(imguiData);
 
-    auto pInputHandler = new Layer_InputHandler(&m_msgBus);
-    m_layerStack.PushLayer(pInputHandler, Layer_InputHandler::GetID());
-
+    m_layerStack.PushLayer(new Layer_InputHandler(&m_msgBus), Layer_InputHandler::GetID());
     m_layerStack.PushLayer(new Layer_Window(&m_msgBus, m_pWindow), Layer_Window::GetID());
     m_layerStack.PushLayer(new Layer_Console(&m_msgBus), Layer_Console::GetID());
     m_layerStack.PushLayer(new Layer_imgui(&m_msgBus), Layer_imgui::GetID());

@@ -7,12 +7,6 @@
 
 #define TEXT_INPUT_TEXT_SIZE 32
 
-enum class MessageHandlerReturnCode
-{
-  None,
-  Consumed
-};
-
 namespace Engine
 {
 #define ITEM()
@@ -78,10 +72,14 @@ namespace Engine
   class Message
   {
   public:
+    bool handled;
 
-    virtual Message * Clone() const = 0;
+    Message(): handled(false){}
     virtual ~Message() = default;
-    virtual MessageHandlerReturnCode Submit(MessageHandler *) = 0;
+    virtual void Submit(MessageHandler *) = 0;
+    virtual Message * Clone() const = 0;
+    virtual uint32_t GetID() const = 0;
+    virtual std::string ToString() const = 0;
   };
 
 #define MESSAGE_CLASS_HEADER(MESSAGE_TYPE) template<>\
@@ -89,8 +87,9 @@ namespace Engine
   {\
   public:\
     MessageSub<MESSAGE_TYPE> * Clone() const {return new MessageSub<MESSAGE_TYPE>(*this);}\
-    MessageHandlerReturnCode Submit(MessageHandler *);\
-    static uint32_t GetID() {return MESSAGE_TYPE;}\
+    void Submit(MessageHandler *);\
+    uint32_t GetID() const {return MESSAGE_TYPE;}\
+    static uint32_t s_GetID() {return MESSAGE_TYPE;}\
     std::string ToString() const {return #MESSAGE_TYPE;}
 
 #define MESSAGE_CLASS_HEADER_NO_STRING(MESSAGE_TYPE) template<>\
@@ -98,8 +97,9 @@ namespace Engine
   {\
   public:\
     MessageSub<MESSAGE_TYPE> * Clone() const {return new MessageSub<MESSAGE_TYPE>(*this);}\
-    MessageHandlerReturnCode Submit(MessageHandler *);\
-    static uint32_t GetID() {return MESSAGE_TYPE;}
+    void Submit(MessageHandler *);\
+    uint32_t GetID() const {return MESSAGE_TYPE;}\
+    static uint32_t s_GetID() {return MESSAGE_TYPE;}
 
   //-----------------------------------------------------------------------------------
   // Message Classes

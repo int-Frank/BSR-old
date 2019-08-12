@@ -17,14 +17,14 @@ namespace Engine
       Layer_imgui(MessageBus *);
     ~Layer_imgui();
 
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_MouseMove> *);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_MouseButtonDown> *);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_MouseButtonUp> *);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_KeyDown> *);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_KeyUp> *);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_MouseWheelDown> *);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_MouseWheelUp> *);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_GUI_Text> *);
+    void HandleMessage(MessageSub<MT_GUI_MouseMove> *);
+    void HandleMessage(MessageSub<MT_GUI_MouseButtonDown> *);
+    void HandleMessage(MessageSub<MT_GUI_MouseButtonUp> *);
+    void HandleMessage(MessageSub<MT_GUI_KeyDown> *);
+    void HandleMessage(MessageSub<MT_GUI_KeyUp> *);
+    void HandleMessage(MessageSub<MT_GUI_MouseWheelDown> *);
+    void HandleMessage(MessageSub<MT_GUI_MouseWheelUp> *);
+    void HandleMessage(MessageSub<MT_GUI_Text> *);
 
     void Update(float);
     void Render();

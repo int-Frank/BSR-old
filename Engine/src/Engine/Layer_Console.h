@@ -16,7 +16,7 @@ namespace Engine
     ~Layer_Console();
 
 #undef ITEM
-#define ITEM(x) virtual MessageHandlerReturnCode HandleMessage(MessageSub<MT_##x> *);
+#define ITEM(x) virtual void HandleMessage(MessageSub<MT_##x> *);
     MESSAGE_TYPES;
 
     void Update(float);

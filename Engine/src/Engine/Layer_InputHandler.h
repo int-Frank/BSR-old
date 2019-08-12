@@ -31,14 +31,14 @@ namespace Engine
     void ReleaseMouse();
     void SetMouseLookRate(float xRate, float yRate);
 
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_Text>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_KeyUp>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_KeyDown>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_MouseButtonUp>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_MouseButtonDown>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_MouseWheelUp>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_MouseWheelDown>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Input_MouseMove>*);
+    void HandleMessage(MessageSub<MT_Input_Text>*);
+    void HandleMessage(MessageSub<MT_Input_KeyUp>*);
+    void HandleMessage(MessageSub<MT_Input_KeyDown>*);
+    void HandleMessage(MessageSub<MT_Input_MouseButtonUp>*);
+    void HandleMessage(MessageSub<MT_Input_MouseButtonDown>*);
+    void HandleMessage(MessageSub<MT_Input_MouseWheelUp>*);
+    void HandleMessage(MessageSub<MT_Input_MouseWheelDown>*);
+    void HandleMessage(MessageSub<MT_Input_MouseMove>*);
 
     void Bind(InputCode inputCode, MessageType event, Message * binding);
 

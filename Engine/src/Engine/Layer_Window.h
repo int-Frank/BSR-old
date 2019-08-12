@@ -24,21 +24,21 @@ namespace Engine
 
     void Update(float);
 
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Shown>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Hidden>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Exposed>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Moved>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Resized>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Size_Changed>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Minimized>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Maximized>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Restored>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Enter>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Leave>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Focus_Gained>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Focus_Lost>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Close>*);
-    MessageHandlerReturnCode HandleMessage(MessageSub<MT_Window_Take_Focus>*);
+    void HandleMessage(MessageSub<MT_Window_Shown>*);
+    void HandleMessage(MessageSub<MT_Window_Hidden>*);
+    void HandleMessage(MessageSub<MT_Window_Exposed>*);
+    void HandleMessage(MessageSub<MT_Window_Moved>*);
+    void HandleMessage(MessageSub<MT_Window_Resized>*);
+    void HandleMessage(MessageSub<MT_Window_Size_Changed>*);
+    void HandleMessage(MessageSub<MT_Window_Minimized>*);
+    void HandleMessage(MessageSub<MT_Window_Maximized>*);
+    void HandleMessage(MessageSub<MT_Window_Restored>*);
+    void HandleMessage(MessageSub<MT_Window_Enter>*);
+    void HandleMessage(MessageSub<MT_Window_Leave>*);
+    void HandleMessage(MessageSub<MT_Window_Focus_Gained>*);
+    void HandleMessage(MessageSub<MT_Window_Focus_Lost>*);
+    void HandleMessage(MessageSub<MT_Window_Close>*);
+    void HandleMessage(MessageSub<MT_Window_Take_Focus>*);
 
   private:
 

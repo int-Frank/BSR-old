@@ -8,6 +8,7 @@
 #include "Engine/Utility.h"
 #include "Engine/Options.h"
 #include "Engine/InputCodes.h"
+#include "Engine/Message.h"
 
 
 // ---Entry Point---------------------

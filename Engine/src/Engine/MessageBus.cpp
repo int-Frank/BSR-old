@@ -46,7 +46,8 @@ namespace Engine
       auto it = m_layerStack.begin();
       for (; it != m_layerStack.end(); it++)
       {
-        if (pMsg->Submit(it->second) == MessageHandlerReturnCode::Consumed)
+        pMsg->Submit(it->second);
+        if (pMsg->handled)
           continue;
       }
 

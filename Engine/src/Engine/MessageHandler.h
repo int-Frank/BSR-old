@@ -13,7 +13,7 @@ namespace Engine
     virtual ~MessageHandler() = default;
 
 #undef ITEM
-#define ITEM(x) virtual MessageHandlerReturnCode HandleMessage(MessageSub<MT_##x> *) {return MessageHandlerReturnCode::None;}
+#define ITEM(x) virtual void HandleMessage(MessageSub<MT_##x> *) {}
     MESSAGE_TYPES;
   };
 }

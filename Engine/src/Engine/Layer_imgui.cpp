@@ -17,26 +17,26 @@ namespace Engine
   {
   }
 
-  MessageHandlerReturnCode Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseMove> * a_pMsg)
+  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseMove> * a_pMsg)
   {
     ImGuiIO& io = ImGui::GetIO();
     io.MousePos = ImVec2((float)a_pMsg->x, (float)a_pMsg->y);
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
-  MessageHandlerReturnCode Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseButtonDown> * a_pMsg)
+  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseButtonDown> * a_pMsg)
   {
     SetMouseButton(a_pMsg->button, true);
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
-  MessageHandlerReturnCode Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseButtonUp> * a_pMsg)
+  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseButtonUp> * a_pMsg)
   {
     SetMouseButton(a_pMsg->button, false);
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
-  MessageHandlerReturnCode Layer_imgui::HandleMessage(MessageSub<MT_GUI_KeyDown> * a_pMsg)
+  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_KeyDown> * a_pMsg)
   {
     ImGuiIO& io = ImGui::GetIO();
     BSR_ASSERT(a_pMsg->keyCode >= 0 && a_pMsg->keyCode < IM_ARRAYSIZE(io.KeysDown));
@@ -45,10 +45,10 @@ namespace Engine
     io.KeyCtrl = ((a_pMsg->modState & KM_CTRL) != 0);
     io.KeyAlt = ((a_pMsg->modState & KM_ALT) != 0);
     io.KeySuper = ((a_pMsg->modState & KM_GUI) != 0);
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
-  MessageHandlerReturnCode Layer_imgui::HandleMessage(MessageSub<MT_GUI_KeyUp> * a_pMsg)
+  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_KeyUp> * a_pMsg)
   {
     ImGuiIO& io = ImGui::GetIO();
     BSR_ASSERT(a_pMsg->keyCode >= 0 && a_pMsg->keyCode < IM_ARRAYSIZE(io.KeysDown));
@@ -57,28 +57,28 @@ namespace Engine
     io.KeyCtrl = ((a_pMsg->modState & KM_CTRL) != 0);
     io.KeyAlt = ((a_pMsg->modState & KM_ALT) != 0);
     io.KeySuper = ((a_pMsg->modState & KM_GUI) != 0);
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
-  MessageHandlerReturnCode Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseWheelUp> * a_pMsg)
+  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseWheelUp> * a_pMsg)
   {
     ImGuiIO& io = ImGui::GetIO();
     io.MouseWheel += 1;
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
-  MessageHandlerReturnCode Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseWheelDown> * a_pMsg)
+  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseWheelDown> * a_pMsg)
   {
     ImGuiIO& io = ImGui::GetIO();
     io.MouseWheel -= 1;
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
-  MessageHandlerReturnCode Layer_imgui::HandleMessage(MessageSub<MT_GUI_Text> * a_pMsg)
+  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_Text> * a_pMsg)
   {
     ImGuiIO& io = ImGui::GetIO();
     io.AddInputCharactersUTF8(a_pMsg->text);
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
   void Layer_imgui::SetMouseButton(uint32_t a_button, bool a_down)

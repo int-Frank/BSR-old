@@ -2,8 +2,8 @@
 #include "MessageHandler.h"
 
 #undef ITEM
-#define ITEM(x) MessageHandlerReturnCode MessageSub<MT_##x>::Submit(MessageHandler * a_pHandler)\
-    {return a_pHandler->HandleMessage(static_cast<MessageSub<MT_##x> *>(this));}\
+#define ITEM(x) void MessageSub<MT_##x>::Submit(MessageHandler * a_pHandler)\
+    {a_pHandler->HandleMessage(static_cast<MessageSub<MT_##x> *>(this));}\
 
 namespace Engine
 {

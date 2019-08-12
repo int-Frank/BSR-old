@@ -38,7 +38,7 @@ namespace Engine
 
   }
 
-  MessageHandlerReturnCode Layer_InputHandler::HandleMessage(MessageSub<MT_Input_Text> * a_pMsg)
+  void Layer_InputHandler::HandleMessage(MessageSub<MT_Input_Text> * a_pMsg)
   {
     uint64_t mapKey = PackKey(IC_UNKNOWN, MT_Input_Text);
     auto it = m_bindings.find(mapKey);
@@ -48,10 +48,10 @@ namespace Engine
       TranslateMessage(pMsg, a_pMsg);
       Post(pMsg);
     }
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
-  MessageHandlerReturnCode  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_KeyUp> * a_pMsg)
+  void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_KeyUp> * a_pMsg)
   {
     uint64_t mapKey = PackKey(a_pMsg->keyCode, MT_Input_KeyUp);
     auto it = m_bindings.find(mapKey);
@@ -61,10 +61,10 @@ namespace Engine
       TranslateMessage(pMsg, a_pMsg);
       Post(pMsg);
     }
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
-  MessageHandlerReturnCode  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_KeyDown> * a_pMsg)
+  void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_KeyDown> * a_pMsg)
   {
     uint64_t mapKey = PackKey(a_pMsg->keyCode, MT_Input_KeyDown);
     auto it = m_bindings.find(mapKey);
@@ -74,10 +74,10 @@ namespace Engine
       TranslateMessage(pMsg, a_pMsg);
       Post(pMsg);
     }
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
-  MessageHandlerReturnCode  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseButtonUp> * a_pMsg)
+  void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseButtonUp> * a_pMsg)
   {
     uint64_t mapKey = PackKey(a_pMsg->button, MT_Input_MouseButtonUp);
     auto it = m_bindings.find(mapKey);
@@ -87,10 +87,10 @@ namespace Engine
       TranslateMessage(pMsg, a_pMsg);
       Post(pMsg);
     }
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
-  MessageHandlerReturnCode  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseButtonDown> * a_pMsg)
+  void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseButtonDown> * a_pMsg)
   {
     uint64_t mapKey = PackKey(a_pMsg->button, MT_Input_MouseButtonDown);
     auto it = m_bindings.find(mapKey);
@@ -100,10 +100,10 @@ namespace Engine
       TranslateMessage(pMsg, a_pMsg);
       Post(pMsg);
     }
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
-  MessageHandlerReturnCode  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseWheelUp> * a_pMsg)
+  void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseWheelUp> * a_pMsg)
   {
     uint64_t mapKey = PackKey(IC_MOUSE_WHEEL_UP, MT_Input_MouseWheelUp);
     auto it = m_bindings.find(mapKey);
@@ -113,10 +113,10 @@ namespace Engine
       TranslateMessage(pMsg, a_pMsg);
       Post(pMsg);
     }
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
-  MessageHandlerReturnCode  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseWheelDown> * a_pMsg)
+  void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseWheelDown> * a_pMsg)
   {
     uint64_t mapKey = PackKey(IC_MOUSE_WHEEL_DOWN, MT_Input_MouseWheelDown);
     auto it = m_bindings.find(mapKey);
@@ -126,10 +126,10 @@ namespace Engine
       TranslateMessage(pMsg, a_pMsg);
       Post(pMsg);
     }
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
-  MessageHandlerReturnCode  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseMove> * a_pMsg)
+  void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseMove> * a_pMsg)
   {
     uint64_t mapKey = PackKey(IC_MOUSE_MOTION, MT_Input_MouseMove);
     auto it = m_bindings.find(mapKey);
@@ -139,7 +139,7 @@ namespace Engine
       TranslateMessage(pMsg, a_pMsg);
       Post(pMsg);
     }
-    return MessageHandlerReturnCode::Consumed;
+    a_pMsg->handled = true;
   }
 
   void Layer_InputHandler::GrabMouse()
@@ -243,7 +243,8 @@ namespace Engine
       if (pMsg == nullptr)
         break;
 
-      if (pMsg->Submit(this) == MessageHandlerReturnCode::Consumed)
+      pMsg->Submit(this);
+      if (pMsg->handled)
         delete pMsg;
       else
         Post(pMsg);
