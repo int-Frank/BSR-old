@@ -5,6 +5,8 @@
 #include <string>
 #include <sstream>
 
+#include  "Core.h"
+
 #define TEXT_INPUT_TEXT_SIZE 32
 
 namespace Engine
@@ -72,9 +74,17 @@ namespace Engine
   class Message
   {
   public:
-    bool handled;
 
-    Message(): handled(false){}
+    enum
+    {
+      E_Handled = BIT(1),
+      E_Show    = BIT(2)
+    };
+
+  public:
+    uint32_t flags;
+
+    Message(): flags(0){}
     virtual ~Message() = default;
     virtual void Submit(MessageHandler *) = 0;
     virtual Message * Clone() const = 0;

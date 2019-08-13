@@ -47,8 +47,8 @@ namespace Engine
       for (; it != m_layerStack.end(); it++)
       {
         pMsg->Submit(it->second);
-        if (pMsg->handled)
-          continue;
+        if (pMsg->flags & Message::E_Handled)
+          break;
       }
 
       delete pMsg;

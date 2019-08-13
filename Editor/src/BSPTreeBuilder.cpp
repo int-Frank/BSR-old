@@ -3,6 +3,7 @@
 
 #include "BSPTreeBuilder.h"
 #include "DgDynamicArray.h"
+#include "BSR_Assert.h"
 
 #define SCORE_BY_AREA
 
@@ -46,7 +47,7 @@ void BSPTreeBuilder::Run()
 void  BSPTreeBuilder::Split(uint32_t a_nodeIndex,
                             Dg::DynamicArray<BlockID> const & a_nodeBlocks)
 {
-  float bestScore = FLT_MAX;
+  uint32_t bestScore = FLT_MAX;
   int bestElement = -1;
   float bestOffset = 0.0f;
   Dg::DynamicArray<BlockID> aboveBlocks, belowBlocks;
@@ -72,38 +73,41 @@ void  BSPTreeBuilder::Split(uint32_t a_nodeIndex,
     }
   }
 
-  if (bestScore == FLT_MAX)
-  { 
-    throw std::exception("BSPTreeBuilder::Split() No valid split found!");
-  }
+  BSR_ASSERT(bestScore < FLT_MAX, "BSPTreeBuilder::Split() No valid split found!");
+  
+  m_result[a_nodeIndex].SetType(Node::E_Branch);
 
-  m_result[a_nodeIndex].nodeType = Node::E_Branch;
+  bestOffset = round(bestOffset);
+
+  BSR_ASSERT(bestOffset >= 0.0f);
+  BSR_ASSERT(bestOffset <= 255.0f);
+
   m_result[a_nodeIndex].branch.element = bestElement;
-  m_result[a_nodeIndex].branch.offset = bestOffset;
+  m_result[a_nodeIndex].branch.offset = unsigned(bestOffset);
 
   if (aboveBlocks.size() == 1)
   {
     uint32_t ind = GetLeafIndex(aboveBlocks[0]);
-    m_result[a_nodeIndex].branch.child_ABOVE_ind = ind;
+    m_result[a_nodeIndex].branch.childAboveInd = ind;
   }
   else
   {
     m_result.push_back(Node());
     uint32_t ind = (uint32_t)m_result.size() - 1;
-    m_result[a_nodeIndex].branch.child_ABOVE_ind = ind;
+    m_result[a_nodeIndex].branch.childAboveInd = ind;
     Split(ind, aboveBlocks);
   }
 
   if (belowBlocks.size() == 1)
   {
     uint32_t ind = GetLeafIndex(belowBlocks[0]);
-    m_result[a_nodeIndex].branch.child_BELOW_ind = ind;
+    m_result[a_nodeIndex].branch.childBelowInd = ind;
   }
   else
   {
     m_result.push_back(Node());
     uint32_t ind = (uint32_t)m_result.size() - 1;
-    m_result[a_nodeIndex].branch.child_BELOW_ind = ind;
+    m_result[a_nodeIndex].branch.childBelowInd = ind;
     Split(ind, belowBlocks);
   }
 }
@@ -113,7 +117,7 @@ uint32_t BSPTreeBuilder::GetLeafIndex(BlockID a_id)
 {
   for (size_t i = 0; i < m_result.size(); i++)
   {
-    if (m_result[i].nodeType == Node::E_Leaf)
+    if (m_result[i].Type() == Node::E_Leaf)
     {
       if (m_result[i].leaf.blockID == a_id)
       {
@@ -124,7 +128,7 @@ uint32_t BSPTreeBuilder::GetLeafIndex(BlockID a_id)
 
   m_result.push_back(Node());
   uint32_t ind = (uint32_t)m_result.size() - 1;
-  m_result[ind].nodeType = Node::E_Leaf;
+  m_result[ind].SetType(Node::E_Leaf);
   m_result[ind].leaf.blockID = a_id;
   return ind;
 }
@@ -138,36 +142,30 @@ Dg::DynamicArray<vec2> BSPTreeBuilder::GetCandidatePoints(Dg::DynamicArray<Block
     BlockID id = a_blocks[i];
     Block block = m_rBlocks[id];
     vec2 p0, p1;
-    p0 = block.lowerLeft;
-    p1 = block.lowerLeft + block.dimensions;
+
+    p0[0] = float(block.lowerLeft[Block::X]);
+    p0[1] = float(block.lowerLeft[Block::Y]);
+
+    p1[0] = float(block.lowerLeft[Block::X]) + block.dimensions[Block::W];
+    p1[1] = float(block.lowerLeft[Block::Y]) + block.dimensions[Block::H];
 
     bool p0_exists = false;
     bool p1_exists = false;
     for (size_t b = 0; b < result.size(); b++)
     {
       if (result[b] == p0)
-      {
         p0_exists = true;
-      }
       if (result[b] == p1)
-      {
         p1_exists = true;
-      }
 
       if (p0_exists && p1_exists)
-      {
         break;
-      }
     }
 
     if (!p0_exists)
-    {
       result.push_back(p0);
-    }
     if (!p1_exists)
-    {
       result.push_back(p1);
-    }
   }
   return result;
 }

@@ -21,19 +21,19 @@ namespace Engine
   {
     ImGuiIO& io = ImGui::GetIO();
     io.MousePos = ImVec2((float)a_pMsg->x, (float)a_pMsg->y);
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseButtonDown> * a_pMsg)
   {
     SetMouseButton(a_pMsg->button, true);
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseButtonUp> * a_pMsg)
   {
     SetMouseButton(a_pMsg->button, false);
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void Layer_imgui::HandleMessage(MessageSub<MT_GUI_KeyDown> * a_pMsg)
@@ -45,7 +45,7 @@ namespace Engine
     io.KeyCtrl = ((a_pMsg->modState & KM_CTRL) != 0);
     io.KeyAlt = ((a_pMsg->modState & KM_ALT) != 0);
     io.KeySuper = ((a_pMsg->modState & KM_GUI) != 0);
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void Layer_imgui::HandleMessage(MessageSub<MT_GUI_KeyUp> * a_pMsg)
@@ -57,28 +57,28 @@ namespace Engine
     io.KeyCtrl = ((a_pMsg->modState & KM_CTRL) != 0);
     io.KeyAlt = ((a_pMsg->modState & KM_ALT) != 0);
     io.KeySuper = ((a_pMsg->modState & KM_GUI) != 0);
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseWheelUp> * a_pMsg)
   {
     ImGuiIO& io = ImGui::GetIO();
     io.MouseWheel += 1;
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseWheelDown> * a_pMsg)
   {
     ImGuiIO& io = ImGui::GetIO();
     io.MouseWheel -= 1;
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void Layer_imgui::HandleMessage(MessageSub<MT_GUI_Text> * a_pMsg)
   {
     ImGuiIO& io = ImGui::GetIO();
     io.AddInputCharactersUTF8(a_pMsg->text);
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void Layer_imgui::SetMouseButton(uint32_t a_button, bool a_down)

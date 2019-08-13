@@ -19,6 +19,7 @@ namespace Engine
     , m_xMouseRotRate(1.0f)
     , m_yMouseRotRate(1.0f)
   {
+    //TODO move these to OnAttach(). Also Undind on OnDetatch()
     Bind(IC_MOUSE_MOTION, MT_Input_MouseMove, new MessageSub<MT_GUI_MouseMove>());
     Bind(IC_MOUSE_WHEEL_UP, MT_Input_MouseWheelUp, new MessageSub<MT_GUI_MouseWheelUp>());
     Bind(IC_MOUSE_WHEEL_DOWN, MT_Input_MouseWheelDown, new MessageSub<MT_GUI_MouseWheelDown>());
@@ -45,7 +46,7 @@ namespace Engine
       MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_KeyUp> * a_pMsg)
@@ -58,7 +59,7 @@ namespace Engine
       MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_KeyDown> * a_pMsg)
@@ -71,7 +72,7 @@ namespace Engine
       MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseButtonUp> * a_pMsg)
@@ -84,7 +85,7 @@ namespace Engine
       MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseButtonDown> * a_pMsg)
@@ -97,7 +98,7 @@ namespace Engine
       MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseWheelUp> * a_pMsg)
@@ -110,7 +111,7 @@ namespace Engine
       MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseWheelDown> * a_pMsg)
@@ -123,7 +124,7 @@ namespace Engine
       MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseMove> * a_pMsg)
@@ -136,7 +137,7 @@ namespace Engine
       MessageTranslator::Translate(pMsg, a_pMsg);
       Post(pMsg);
     }
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void Layer_InputHandler::GrabMouse()
@@ -241,7 +242,7 @@ namespace Engine
         break;
 
       pMsg->Submit(this);
-      if (pMsg->handled)
+      if (pMsg->flags)
         delete pMsg;
       else
         Post(pMsg);

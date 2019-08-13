@@ -2,54 +2,57 @@
 #include <sstream>
 
 #include "BlockPartition.h"
+#include "BSR_Assert.h"
 
-//TODO Implement a maximum block size. Blocks above this size should be broken down.
-
-
-void BlockPartition::CheckCoordinate(XY const & a_coord) const
+int BlockPartition::X(int a_val) const
 {
-  if (a_coord.x >= m_mask.length(0) || a_coord.y >= m_mask.length(1))
-  {
-    std::stringstream ss;
-    ss << "Coordinate [" << a_coord.x << ", " << a_coord.y << "] out of range. Mask dimensions are ["
-      << m_mask.length(0) << ", " << m_mask.length(1) << "]";
-    throw std::out_of_range(ss.str());
-  }
+  return a_val % m_mask.length(1);
 }
 
-bool BlockPartition::GetNextSeed(XY & a_out) const
+int BlockPartition::Y(int a_val) const
 {
-  CheckCoordinate(a_out);
+  return a_val / m_mask.length(1);
+}
 
-  for (; a_out.y < uint32_t(m_mask.length(1)); a_out.y++)
+int BlockPartition::GetNextSeed(int a_seed)
+{
+  while (a_seed < m_mask.length(0) * m_mask.length(1))
   {
-    for (; a_out.x < uint32_t(m_mask.length(0)); a_out.x++)
-    {
-      if (!m_mask.at(a_out.x, a_out.y))
-      {
-        return true;
-      }
-    }
-    a_out.x = 0;
+    int x = X(a_seed);
+    int y = Y(a_seed);
+
+    if (!m_mask.at(x, y))
+      return a_seed;
+    a_seed++;
+  }
+
+  return INVALID_SEED;
+}
+
+bool BlockPartition::GetNextBlock(unsigned a_blockSize, int & a_seed, Block & a_out)
+{
+  while (true)
+  {
+    a_seed = GetNextSeed(a_seed);
+    if (a_seed == INVALID_SEED)
+      break;
+
+    a_out = BuildBlock(a_seed);
+    if (a_out.dimensions[Block::W] >= a_blockSize && a_out.dimensions[Block::H] >= a_blockSize)
+      return true;
   }
   return false;
 }
 
-Block BlockPartition::GetCandidate(XY const & a_seed) const
+Block BlockPartition::BuildBlock(int a_seed)
 {
-  CheckCoordinate(a_seed);
-
-  if (m_mask(a_seed.x, a_seed.y))
-  {
-    std::stringstream ss;
-    ss << "GetCandidate(): Coordinate [" << a_seed.x << ", " << a_seed.y << "] is not a proper seed";
-    throw std::exception(ss.str().c_str());
-  }
-
   uint32_t h = 1;
   uint32_t w = 1;
-  uint32_t min_x = a_seed.x;
-  uint32_t min_y = a_seed.y;
+  uint32_t min_y = Y(a_seed);
+  uint32_t min_x = X(a_seed);
+
+  //CheckCoordinate(a_seed);
+  BSR_ASSERT(!m_mask(min_x, min_y), "Not a proper seed");
 
   uint32_t flags = 0;
   while (flags != 0xF)
@@ -75,15 +78,13 @@ Block BlockPartition::GetCandidate(XY const & a_seed) const
         }
       }
       else
-      {
         flags |= 1;
-      }
     }
 
     //Try to expand block in the +y direction
     if (!(flags & 2))
     {
-      if (min_y + h < m_mask.length(1))
+      if (min_y + h < uint32_t(m_mask.length(1)))
       {
         for (uint32_t x = min_x; x < min_x + w; x++)
         {
@@ -95,20 +96,16 @@ Block BlockPartition::GetCandidate(XY const & a_seed) const
         }
 
         if (!(flags & 2))
-        {
           h = h + 1;
-        }
       }
       else
-      {
         flags |= 2;
-      }
     }
 
     //Try to expand block in the +x direction
     if (!(flags & 4))
     {
-      if (min_x + w < m_mask.length(0))
+      if (min_x + w < uint32_t(m_mask.length(0)))
       {
         for (uint32_t y = min_y; y < min_y + h; y++)
         {
@@ -120,14 +117,10 @@ Block BlockPartition::GetCandidate(XY const & a_seed) const
         }
 
         if (!(flags & 4))
-        {
           w = w + 1;
-        }
       }
       else
-      {
         flags |= 4;
-      }
     }
 
     //Try to expand block in the -y direction
@@ -151,29 +144,25 @@ Block BlockPartition::GetCandidate(XY const & a_seed) const
         }
       }
       else
-      {
         flags |= 8;
-      }
     }
   }
 
   Block result;
 
-  result.lowerLeft[0] = float(min_x);
-  result.lowerLeft[1] = float(min_y);
-  result.dimensions[0] = float(w);
-  result.dimensions[1] = float(h);
+  result.lowerLeft[Block::X] = min_x;
+  result.lowerLeft[Block::Y] = min_y;
+  result.dimensions[Block::W] = w;
+  result.dimensions[Block::H] = h;
 
   return result;
 }
 
 void BlockPartition::MaskOut(Block const & a_block)
 {
-  //TODO add range checks
-
-  for (size_t x = size_t(a_block.lowerLeft[0]); x < size_t(a_block.lowerLeft[0] + a_block.dimensions[0]); x++)
+  for (size_t x = size_t(a_block.lowerLeft[Block::X]); x < size_t(a_block.lowerLeft[Block::X] + a_block.dimensions[Block::W]); x++)
   {
-    for (size_t y = size_t(a_block.lowerLeft[1]); y < size_t(a_block.lowerLeft[1] + a_block.dimensions[1]); y++)
+    for (size_t y = size_t(a_block.lowerLeft[Block::Y]); y < size_t(a_block.lowerLeft[Block::Y] + a_block.dimensions[Block::H]); y++)
     {
       m_mask(x, y) = true;
     }
@@ -182,20 +171,35 @@ void BlockPartition::MaskOut(Block const & a_block)
 
 BlockPartition::BlockPartition(Dg::HyperArray<bool, 2> const & m_mask)
   : m_mask(m_mask)
+  , m_maxBlockSize(64)
 {
+  BSR_ASSERT(m_mask.length(0) <= 256);
+  BSR_ASSERT(m_mask.length(1) <= 256);
+}
 
+void BlockPartition::SetMaxBlockSize(unsigned a_val)
+{
+  m_maxBlockSize = a_val;
 }
 
 Dg::DynamicArray<Block> BlockPartition::Run()
 {
   Dg::DynamicArray<Block> result;
-  XY seed{0, 0};
+  unsigned blockSize = m_maxBlockSize;
+  int seed = 0;
 
-  while (GetNextSeed(seed))
+  while (blockSize > 0)
   {
-    Block block = GetCandidate(seed);
-    MaskOut(block);
-    result.push_back(block);
+    Block block;
+    if (GetNextBlock(blockSize, seed, block))
+    {
+      MaskOut(block);
+      result.push_back(block);
+      continue;
+    }
+
+    blockSize--;
+    seed = 0;
   }
   return result;
 }

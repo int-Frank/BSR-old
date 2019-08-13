@@ -34,7 +34,7 @@ namespace Engine
   private:
 
     SDL_Window *        m_pWindow;
-    IGraphicsContext *  m_pContext;
+    IGraphicsContext *  m_pContext; //TODO this context should live in Framework
   };
 
   void Framework::InitWindow()

@@ -8,8 +8,6 @@
 
 #define BSR_VERSION 0x10000000
 
-typedef uint32_t BlockID; //This is simply the index to the block in m_rBlocks
-
 struct WallPhysics
 {
   vec4  p0;     //Start point of the wall
@@ -49,8 +47,21 @@ struct Object
 
 struct Block
 {
-  vec2 lowerLeft;  //[x, y]
-  vec2 dimensions; //[w, h]
+  enum Element
+  {
+    X = 0,
+    Y = 1,
+    W = 0,
+    H = 1,
+  };
+
+  Block() 
+    : lowerLeft{0, 0}
+    , dimensions{0, 0}
+  {}
+
+  uint8_t lowerLeft[2];
+  uint8_t dimensions[2];
 };
 
 class Node
@@ -61,28 +72,32 @@ public:
   Node(Node const & a_other);
   Node & operator=(Node const & a_other);
 
-  enum
+  enum NodeType
   {
-    //Node type
-    E_Branch     = 0, //Axis Aligned
+    E_Branch     = 0,
     E_Leaf       = 1,
-    E_Invalid    = -1,
   };
 
-  int nodeType;
+  NodeType Type() const {return NodeType(branch.type);} 
+  void SetType(NodeType a_val) {branch.type = a_val;} 
+
   union
   {
+    uint32_t data;
+
     struct Branch
     {
-      uint16_t      child_ABOVE_ind;
-      uint16_t      child_BELOW_ind;
-      uint16_t      element;
-      float         offset;
+      unsigned type           : 1;
+      unsigned childAboveInd  : 11;
+      unsigned childBelowInd  : 11;
+      unsigned element        : 1;
+      unsigned offset         : 8;
     } branch;
 
     struct Leaf
     {
-      BlockID blockID;
+      unsigned type     : 1;
+      unsigned blockID  : 31;
     } leaf;
   };
 };

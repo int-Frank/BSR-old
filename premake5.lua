@@ -152,17 +152,17 @@ project "Editor"
   includedirs
   {
     "%{wks.location}/Common/src",
+    "%{wks.location}/Engine/src",
+    "%{wks.location}/Engine/src/Engine",
     "%{IncludeDir.spdlog}",
 		"%{IncludeDir.DgLib}",
-		"%{IncludeDir.Glad}",
-		"%{IncludeDir.SDL2}",
 		"%{IncludeDir.imgui}"
   }
   
   links
   {
     "DgLib",
-    "Glad",
+    "Engine",
     "Common"
   }
   

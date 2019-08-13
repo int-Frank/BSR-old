@@ -14,7 +14,7 @@ namespace Engine
   {
     static Dg::Map_AVL<uint64_t, MessageTranslatorFn> g_msgTrnsMap;
 
-    void Translate_GUI_MouseMove__Input_MouseMove(Message * a_pDest, Message const * a_pSrc)
+    static void Translate_GUI_MouseMove__Input_MouseMove(Message * a_pDest, Message const * a_pSrc)
     {
       MessageSub<MT_GUI_MouseMove> * pDest 
         = static_cast<MessageSub<MT_GUI_MouseMove> *> (a_pDest);
@@ -25,7 +25,7 @@ namespace Engine
       pDest->y = pSrc->y;
     }
 
-    void Translate_GUI_Text__Input_Text(Message * a_pDest, Message const * a_pSrc)
+    static void Translate_GUI_Text__Input_Text(Message * a_pDest, Message const * a_pSrc)
     {
       MessageSub<MT_GUI_Text> * pDest 
         = static_cast<MessageSub<MT_GUI_Text> *> (a_pDest);
@@ -35,7 +35,7 @@ namespace Engine
       strncpy_s(pDest->text, TEXT_INPUT_TEXT_SIZE, pSrc->text, TEXT_INPUT_TEXT_SIZE);
     }
 
-    void Translate_GUI_KeyDown__Input_KeyDown(Message * a_pDest, Message const * a_pSrc)
+    static void Translate_GUI_KeyDown__Input_KeyDown(Message * a_pDest, Message const * a_pSrc)
     {
       MessageSub<MT_GUI_KeyDown> * pDest 
         = static_cast<MessageSub<MT_GUI_KeyDown> *> (a_pDest);
@@ -46,7 +46,7 @@ namespace Engine
       pDest->modState = pSrc->modState;
     }
 
-    void Translate_GUI_KeyUp__Input_KeyUp(Message * a_pDest, Message const * a_pSrc)
+    static void Translate_GUI_KeyUp__Input_KeyUp(Message * a_pDest, Message const * a_pSrc)
     {
       MessageSub<MT_GUI_KeyUp> * pDest 
         = static_cast<MessageSub<MT_GUI_KeyUp> *> (a_pDest);
@@ -57,7 +57,7 @@ namespace Engine
       pDest->modState = pSrc->modState;
     }
 
-    void Translate_GUI_MouseButtonDown__Input_MouseButtonDown(Message * a_pDest, Message const * a_pSrc)
+    static void Translate_GUI_MouseButtonDown__Input_MouseButtonDown(Message * a_pDest, Message const * a_pSrc)
     {
       MessageSub<MT_GUI_MouseButtonDown> * pDest 
         = static_cast<MessageSub<MT_GUI_MouseButtonDown> *> (a_pDest);
@@ -69,7 +69,7 @@ namespace Engine
       pDest->y = pSrc->y;
     }
 
-    void Translate_GUI_MouseButtonUp__Input_MouseButtonUp(Message * a_pDest, Message const * a_pSrc)
+    static void Translate_GUI_MouseButtonUp__Input_MouseButtonUp(Message * a_pDest, Message const * a_pSrc)
     {
       MessageSub<MT_GUI_MouseButtonUp> * pDest 
         = static_cast<MessageSub<MT_GUI_MouseButtonUp> *> (a_pDest);

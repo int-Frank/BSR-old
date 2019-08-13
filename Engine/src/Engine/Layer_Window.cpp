@@ -102,7 +102,7 @@ namespace Engine
   void Layer_Window::HandleMessage(MessageSub<MT_Window_Close> * a_pMsg)
   {
     Application::Instance()->RequestQuit();
-    a_pMsg->handled = true;
+    a_pMsg->flags |= Message::E_Handled;
   }
 
   void Layer_Window::HandleMessage(MessageSub<MT_Window_Take_Focus>*)

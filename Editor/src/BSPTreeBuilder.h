@@ -5,10 +5,10 @@
 #include "MapData.h"
 #include "DgDynamicArray.h"
 
-
-//TODO We don't need a bsp tree, just bake the block id into a 64x64 grid
 class BSPTreeBuilder
 {
+  typedef uint32_t BlockID;
+
 public:
 
   BSPTreeBuilder(Dg::DynamicArray<Block> const &);

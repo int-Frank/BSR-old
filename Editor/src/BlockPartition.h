@@ -10,13 +10,6 @@
 //      split by smaller ones. We can the decrement and search again (9 x 9 for example) all the way to 1.
 class BlockPartition
 {
-private:
-
-  struct XY
-  {
-    uint32_t x, y;
-  };
-
 public:
 
   BlockPartition(Dg::HyperArray<bool, 2> const &);
@@ -25,12 +18,18 @@ public:
 
 private:
 
-  bool GetNextSeed(XY & currentSeed) const; //change to 'bool GetNextSeed(XY & currentSeed, int size) const;'
-  Block GetCandidate(XY const & seed) const;
+  int GetNextSeed(int currentSeed); //change to 'bool GetNextSeed(XY & currentSeed, int size) const;'
+  
+  bool GetNextBlock(unsigned blockSize, int & seed, Block &);
+  Block BuildBlock(int seed);
   void MaskOut(Block const &);
-  void CheckCoordinate(XY const & coord) const;
 
 private:
+
+  static int const INVALID_SEED = -1;
+
+  int X(int) const;
+  int Y(int) const;
 
   Dg::HyperArray<bool, 2> m_mask;
   unsigned                m_maxBlockSize;
