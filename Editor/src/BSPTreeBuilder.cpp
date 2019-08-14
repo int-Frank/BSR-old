@@ -82,32 +82,32 @@ void  BSPTreeBuilder::Split(uint32_t a_nodeIndex,
   BSR_ASSERT(bestOffset >= 0.0f);
   BSR_ASSERT(bestOffset <= 255.0f);
 
-  m_result[a_nodeIndex].branch.element = bestElement;
-  m_result[a_nodeIndex].branch.offset = unsigned(bestOffset);
+  m_result[a_nodeIndex].SetElement(bestElement);
+  m_result[a_nodeIndex].SetOffset(bestOffset);
 
   if (aboveBlocks.size() == 1)
   {
     uint32_t ind = GetLeafIndex(aboveBlocks[0]);
-    m_result[a_nodeIndex].branch.childAboveInd = ind;
+    m_result[a_nodeIndex].SetChildAboveInd(ind);
   }
   else
   {
     m_result.push_back(Node());
     uint32_t ind = (uint32_t)m_result.size() - 1;
-    m_result[a_nodeIndex].branch.childAboveInd = ind;
+    m_result[a_nodeIndex].SetChildAboveInd(ind);
     Split(ind, aboveBlocks);
   }
 
   if (belowBlocks.size() == 1)
   {
     uint32_t ind = GetLeafIndex(belowBlocks[0]);
-    m_result[a_nodeIndex].branch.childBelowInd = ind;
+    m_result[a_nodeIndex].SetChildBelowInd(ind);
   }
   else
   {
     m_result.push_back(Node());
     uint32_t ind = (uint32_t)m_result.size() - 1;
-    m_result[a_nodeIndex].branch.childBelowInd = ind;
+    m_result[a_nodeIndex].SetChildBelowInd(ind);
     Split(ind, belowBlocks);
   }
 }
@@ -117,9 +117,9 @@ uint32_t BSPTreeBuilder::GetLeafIndex(BlockID a_id)
 {
   for (size_t i = 0; i < m_result.size(); i++)
   {
-    if (m_result[i].Type() == Node::E_Leaf)
+    if (m_result[i].GetType() == Node::E_Leaf)
     {
-      if (m_result[i].leaf.blockID == a_id)
+      if (m_result[i].GetBlockID() == a_id)
       {
         return (uint32_t)i;
       }
@@ -129,7 +129,7 @@ uint32_t BSPTreeBuilder::GetLeafIndex(BlockID a_id)
   m_result.push_back(Node());
   uint32_t ind = (uint32_t)m_result.size() - 1;
   m_result[ind].SetType(Node::E_Leaf);
-  m_result[ind].leaf.blockID = a_id;
+  m_result[ind].SetBlockID(a_id);
   return ind;
 }
 

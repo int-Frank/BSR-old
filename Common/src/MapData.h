@@ -4,16 +4,10 @@
 #include "DgDynamicArray.h"
 #include "DgVariableArray2D.h"
 #include "DgHyperArray.h"
+#include "DgMath.h"
 #include "Types.h"
 
 #define BSR_VERSION 0x10000000
-
-struct WallPhysics
-{
-  vec4  p0;     //Start point of the wall
-  vec4  n;      //normal to the line
-  float length; //wall length
-};
 
 struct Object
 {
@@ -45,6 +39,53 @@ struct Object
   vec4        rotation; 
 };
 
+class Wall
+{
+public:
+
+  Wall();
+
+  enum Direction : uint32_t
+  {
+    X     = 0,
+    Y     = 1,
+    negX  = 2,
+    negY  = 3,
+  };
+
+  vec2 GetNormal() const;
+
+  uint32_t direction;
+  vec2 origin;
+  float length;
+
+private:
+
+  static vec2 const s_directions[4];
+};
+
+struct Arc
+{
+  vec2 loa;
+  vec2 roa;
+};
+
+struct Corner
+{
+  enum ArcQuadrant
+  {
+    I,
+    II,
+    III,
+    IV
+  };
+
+  static Arc const Arcs[4];
+
+  uint32_t quadrant;
+  vec2 origin;
+};
+
 struct Block
 {
   enum Element
@@ -72,34 +113,30 @@ public:
   Node(Node const & a_other);
   Node & operator=(Node const & a_other);
 
-  enum NodeType
+  enum NodeType : uint32_t
   {
     E_Branch     = 0,
     E_Leaf       = 1,
   };
 
-  NodeType Type() const {return NodeType(branch.type);} 
-  void SetType(NodeType a_val) {branch.type = a_val;} 
+  NodeType GetType() const;
+  uint32_t GetElement() const;
+  uint32_t GetChildAboveInd() const;
+  uint32_t GetChildBelowInd() const;
+  float GetOffset() const;
+  uint32_t GetBlockID() const;
 
-  union
-  {
-    uint32_t data;
+  void SetType(NodeType);
+  void SetElement(uint32_t);
+  void SetChildAboveInd(uint32_t);
+  void SetChildBelowInd(uint32_t);
+  void SetOffset(float);
+  void SetBlockID(uint32_t); //no greater than 31 bits
+  
+private:
 
-    struct Branch
-    {
-      unsigned type           : 1;
-      unsigned childAboveInd  : 11;
-      unsigned childBelowInd  : 11;
-      unsigned element        : 1;
-      unsigned offset         : 8;
-    } branch;
-
-    struct Leaf
-    {
-      unsigned type     : 1;
-      unsigned blockID  : 31;
-    } leaf;
-  };
+  uint32_t m_data;
+  float m_offset;
 };
 
 /*
