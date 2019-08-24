@@ -1,4 +1,4 @@
-#ifndef RENDERTEMP_H
+ #ifndef RENDERTEMP_H
 #define RENDERTEMP_H
 
 #include <stdint.h>

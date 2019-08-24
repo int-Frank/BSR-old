@@ -1,24 +1,19 @@
 #include "MapData.h"
 
-vec2 const Wall::s_directions[4] = 
-{
-  {1.0f, 0.0f},
-  {0.0f, 1.0f},
-  {-1.0f, 0.0f},
-  {0.0f, -1.0f}
-};
+#define DG_ASSERTS_ENABLED
+#include "DgAssert.h"
 
 Arc const Corner::Arcs[4] = 
 {
-  {{0.0f, 1.0f}, {1.0f, 0.0f}},
-  {{-1.0f, 0.0f}, {0.0f, 1.0f}},
-  {{0.0f, -1.0f}, {-1.0f, 0.0f}},
-  {{1.0f, 0.0f}, {0.0f, -1.0f}}
+  {{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+  {{-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+  {{0.0f, -1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}},
+  {{1.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}}
 };
 
 Wall::Wall()
-  : direction(0)
-  , origin(0.0f, 0.0f)
+  : direction(1.0f, 0.0f, 0.0f)
+  , origin(0.0f, 0.0f, 1.0f)
   , length(1.0f)
 {
 
@@ -26,7 +21,7 @@ Wall::Wall()
 
 vec2 Wall::GetNormal() const
 {
-  return s_directions[(direction + 3) % 4];
+  return vec2(direction[1], -direction[0]);
 }
 
 Node::Node()
@@ -92,11 +87,13 @@ void Node::SetElement(uint32_t a_val)
 
 void Node::SetChildAboveInd(uint32_t a_val)
 {
+  DG_ASSERT(a_val <= 0x7FFFF);
   m_data = (m_data & 0xFFFE0003) | ((a_val & 0x7FFF) << 2);
 }
 
 void Node::SetChildBelowInd(uint32_t a_val)
 {
+  DG_ASSERT(a_val <= 0x7FFFF);
   m_data = (m_data & 0x1FFFF) | ((a_val & 0x7FFF) << 17);
 }
 

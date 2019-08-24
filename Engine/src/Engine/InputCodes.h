@@ -4,10 +4,6 @@
 #include <stdint.h>
 #include "Core.h"
 
-#undef NEW_COUNTER
-#define NEW_COUNTER KeyModCounter
-INIT_COUNTER(0)
-
 #define KM_SHIFT (KM_LSHIFT | KM_RSHIFT)
 #define KM_CTRL (KM_LCTRL | KM_RCTRL)
 #define KM_ALT  (KM_LALT | KM_RALT)
@@ -17,17 +13,17 @@ namespace Engine
 {
   enum KeyMod : uint16_t
   {
-    KM_LSHIFT   = BIT(COUNTER),
-    KM_LCTRL    = BIT(COUNTER),
-    KM_LALT     = BIT(COUNTER),
-    KM_LGUI     = BIT(COUNTER),
-    KM_RSHIFT   = BIT(COUNTER),
-    KM_RCTRL    = BIT(COUNTER),
-    KM_RALT     = BIT(COUNTER),
-    KM_RGUI     = BIT(COUNTER),
-    KM_NUM      = BIT(COUNTER),
-    KM_CAPS     = BIT(COUNTER),
-    KM_MODE     = BIT(COUNTER)
+    KM_LSHIFT   = BIT(1),
+    KM_LCTRL    = BIT(2),
+    KM_LALT     = BIT(3),
+    KM_LGUI     = BIT(4),
+    KM_RSHIFT   = BIT(5),
+    KM_RCTRL    = BIT(6),
+    KM_RALT     = BIT(7),
+    KM_RGUI     = BIT(8),
+    KM_NUM      = BIT(9),
+    KM_CAPS     = BIT(10),
+    KM_MODE     = BIT(11)
   };
 
   enum InputCode : uint16_t

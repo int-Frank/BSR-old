@@ -25,4 +25,9 @@ typedef Dg::R2::Line<float>             line2D;
 typedef Dg::R3::Sphere<float>           sphere;
 typedef Dg::R3::Rectangle<float>        rect3D;
 
+#define VEC_NORTH vec3(0.0f, 1.0f, 0.0f)
+#define VEC_EAST  vec3(1.0f, 0.0f, 0.0f)
+#define VEC_SOUTH vec3(0.0f, -1.0f, 0.0f)
+#define VEC_WEST  vec3(-1.0f, 0.0f, 0.0f)
+
 #endif

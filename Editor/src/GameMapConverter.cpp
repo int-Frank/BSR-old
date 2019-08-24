@@ -348,8 +348,8 @@ MapFileData GameMapConverter::PIMPL::ConvertMap(uint32_t a_offset)
   //------------------------------------------------------------------------------------------
   WallAssembler wallAss(mask);
   wallAss.Run();
-  result.wallGeometryLines = wallAss.GetLines();
-  result.wallGeometryPoints = wallAss.GetPoints();
+  result.wallGeometryLines = wallAss.GetWalls();
+  result.wallGeometryPoints = wallAss.GetCorners();
 
   //------------------------------------------------------------------------------------------
   // Generate BSP Tree

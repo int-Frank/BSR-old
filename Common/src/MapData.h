@@ -39,35 +39,33 @@ struct Object
   vec4        rotation; 
 };
 
+class WallFace
+{
+public:
+
+private:
+
+  vec3 position;
+  vec3 direction;
+};
+
 class Wall
 {
 public:
 
   Wall();
 
-  enum Direction : uint32_t
-  {
-    X     = 0,
-    Y     = 1,
-    negX  = 2,
-    negY  = 3,
-  };
-
   vec2 GetNormal() const;
 
-  uint32_t direction;
-  vec2 origin;
+  vec3 direction;
+  vec3 origin;
   float length;
-
-private:
-
-  static vec2 const s_directions[4];
 };
 
 struct Arc
 {
-  vec2 loa;
-  vec2 roa;
+  vec3 loa; 
+  vec3 roa;
 };
 
 struct Corner
@@ -82,8 +80,8 @@ struct Corner
 
   static Arc const Arcs[4];
 
-  uint32_t quadrant;
-  vec2 origin;
+  uint32_t  arcQuadrant;
+  vec3      point;
 };
 
 struct Block
@@ -101,8 +99,8 @@ struct Block
     , dimensions{0, 0}
   {}
 
-  uint8_t lowerLeft[2];
-  uint8_t dimensions[2];
+  uint32_t lowerLeft[2];
+  uint32_t dimensions[2];
 };
 
 class Node
@@ -160,8 +158,8 @@ struct MapFileData
 
   //Includes all sprites; actors; wall, floor and ceiling tiles
   Dg::DynamicArray<Object>                objectMasterList; 
-  Dg::DynamicArray<lineSeg2D>             wallGeometryLines;
-  Dg::DynamicArray<vec3>                  wallGeometryPoints;
+  Dg::DynamicArray<Wall>                  wallGeometryLines;
+  Dg::DynamicArray<Corner>                wallGeometryPoints;
 
   //These can be loaded directly from MAPTEMP.BS6
   //Dg::HyperArray<uint16_t, 2>             floorPlanObject;

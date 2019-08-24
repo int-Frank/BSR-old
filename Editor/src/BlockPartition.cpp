@@ -6,12 +6,12 @@
 
 int BlockPartition::X(int a_val) const
 {
-  return a_val % m_mask.length(1);
+  return a_val % int(m_mask.length(1));
 }
 
 int BlockPartition::Y(int a_val) const
 {
-  return a_val / m_mask.length(1);
+  return a_val / int(m_mask.length(1));
 }
 
 int BlockPartition::GetNextSeed(int a_seed)
