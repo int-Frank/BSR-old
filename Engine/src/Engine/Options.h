@@ -1,7 +1,7 @@
-#ifndef OPTIONS_H
-#define OPTIONS_H
+#ifndef EN_OPTIONS_H
+#define EN_OPTIONS_H
 
-#include "LogLevel.h"
+#include "core_LogLevel.h"
 
 //----------------------------------------------------------------------------
 // Switches

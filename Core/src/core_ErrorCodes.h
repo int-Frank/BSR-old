@@ -1,7 +1,7 @@
 #ifndef ERRORCODES_H
 #define ERRORCODES_H
 
-namespace Engine
+namespace Core
 {
   enum ErrorCode
   {

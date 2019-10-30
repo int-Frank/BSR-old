@@ -4,7 +4,7 @@
 #include "Framework.h"
 #include "../Engine/Message.h"
 #include "../Engine/InputCodes.h"
-#include "../Engine/Log.h"
+#include "core_Log.h"
 
 #include "SDL_events.h"
 #include "SDL.h"

@@ -1,8 +1,8 @@
-#ifndef ISHADER_H
-#define ISHADER_H
+#ifndef EN_ISHADER_H
+#define EN_ISHADER_H
 
 #include <string>
-#include "ErrorCodes.h"
+#include "core_ErrorCodes.h"
 
 namespace Engine
 {

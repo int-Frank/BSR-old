@@ -1,5 +1,5 @@
-#ifndef MESSAGEBUS_H
-#define MESSAGEBUS_H
+#ifndef EN_MESSAGEBUS_H
+#define EN_MESSAGEBUS_H
 
 #include <stdint.h>
 #include <mutex>

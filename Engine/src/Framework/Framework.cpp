@@ -1,10 +1,10 @@
 
 #include "SDL.h"
 #include "../Engine/Options.h"
-#include "../Engine/Log.h"
+#include "core_Log.h"
 #include "Framework.h"
 #include "../Engine/InputCodes.h"
-#include "../Engine/BSR_Assert.h"
+#include "core_Assert.h"
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -56,11 +56,11 @@ namespace Engine
     return s_instance;
   }
 
-  ErrorCode Framework::Init()
+  Core::ErrorCode Framework::Init()
   {
     BSR_ASSERT(s_instance == nullptr, "Framework already initialized!");
     s_instance = new Framework();
-    ErrorCode result = EC_None;
+    Core::ErrorCode result = Core::EC_None;
     do
     {
       //-----------------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ namespace Engine
       if (SDL_Init(SDL_INIT_EVERYTHING) != 0) 
       {
         LOG_ERROR("Unable to initialize SDL: {}", SDL_GetError());
-        result = EC_Error;
+        result = Core::EC_Error;
         break;
       }
 
@@ -86,9 +86,9 @@ namespace Engine
     return result;
   }
 
-  ErrorCode Framework::ShutDown()
+  Core::ErrorCode Framework::ShutDown()
   {
-    ErrorCode result = EC_None;
+    Core::ErrorCode result = Core::EC_None;
 
     delete s_instance;
     s_instance = nullptr;

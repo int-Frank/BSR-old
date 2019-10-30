@@ -1,5 +1,5 @@
-#ifndef OPENGLCONTEXT_H
-#define OPENGLCONTEXT_H
+#ifndef EN_OPENGLCONTEXT_H
+#define EN_OPENGLCONTEXT_H
 
 #include "../Engine/IGraphicsContext.h"
 
@@ -16,7 +16,7 @@ namespace Engine
     ~OpenGLContext();
     OpenGLContext(SDL_Window *);
 
-    ErrorCode Init() override;
+    Core::ErrorCode Init() override;
     void SwapBuffers() override;
 
   private:

@@ -9,7 +9,8 @@
 class Game : public Engine::Application
 {
 public:
-  Game()
+  Game(Opts const & a_opts)
+    : Application(a_opts)
   {
     LOG_TRACE("Game initialised!");
   }
@@ -23,5 +24,6 @@ public:
 
 Engine::Application* Engine::CreateApplication()
 {
-  return new Game();
+  Application::Opts opts;
+  return new Game(opts);
 }

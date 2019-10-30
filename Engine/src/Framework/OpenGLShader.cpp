@@ -2,9 +2,9 @@
 
 #include "Framework.h"
 #include "../Engine/IShader.h"
-#include "../Engine/ErrorCodes.h"
-#include "../Engine/Log.h"
-#include "../Engine/BSR_Assert.h"
+#include "core_ErrorCodes.h"
+#include "core_Log.h"
+#include "core_Assert.h"
 
 namespace Engine
 {
@@ -18,16 +18,16 @@ namespace Engine
     void Bind() const;
     void Unbind() const;
 
-    ErrorCode Init(std::string const & vs, std::string const & fs);
+    Core::ErrorCode Init(std::string const & vs, std::string const & fs);
 
   private:
     GLuint m_program;
   };
 
-  IShader * Framework::GetShader(std::string const & a_vs, std::string const & a_fs)
+  IShader * Framework::CreateShader(std::string const & a_vs, std::string const & a_fs)
   {
     OpenGLShader * temp = new OpenGLShader();
-    BSR_ASSERT(temp->Init(a_vs, a_fs) == EC_None);
+    BSR_ASSERT(temp->Init(a_vs, a_fs) == Core::EC_None);
     return temp;
   }
 
@@ -51,7 +51,7 @@ namespace Engine
     glUseProgram(0);
   }
 
-  ErrorCode OpenGLShader::Init(std::string const & a_vs, std::string const & a_fs)
+  Core::ErrorCode OpenGLShader::Init(std::string const & a_vs, std::string const & a_fs)
   {
     // Create an empty vertex shader handle
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -80,7 +80,7 @@ namespace Engine
 
       LOG_ERROR("{0}", infoLog.data());
 
-      return EC_Error;
+      return Core::EC_Error;
     }
 
     // Create an empty fragment shader handle
@@ -111,7 +111,7 @@ namespace Engine
 
       LOG_ERROR("{0}", infoLog.data());
 
-      return EC_Error;
+      return Core::EC_Error;
     }
 
     // Vertex and fragment shaders are successfully compiled.
@@ -148,14 +148,14 @@ namespace Engine
       LOG_ERROR("{0}", infoLog.data());
 
       // In this simple program, we'll just leave
-      return EC_Error;
+      return Core::EC_Error;
     }
 
     // Always detach shaders after a successful link.
     glDetachShader(m_program, vertexShader);
     glDetachShader(m_program, fragmentShader);
 
-    return EC_None;
+    return Core::EC_None;
   }
 
 }

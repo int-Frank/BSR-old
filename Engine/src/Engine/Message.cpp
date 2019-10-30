@@ -8,7 +8,7 @@
 
 namespace Engine
 {
-  MESSAGE_TYPES
+  MESSAGE_LIST
 
   namespace MessageTranslator
   {

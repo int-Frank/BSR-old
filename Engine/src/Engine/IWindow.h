@@ -1,8 +1,8 @@
-#ifndef IWINDOW_H
-#define IWINDOW_H
+#ifndef EN_IWINDOW_H
+#define EN_IWINDOW_H
 
 #include <string>
-#include "ErrorCodes.h"
+#include "core_ErrorCodes.h"
 
 namespace Engine
 {
@@ -33,7 +33,7 @@ namespace Engine
     virtual bool IsVSync() const = 0;
 
     virtual bool IsInit() const = 0;
-    virtual ErrorCode Init(WindowProps const & props = WindowProps()) = 0;
+    virtual Core::ErrorCode Init(WindowProps const & props = WindowProps()) = 0;
     virtual void Destroy() = 0;
 
     virtual void GetDimensions(int & w, int & h) = 0;

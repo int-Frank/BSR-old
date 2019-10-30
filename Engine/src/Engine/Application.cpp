@@ -1,11 +1,12 @@
 #include <exception>
 
+#include "core_ErrorCodes.h"
 #include "Application.h"
 #include "Options.h"
-#include "Log.h"
+#include "core_Log.h"
 #include "../Framework/Framework.h"
 #include "IWindow.h"
-#include "BSR_Assert.h"
+#include "core_Assert.h"
 #include "Message.h"
 
 #include "Layer_Console.h"
@@ -26,7 +27,7 @@ namespace Engine
     if (m_pWindow == nullptr)
       throw std::runtime_error("GetWindow() has returned a null pointer!");
 
-    if (m_pWindow->Init() != EC_None)
+    if (m_pWindow->Init() != Core::EC_None)
       throw std::runtime_error("Failed to initialise window!");
   }
 
@@ -35,7 +36,7 @@ namespace Engine
     return s_instance;
   }
 
-  Application::Application()
+  Application::Application(Opts const & a_opts)
     : m_msgBus(m_layerStack)
     , m_pWindow(nullptr)
     , m_shouldQuit(false)
@@ -43,11 +44,14 @@ namespace Engine
     BSR_ASSERT(s_instance == nullptr, "Error, Application already created!");
     s_instance = this;
 
-    impl::Logger::Init("BSR");
+    if (a_opts.loggerType == E_UseFileLogger)
+      Core::impl::Logger::Init_file(a_opts.loggerName.c_str(), a_opts.logFile.c_str());
+    else
+      Core::impl::Logger::Init_stdout(a_opts.loggerName.c_str());
 
     MessageTranslator::AddDefaultTranslators();
 
-    if (Framework::Init() != EC_None)
+    if (Framework::Init() != Core::EC_None)
       throw std::runtime_error("Failed to initialise framework!");
 
     InitWindow();
@@ -66,7 +70,7 @@ namespace Engine
 
   Application::~Application()
   {
-    if (Framework::ShutDown() != EC_None)
+    if (Framework::ShutDown() != Core::EC_None)
       LOG_ERROR("Failed to shut down framework!");
 
     s_instance = nullptr;

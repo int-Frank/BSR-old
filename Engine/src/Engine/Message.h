@@ -1,18 +1,18 @@
-#ifndef MESSAGE_H
-#define MESSAGE_H
+#ifndef EN_MESSAGE_H
+#define EN_MESSAGE_H
 
 #include <stdint.h>
 #include <string>
 #include <sstream>
 
-#include  "Core.h"
+#include  "core_utils.h"
 
 #define TEXT_INPUT_TEXT_SIZE 32
 
 namespace Engine
 {
 #define ITEM()
-#define MESSAGE_TYPES \
+#define MESSAGE_LIST \
   ITEM(None) \
   ITEM(GoBack) \
   ITEM(GUI_MouseMove) \
@@ -57,7 +57,7 @@ namespace Engine
 #define ITEM(x) MT_##x,
   enum MessageType : uint32_t
   {
-    MESSAGE_TYPES
+    MESSAGE_LIST
     MT_COUNT
   };
 
@@ -67,7 +67,7 @@ namespace Engine
   //Forward declare all Message types
 #undef ITEM
 #define ITEM(MESSAGE_TYPE) template<> class MessageSub<MT_##MESSAGE_TYPE>;
-  MESSAGE_TYPES
+  MESSAGE_LIST
   
   class MessageHandler;
 

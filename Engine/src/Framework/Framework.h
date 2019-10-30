@@ -1,15 +1,16 @@
-#ifndef FRAMEWORK_H
-#define FRAMEWORK_H
+#ifndef EN_FRAMEWORK_H
+#define EN_FRAMEWORK_H
 
 #include <memory>
 #include <string>
 
-#include "../Engine/ErrorCodes.h"
+#include "core_ErrorCodes.h"
 
 #include "../Engine/IWindow.h"
 #include "../Engine/IEventPoller.h"
 #include "../Engine/IMouseController.h"
 #include "../Engine/IShader.h"
+#include "../Engine/Buffer.h"
 
 namespace Engine
 {
@@ -29,20 +30,21 @@ namespace Engine
     ~Framework();
 
     static Framework * Instance();
-    static ErrorCode Init();
-    static ErrorCode ShutDown();
-
-    //These will pass pointers to internal objects.
-    //Do NOT delete these! All internal objects will
-    //Destroyed on calling DestroyInstance();
+    static Core::ErrorCode Init();
+    static Core::ErrorCode ShutDown();
 
     //There can only be one of these objects...
     std::shared_ptr<IWindow>          GetWindow();
     std::shared_ptr<IEventPoller>     GetEventPoller();
     std::shared_ptr<IMouseController> GetMouseController();
 
-    IShader * GetShader(std::string const & vs, std::string const & fs);
+    //Rendering
+    IShader * CreateShader(std::string const & vs, std::string const & fs);
+    IVertexBuffer * CreateVertexBuffer(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
+    IVertexBuffer * CreateVertexBuffer(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
+    IIndexBuffer * CreateIndexBuffer(void* data, uint32_t size = 0);
 
+    //Audio
     //IAudio *       GetAudio();
 
     //These can only be initialized after the window has been created.

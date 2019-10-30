@@ -1,5 +1,5 @@
-#ifndef IEVENTPOLLER_H
-#define IEVENTPOLLER_H
+#ifndef EN_IEVENTPOLLER_H
+#define EN_IEVENTPOLLER_H
 
 namespace Engine
 {

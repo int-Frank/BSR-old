@@ -1,5 +1,5 @@
-#ifndef ENTRYPOINT_H
-#define ENTRYPOINT_H
+#ifndef EN_ENTRYPOINT_H
+#define EN_ENTRYPOINT_H
 
 #include <fstream>
 #include <exception>

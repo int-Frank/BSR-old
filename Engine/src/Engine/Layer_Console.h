@@ -1,5 +1,5 @@
-#ifndef LAYER_CONSOLE_H
-#define LAYER_CONSOLE_H
+#ifndef EN_LAYER_CONSOLE_H
+#define EN_LAYER_CONSOLE_H
 
 #include "Message.h"
 #include "Layer.h"
@@ -17,7 +17,7 @@ namespace Engine
 
 #undef ITEM
 #define ITEM(x) virtual void HandleMessage(MessageSub<MT_##x> *);
-    MESSAGE_TYPES;
+    MESSAGE_LIST;
 
     void Update(float);
 

@@ -1,5 +1,5 @@
-#ifndef LAYERSTACK_H
-#define LAYERSTACK_H
+#ifndef EN_LAYERSTACK_H
+#define EN_LAYERSTACK_H
 
 #include <stdint.h>
 #include "DgMap_AVL.h"

@@ -1,8 +1,8 @@
 #include "OpenGLContext.h"
 #include "glad/glad.h"
-#include "../Engine/Log.h"
-#include "../Engine/ErrorCodes.h"
-#include "../Engine/BSR_Assert.h"
+#include "core_Log.h"
+#include "core_ErrorCodes.h"
+#include "core_Assert.h"
 #include "SDL.h"
 
 namespace Engine
@@ -21,28 +21,28 @@ namespace Engine
     m_pWindow = a_pWindow;
   }
 
-  ErrorCode OpenGLContext::Init()
+  Core::ErrorCode OpenGLContext::Init()
   {
     // Create OpenGL context
     m_context = SDL_GL_CreateContext(m_pWindow);
     if (m_context == nullptr)
     {
       LOG_ERROR("SDL_GL_CreateContext() Failed!");
-      return EC_Error;
+      return Core::EC_Error;
     }
     LOG_TRACE("Opengl loaded");
 
     if (gladLoadGLLoader(SDL_GL_GetProcAddress) == 0)
     {
       LOG_ERROR("Glad failed to log");
-      return EC_Error;
+      return Core::EC_Error;
     }
 
     LOG_TRACE("Vendor:   {}", glGetString(GL_VENDOR));
     LOG_TRACE("Renderer: {}", glGetString(GL_RENDERER));
     LOG_TRACE("Version:  {}", glGetString(GL_VERSION));
 
-    return EC_None;
+    return Core::EC_None;
   }
 
   void OpenGLContext::SwapBuffers()

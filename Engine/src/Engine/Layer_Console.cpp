@@ -1,5 +1,5 @@
 #include "Layer_Console.h"
-#include "Log.h"
+#include "core_Log.h"
 
 #define LOG_MESSAGE(...) LOG_TRACE(__VA_ARGS__)
 
@@ -24,6 +24,6 @@ namespace Engine
 #undef ITEM
 #define ITEM(x) void Layer_Console::HandleMessage(MessageSub<MT_##x> * a_pMsg)\
 {if (a_pMsg->flags & Message::E_Show) LOG_TRACE(a_pMsg->ToString());}
-  MESSAGE_TYPES
+  MESSAGE_LIST
 
 }

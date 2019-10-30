@@ -1,5 +1,5 @@
-#ifndef LAYER_IMGUI_H
-#define LAYER_IMGUI_H
+#ifndef EN_LAYER_IMGUI_H
+#define EN_LAYER_IMGUI_H
 
 #include "Message.h"
 #include "Layer.h"

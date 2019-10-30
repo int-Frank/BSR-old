@@ -1,5 +1,7 @@
-#ifndef GAME_H
-#define GAME_H
+#ifndef EN_APPLICATION_H
+#define EN_APPLICATION_H
+
+#include <string>
 
 #include "MessageBus.h"
 #include "LayerStack.h"
@@ -15,7 +17,28 @@ namespace Engine
   {
   public:
 
-    Application();
+    enum
+    {
+      E_UseFileLogger,
+      E_UseStdOutLogger
+    };
+
+    struct Opts
+    {
+      Opts()
+        : logFile("log_output.txt")
+        , loggerName("BSR")
+        , loggerType(E_UseStdOutLogger)
+      {
+      
+      }
+
+      std::string logFile;
+      std::string loggerName;
+      int         loggerType;
+    };
+
+    Application(Opts const &);
     virtual ~Application();
 
     static Application * Instance();

@@ -19,7 +19,7 @@ Dg::DynamicArray<Corner> const & WallAssembler::GetCorners() const
 void WallAssembler::ScanAndInsert(int a_xyFixed,
                                   int a_rowCol,
                                   bool a_above,
-                                  int a_start, 
+                                  int a_start,
                                   int a_end)
 {
   //TODO add checks

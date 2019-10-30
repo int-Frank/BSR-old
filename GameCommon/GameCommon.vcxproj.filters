@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Data">
+      <UniqueIdentifier>{3F05847C-2B3C-850D-D428-6B10C03E010F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThreadPool">
+      <UniqueIdentifier>{77E74159-639F-83A6-CCA6-5C02B87D1E97}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Data\gc_MapData.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ThreadPool\gc_Job.h">
+      <Filter>ThreadPool</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ThreadPool\gc_Mediator.h">
+      <Filter>ThreadPool</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ThreadPool\gc_ThreadPool.h">
+      <Filter>ThreadPool</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gc_BooleanMask2D.h" />
+    <ClInclude Include="src\gc_Constants.h" />
+    <ClInclude Include="src\gc_Map_BS.h" />
+    <ClInclude Include="src\gc_Types.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Data\gc_MapData.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadPool\gc_ThreadPool.cpp">
+      <Filter>ThreadPool</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gc_Map_BS.cpp" />
+  </ItemGroup>
+</Project>

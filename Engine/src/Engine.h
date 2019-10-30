@@ -3,9 +3,9 @@
 
 #include "Engine/Application.h"
 #include "Engine/Layer.h"
-#include "Engine/Log.h"
-#include "Engine/BSR_Assert.h"
-#include "Engine/Core.h"
+#include "core_Log.h"
+#include "core_Assert.h"
+#include "core_Utils.h"
 #include "Engine/Options.h"
 #include "Engine/InputCodes.h"
 #include "Engine/Message.h"

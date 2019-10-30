@@ -1,5 +1,5 @@
-#ifndef LAYER_H
-#define LAYER_H
+#ifndef EN_LAYER_H
+#define EN_LAYER_H
 
 #include <stdint.h>
 #include "Message.h"

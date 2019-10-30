@@ -1,7 +1,7 @@
-#ifndef IGRAPHICSCONTEXT_H
-#define IGRAPHICSCONTEXT_H
+#ifndef EN_IGRAPHICSCONTEXT_H
+#define EN_IGRAPHICSCONTEXT_H
 
-#include "ErrorCodes.h"
+#include "core_ErrorCodes.h"
 
 namespace Engine
 {
@@ -11,7 +11,7 @@ namespace Engine
 
     virtual ~IGraphicsContext(){};
 
-    virtual ErrorCode Init() = 0;
+    virtual Core::ErrorCode Init() = 0;
     virtual void SwapBuffers() = 0;
 
   private:

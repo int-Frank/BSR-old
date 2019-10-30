@@ -1,9 +1,9 @@
-#ifndef LAYER_WINDOW_H
-#define LAYER_WINDOW_H
+#ifndef EN_LAYER_WINDOW_H
+#define EN_LAYER_WINDOW_H
 
 #include <memory>
 
-#include "ErrorCodes.h"
+#include "core_ErrorCodes.h"
 #include "Layer.h"
 
 namespace Engine

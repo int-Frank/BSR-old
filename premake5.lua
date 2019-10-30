@@ -49,6 +49,47 @@ group "Depenencies"
   
 group ""
 
+project "Core"
+  location "Core"
+  kind "StaticLib"
+  targetdir (projOutput)
+  objdir (projOutputInt)
+  systemversion "latest"
+  language "C++"
+  cppdialect "C++17"
+  
+  files 
+  {
+    "Core/src/**.h",
+    "Core/src/**.cpp",
+  }
+
+  links
+  {
+    "DgLib"
+  }
+
+  includedirs
+  {
+		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.DgLib}"
+  }
+  
+  filter "configurations:Debug"
+		defines "BSR_DEBUG"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		defines "BSR_RELEASE"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Dist"
+		defines "BSR_DIST"
+		runtime "Release"
+		optimize "on"
+
 project "Engine"
   location "Engine"
   kind "StaticLib"
@@ -69,12 +110,14 @@ project "Engine"
     "DgLib",
     "Glad",
     "imgui",
+    "Core",
     "Vendor/SDL2-2.0.9/lib/x64/SDL2.lib",
     "Vendor/SDL2-2.0.9/lib/x64/SDL2main.lib"
   }
 
   includedirs
   {
+    "%{wks.location}/Core/src",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.DgLib}",
 		"%{IncludeDir.Glad}",
@@ -97,8 +140,8 @@ project "Engine"
 		runtime "Release"
 		optimize "on"
 
-project "Common"
-  location "Common"
+project "GameCommon"
+  location "GameCommon"
   kind "StaticLib"
   targetdir (projOutput)
   objdir (projOutputInt)
@@ -108,17 +151,20 @@ project "Common"
   
   files 
   {
-    "Common/src/**.h",
-    "Common/src/**.cpp",
+    "GameCommon/src/**.h",
+    "GameCommon/src/**.cpp",
   }
   
   links
   {
-    "DgLib"
+    "DgLib",
+    "Core"
   }
   
   includedirs
   {
+    "%{wks.location}/Core/src",
+		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.DgLib}"
   }
   
@@ -151,7 +197,8 @@ project "Editor"
   
   includedirs
   {
-    "%{wks.location}/Common/src",
+    "%{wks.location}/Core/src",
+    "%{wks.location}/GameCommon/src",
     "%{wks.location}/Engine/src",
     "%{wks.location}/Engine/src/Engine",
     "%{IncludeDir.spdlog}",
@@ -162,8 +209,53 @@ project "Editor"
   links
   {
     "DgLib",
+    "Core",
     "Engine",
-    "Common"
+    "GameCommon"
+  }
+  
+  filter "configurations:Debug"
+		defines "BSR_DEBUG"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		defines "BSR_RELEASE"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Dist"
+		defines "BSR_DIST"
+		runtime "Release"
+		optimize "on"
+    
+project "Converter"
+  location "Converter"
+  kind "ConsoleApp"
+  targetdir (projOutput)
+  objdir (projOutputInt)
+  systemversion "latest"
+  language "C++"
+  cppdialect "C++17"
+  
+  files 
+  {
+    "Converter/src/**.h",
+    "Converter/src/**.cpp",
+  }
+  
+  includedirs
+  {
+    "%{wks.location}/GameCommon/src",
+    "%{wks.location}/Core/src",
+		"%{IncludeDir.DgLib}"
+  }
+  
+  links
+  {
+    "DgLib",
+    "GameCommon",
+    "Core"
   }
   
   filter "configurations:Debug"
@@ -198,7 +290,8 @@ project "Editor"
     
     includedirs
     {
-      "%{wks.location}/Common/src",
+      "%{wks.location}/Core/src",
+      "%{wks.location}/GameCommon/src",
       "%{wks.location}/Engine/src",
       "%{wks.location}/Engine/src/Engine",
       "%{IncludeDir.spdlog}",
@@ -208,9 +301,10 @@ project "Editor"
     
     links
     {
+      "Core",
       "Engine",
       "DgLib",
-      "Common"
+      "GameCommon"
     }
     
     filter "configurations:Debug"

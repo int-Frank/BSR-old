@@ -3,9 +3,9 @@
 
 #include "Framework.h"
 #include "../Engine/Options.h"
-#include "../Engine/Log.h"
+#include "core_Log.h"
 #include "../Engine/IWindow.h"
-#include "../Engine/BSR_Assert.h"
+#include "core_Assert.h"
 #include "OpenGLContext.h"
 
 #define OPENGL_MAJOR 4
@@ -26,7 +26,7 @@ namespace Engine
     bool IsVSync() const;
 
     bool IsInit() const;
-    ErrorCode Init(WindowProps const & props = WindowProps());
+    Core::ErrorCode Init(WindowProps const & props = WindowProps());
     void Destroy();
 
     void GetDimensions(int & w, int & h);
@@ -77,7 +77,7 @@ namespace Engine
     return m_pWindow != nullptr;
   }
 
-  ErrorCode FW_SDLWindow::Init(WindowProps const & a_props)
+  Core::ErrorCode FW_SDLWindow::Init(WindowProps const & a_props)
   {
     BSR_ASSERT(m_pWindow == nullptr && m_pContext == nullptr, "FW_SDLWindow already initialised!");
 
@@ -94,18 +94,18 @@ namespace Engine
     if(m_pWindow == nullptr)
     {
       LOG_ERROR("Failed to create window!");
-      return EC_Error;
+      return Core::EC_Error;
     }
 
     m_pContext = new OpenGLContext(m_pWindow);
-    if (m_pContext->Init() != EC_None)
+    if (m_pContext->Init() != Core::EC_None)
     {
       LOG_ERROR("Failed to create opengl context!");
       Destroy();
-      return EC_Error;
+      return Core::EC_Error;
     }
 
-    return EC_None;
+    return Core::EC_None;
   }
 
   void FW_SDLWindow::Destroy()

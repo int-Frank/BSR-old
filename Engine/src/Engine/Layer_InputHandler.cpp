@@ -3,7 +3,7 @@
 
 #include "Layer_InputHandler.h"
 #include "../Framework/Framework.h"
-#include "Log.h"
+#include "core_Log.h"
 #include "InputCodes.h"
 #include "Message.h"
 

@@ -1,8 +1,8 @@
-#ifndef INPUTCODES_H
-#define INPUTCODES_H
+#ifndef EN_INPUTCODES_H
+#define EN_INPUTCODES_H
 
 #include <stdint.h>
-#include "Core.h"
+#include "core_Utils.h"
 
 #define KM_SHIFT (KM_LSHIFT | KM_RSHIFT)
 #define KM_CTRL (KM_LCTRL | KM_RCTRL)

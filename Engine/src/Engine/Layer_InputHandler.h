@@ -1,5 +1,5 @@
-#ifndef LAYER_INPUTHANDLER_H
-#define LAYER_INPUTHANDLER_H
+#ifndef EN_LAYER_INPUTHANDLER_H
+#define EN_LAYER_INPUTHANDLER_H
 
 #include <stdint.h>
 
