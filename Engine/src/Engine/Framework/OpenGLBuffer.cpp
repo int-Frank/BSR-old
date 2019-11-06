@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include "../Buffer.h"
 #include "../Renderer.h"
+#include  "core_Log.h"
 
 namespace Engine 
 {
@@ -22,8 +23,8 @@ namespace Engine
     virtual void SetData(void* data, uint32_t size, uint32_t offset = 0) override;
     virtual void Bind() const override;
 
-    virtual const BufferLayout& GetLayout() const override;
-    virtual void SetLayout(const BufferLayout& layout) override;
+    virtual BufferLayout const & GetLayout() const override;
+    virtual void SetLayout(BufferLayout const & layout) override;
 
     virtual uint32_t GetSize() const override;
     virtual RendererID GetRendererID() const override;
@@ -34,8 +35,6 @@ namespace Engine
     uint32_t m_size;
     VertexBufferUsage m_usage;
     BufferLayout m_layout;
-
-    uint8_t * m_localData;
   };
 
   //////////////////////////////////////////////////////////////////////////////////
@@ -48,18 +47,16 @@ namespace Engine
     OpenGLIndexBuffer(void* data, uint32_t size);
     virtual ~OpenGLIndexBuffer();
 
-    virtual void SetData(void* data, uint32_t size, uint32_t offset = 0);
-    virtual void Bind() const;
+    virtual void SetData(void* data, uint32_t size, uint32_t offset = 0) override;
+    virtual void Bind() const override;
 
-    virtual uint32_t GetCount() const;
+    virtual uint32_t GetCount() const override;
 
-    virtual uint32_t GetSize() const;
-    virtual RendererID GetRendererID() const;
+    virtual uint32_t GetSize() const override;
+    virtual RendererID GetRendererID() const override;
   private:
     RendererID m_rendererID = 0;
     uint32_t m_size; //buffer size
-
-    //Buffer m_LocalData;
   };
 
   static GLenum OpenGLUsage(VertexBufferUsage usage)
@@ -92,14 +89,21 @@ namespace Engine
     : m_rendererID(0)
     , m_size(a_size)
     , m_usage(a_usage)
-    , m_localData(nullptr)
   {
-    m_localData = (uint8_t*)realloc(m_localData, a_size);
+    uint8_t * m_localData = (uint8_t*)malloc(a_size);
+
+    if (m_localData == nullptr)
+    {
+      LOG_ERROR("Failed to allocate memory in OpenGLVertexBuffer()");
+      m_size = 0;
+      return;
+    }
+
     memcpy(m_localData, a_data, a_size);
 
     RenderState state;
     state.SetType(RenderState::Type::Command);
-    state.SetCommandType(RenderState::CommandType::CreateBuffer);
+    state.SetCommandType(RenderState::CommandType::BufferCreate);
 
     RENDER_SUBMIT(m_rendererID, m_size, m_localData, m_usage, state,
       {
@@ -110,16 +114,154 @@ namespace Engine
       });
   }
 
+  OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t a_size, VertexBufferUsage a_usage)
+    : m_rendererID(0)
+    , m_size(a_size)
+    , m_usage(a_usage)
+  {
+    RenderState state;
+    state.SetType(RenderState::Type::Command);
+    state.SetCommandType(RenderState::CommandType::BufferCreate);
+
+    RENDER_SUBMIT(m_rendererID, m_size, m_usage, state,
+      {
+        glCreateBuffers(1, &m_rendererID);
+        glNamedBufferData(m_rendererID, m_size, nullptr, OpenGLUsage(m_usage));
+      });
+  }
+
   OpenGLVertexBuffer::~OpenGLVertexBuffer()
   {
     RenderState state;
     state.SetType(RenderState::Type::Command);
-    state.SetCommandType(RenderState::CommandType::DeleteBuffer);
+    state.SetCommandType(RenderState::CommandType::BufferDelete);
 
     RENDER_SUBMIT(m_rendererID, state,
       {
         glDeleteBuffers(1, &m_rendererID);
-      }
-    )
+      });
+  }
+
+  void OpenGLVertexBuffer::SetData(void* a_data, uint32_t a_size, uint32_t a_offset)
+  {
+    RenderState state;
+    state.SetType(RenderState::Type::Command);
+    state.SetCommandType(RenderState::CommandType::BufferSetData);
+
+    RENDER_SUBMIT(m_rendererID, a_offset, a_size, a_data, state,
+      {
+        glNamedBufferSubData(m_rendererID, a_offset, a_size, a_data);
+      });
+  }
+
+  void OpenGLVertexBuffer::Bind() const
+  {
+    RenderState state;
+    state.SetType(RenderState::Type::Command);
+    state.SetCommandType(RenderState::CommandType::BufferBind);
+
+    RENDER_SUBMIT(m_rendererID, state,
+      {
+        glBindBuffer(GL_ARRAY_BUFFER, m_rendererID);
+      });
+  }
+
+  BufferLayout const & OpenGLVertexBuffer::GetLayout() const
+  {
+    return m_layout;
+  }
+
+  void OpenGLVertexBuffer::SetLayout(BufferLayout const & a_layout)
+  {
+    m_layout = a_layout;
+  }
+
+  uint32_t OpenGLVertexBuffer::GetSize() const
+  {
+    return m_size;
+  }
+
+  RendererID OpenGLVertexBuffer::GetRendererID() const
+  {
+    return m_rendererID;
+  }
+
+  OpenGLIndexBuffer::OpenGLIndexBuffer(void* a_data, uint32_t a_size)
+    : m_rendererID(0)
+    , m_size(a_size)
+  {
+    uint8_t* m_localData = (uint8_t*)malloc(a_size);
+
+    if (m_localData == nullptr)
+    {
+      LOG_ERROR("Failed to allocate memory in OpenGLVertexBuffer()");
+      m_size = 0;
+      return;
+    }
+
+    memcpy(m_localData, a_data, a_size);
+
+    RenderState state;
+    state.SetType(RenderState::Type::Command);
+    state.SetCommandType(RenderState::CommandType::BufferCreate);
+
+    RENDER_SUBMIT(m_rendererID, m_size, m_localData, state,
+      {
+        glCreateBuffers(1, &m_rendererID);
+        glNamedBufferData(m_rendererID, m_size, m_localData, GL_STATIC_DRAW);
+        free(m_localData);
+        m_localData = nullptr;
+      });
+  }
+
+  OpenGLIndexBuffer::~OpenGLIndexBuffer()
+  {
+    RenderState state;
+    state.SetType(RenderState::Type::Command);
+    state.SetCommandType(RenderState::CommandType::BufferDelete);
+
+    RENDER_SUBMIT(m_rendererID, state,
+      {
+        glDeleteBuffers(1, &m_rendererID);
+      });
+  }
+
+  void OpenGLIndexBuffer::SetData(void* a_data, uint32_t a_size, uint32_t a_offset)
+  {
+    RenderState state;
+    state.SetType(RenderState::Type::Command);
+    state.SetCommandType(RenderState::CommandType::BufferSetData);
+
+    RENDER_SUBMIT(m_rendererID, a_offset, a_size, a_data, state,
+      {
+        glNamedBufferSubData(m_rendererID, a_offset, a_size, a_data);
+      });
+  }
+
+  void OpenGLIndexBuffer::Bind() const
+  {
+    RenderState state;
+    state.SetType(RenderState::Type::Command);
+    state.SetCommandType(RenderState::CommandType::BufferBind);
+
+    RENDER_SUBMIT(m_rendererID, state,
+      {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_rendererID);
+      });
+  }
+
+  uint32_t OpenGLIndexBuffer::GetCount() const
+  {
+    return m_size / sizeof(intType);
+  }
+
+  uint32_t OpenGLIndexBuffer::GetSize() const
+  {
+    return m_size;
+  }
+
+  uint32_t OpenGLIndexBuffer::GetRendererID() const
+  {
+    return m_rendererID;
   }
 }

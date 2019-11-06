@@ -84,6 +84,10 @@ namespace Engine
   class IIndexBuffer
   {
   public:
+
+    typedef uint16_t intType;
+
+  public:
     virtual ~IIndexBuffer() {}
 
     virtual void SetData(void* buffer, uint32_t size, uint32_t offset = 0) = 0;

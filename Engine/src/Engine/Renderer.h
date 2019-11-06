@@ -38,8 +38,11 @@ namespace Engine
     enum class CommandType
     {
       None,
-      CreateBuffer,
-      DeleteBuffer
+
+      BufferCreate,
+      BufferDelete,
+      BufferSetData,
+      BufferBind
     };
 
     enum class Layer
@@ -166,7 +169,6 @@ namespace Engine
   };
 
   //We have allowed for a RenderCommand to have up to 8 arguments
-
 
 #ifdef _MSC_VER // Microsoft compilers
 
