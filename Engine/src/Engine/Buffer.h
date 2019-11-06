@@ -54,7 +54,7 @@ namespace Engine
 
   private:
     std::vector<BufferElement> m_elements;
-    uint32_t m_stride = 0;
+    uint32_t m_stride;
   };
 
   enum class VertexBufferUsage
@@ -76,8 +76,9 @@ namespace Engine
     virtual unsigned int GetSize() const = 0;
     virtual RendererID GetRendererID() const = 0;
 
-    virtual void Init(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static) = 0;
-    virtual void Init(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic) = 0;
+    static std::shared_ptr<IVertexBuffer> Create(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
+    static std::shared_ptr<IVertexBuffer> Create(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
+
   };
 
   class IIndexBuffer
@@ -93,7 +94,7 @@ namespace Engine
     virtual unsigned int GetSize() const = 0;
     virtual RendererID GetRendererID() const = 0;
 
-    virtual void Init(void* data, uint32_t size = 0) = 0;
+    static std::shared_ptr<IIndexBuffer> Create(void* data, uint32_t size = 0);
   };
 
 }

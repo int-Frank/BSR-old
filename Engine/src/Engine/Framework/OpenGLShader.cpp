@@ -1,7 +1,7 @@
 #include "glad/glad.h"
 
 #include "Framework.h"
-#include "../Engine/IShader.h"
+#include "../IShader.h"
 #include "core_ErrorCodes.h"
 #include "core_Log.h"
 #include "core_Assert.h"
@@ -24,11 +24,11 @@ namespace Engine
     GLuint m_program;
   };
 
-  IShader * Framework::CreateShader(std::string const & a_vs, std::string const & a_fs)
+  std::shared_ptr<IShader> IShader::Create(std::string const & a_vs, std::string const & a_fs)
   {
     OpenGLShader * temp = new OpenGLShader();
     BSR_ASSERT(temp->Init(a_vs, a_fs) == Core::EC_None);
-    return temp;
+    return std::shared_ptr<IShader>(temp);
   }
 
   OpenGLShader::OpenGLShader()

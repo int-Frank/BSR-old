@@ -1,7 +1,7 @@
 #ifndef EN_OPENGLCONTEXT_H
 #define EN_OPENGLCONTEXT_H
 
-#include "../Engine/IGraphicsContext.h"
+#include "../IGraphicsContext.h"
 
 struct SDL_Window;
 

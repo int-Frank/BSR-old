@@ -4,6 +4,7 @@
 #include "Layer_Window.h"
 #include "Message.h"
 #include "Application.h"
+#include "IWindow.h"
 
 namespace Engine
 {

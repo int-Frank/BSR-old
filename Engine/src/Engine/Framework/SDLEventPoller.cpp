@@ -2,14 +2,14 @@
 #include <cstring>
 
 #include "Framework.h"
-#include "../Engine/Message.h"
-#include "../Engine/InputCodes.h"
+#include "../Message.h"
+#include "../InputCodes.h"
 #include "core_Log.h"
 
 #include "SDL_events.h"
 #include "SDL.h"
 
-#include "../Engine/IEventPoller.h"
+#include "../IEventPoller.h"
 
 
 static_assert(TEXT_INPUT_TEXT_SIZE == SDL_TEXTINPUTEVENT_TEXT_SIZE, "text container incorrect size");

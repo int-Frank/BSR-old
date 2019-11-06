@@ -199,8 +199,7 @@ project "Editor"
   {
     "%{wks.location}/Core/src",
     "%{wks.location}/GameCommon/src",
-    "%{wks.location}/Engine/src",
-    "%{wks.location}/Engine/src/Engine",
+    "%{wks.location}/Engine/src/include",
     "%{IncludeDir.spdlog}",
 		"%{IncludeDir.DgLib}",
 		"%{IncludeDir.imgui}"

@@ -60,6 +60,7 @@ namespace Engine
 
   BufferLayout::BufferLayout(const std::initializer_list<BufferElement>& elements)
     : m_elements(elements)
+    , m_stride(0)
   {
     CalculateOffsetsAndStride();
   }

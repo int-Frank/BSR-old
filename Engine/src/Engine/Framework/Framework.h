@@ -6,11 +6,11 @@
 
 #include "core_ErrorCodes.h"
 
-#include "../Engine/IWindow.h"
-#include "../Engine/IEventPoller.h"
-#include "../Engine/IMouseController.h"
-#include "../Engine/IShader.h"
-#include "../Engine/Buffer.h"
+#include "../IWindow.h"
+#include "../IEventPoller.h"
+#include "../IMouseController.h"
+#include "../IShader.h"
+#include "../Buffer.h"
 
 namespace Engine
 {
@@ -37,12 +37,6 @@ namespace Engine
     std::shared_ptr<IWindow>          GetWindow();
     std::shared_ptr<IEventPoller>     GetEventPoller();
     std::shared_ptr<IMouseController> GetMouseController();
-
-    //Rendering
-    IShader * CreateShader(std::string const & vs, std::string const & fs);
-    IVertexBuffer * CreateVertexBuffer(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
-    IVertexBuffer * CreateVertexBuffer(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
-    IIndexBuffer * CreateIndexBuffer(void* data, uint32_t size = 0);
 
     //Audio
     //IAudio *       GetAudio();

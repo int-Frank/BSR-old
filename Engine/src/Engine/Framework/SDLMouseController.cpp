@@ -1,7 +1,7 @@
 #include "SDL_mouse.h"
 
 #include "Framework.h"
-#include "../Engine/IMouseController.h"
+#include "../IMouseController.h"
 
 namespace Engine
 {

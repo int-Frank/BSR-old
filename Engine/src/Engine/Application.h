@@ -3,10 +3,6 @@
 
 #include <string>
 
-#include "MessageBus.h"
-#include "LayerStack.h"
-#include "../Framework/Framework.h"
-
 namespace Engine
 {
 
@@ -59,11 +55,8 @@ namespace Engine
 
   private:
 
-    bool m_shouldQuit;
-    std::shared_ptr<IWindow> m_pWindow;
-
-    LayerStack        m_layerStack;
-    MessageBus        m_msgBus;
+    class PIMPL;
+    PIMPL * m_pimpl;
   };
 
   // To be defined in CLIENT

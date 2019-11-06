@@ -2,9 +2,9 @@
 #include "glad/glad.h"
 
 #include "Framework.h"
-#include "../Engine/Options.h"
+#include "../Options.h"
 #include "core_Log.h"
-#include "../Engine/IWindow.h"
+#include "../IWindow.h"
 #include "core_Assert.h"
 #include "OpenGLContext.h"
 

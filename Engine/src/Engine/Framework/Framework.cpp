@@ -1,9 +1,9 @@
 
 #include "SDL.h"
-#include "../Engine/Options.h"
+#include "../Options.h"
 #include "core_Log.h"
 #include "Framework.h"
-#include "../Engine/InputCodes.h"
+#include "../InputCodes.h"
 #include "core_Assert.h"
 
 #include "imgui.h"
