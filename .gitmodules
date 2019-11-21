@@ -7,3 +7,6 @@
 [submodule "Vendor/imgui"]
 	path = Vendor/imgui
 	url = https://github.com/int-Frank/imgui
+[submodule "Vendor/cppunitlite"]
+	path = Vendor/cppunitlite
+	url = https://github.com/int-Frank/cppunitlite

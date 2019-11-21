@@ -21,6 +21,7 @@ IncludeDir["SDL2"] = "%{wks.location}/Vendor/SDL2-2.0.9/include"
 IncludeDir["imgui"] = "%{wks.location}/Vendor/imgui"
 IncludeDir["spdlog"] = "%{wks.location}/Vendor/spdlog/include"
 IncludeDir["DgLib"] = "%{wks.location}/Vendor/DgLib/src"
+IncludeDir["cppunitlite"] = "%{wks.location}/Vendor/cppunitlite"
 
 group "Depenencies"
 
@@ -47,7 +48,71 @@ group "Depenencies"
 		  runtime "Release"
 		  optimize "on"
   
+  project "cppunitlite"
+    location "Vendor/cppunitlie"
+    kind "StaticLib"
+    targetdir (projOutput)
+    objdir (projOutputInt)
+    systemversion "latest"
+    include "Vendor/cppunitlite/premake5_cppunitlite.lua"
+    
+    filter "configurations:Debug"
+		  runtime "Debug"
+		  symbols "on"
+
+	  filter "configurations:Release"
+		  runtime "Release"
+		  optimize "on"
+
+	  filter "configurations:Dist"
+		  runtime "Release"
+		  optimize "on"
 group ""
+
+project "Tests"
+  location "Tests"
+  kind "ConsoleApp"
+  targetdir (projOutput)
+  objdir (projOutputInt)
+  systemversion "latest"
+  language "C++"
+  cppdialect "C++17"
+  
+  filter "configurations:Debug"
+	 runtime "Debug"
+	 symbols "on"
+
+	filter "configurations:Release"
+	 runtime "Release"
+	 optimize "on"
+
+	filter "configurations:Dist"
+	 runtime "Release"
+	 optimize "on"
+
+  files 
+  {
+    "Tests/**.h",
+    "Tests/**.cpp",
+  }
+
+  links
+  {
+    "cppunitlite",
+    "DgLib",
+    "Core",
+    "Engine",
+    "GameCommon",
+  }
+
+  includedirs
+  {
+    "%{IncludeDir.cppunitlite}",
+		"%{IncludeDir.DgLib}",
+    "%{wks.location}/Core/src",
+    "%{wks.location}/Engine/src",
+    "%{wks.location}/GameCommon/src"
+  }
 
 project "Core"
   location "Core"

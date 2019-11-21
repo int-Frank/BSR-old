@@ -8,7 +8,7 @@
 
 #include "impl/DgPoolSizeManager.h"
 
-template<typename T, typename = std::enable_if_t<std::is_pod<T>::value>>
+template<typename T, typename = std::enable_if_t<std::is_trivially_destructible<T>::value>>
 class PODArray
 {
 public:
@@ -20,7 +20,7 @@ public:
   {
     resize(1024);
   }
-
+    
   PODArray(size_t a_size)
     : m_pData(nullptr)
     , m_nItems(0)
@@ -29,13 +29,37 @@ public:
     resize(a_size);
   }
 
+  ~PODArray()
+  {
+    delete[] m_pData;
+  }
+
+  PODArray(PODArray const & a_other)
+    : m_pData(nullptr)
+    , m_nItems(0)
+    , m_poolSize(1024)
+  {
+    Init(a_other);
+  }
+
+  PODArray & operator=(PODArray const & a_other)
+  {
+    if (this != &a_other)
+      Init(a_other);
+    return *this;
+  }
+
   void resize(size_t a_size)
   {
-    T * temp = static_cast<T*>(realloc(m_pData, m_poolSize.PeekNextPoolSize() * sizeof(T)));
+    Dg::PoolSizeManager oldSizeManager = m_poolSize;
+    m_poolSize.SetSize(a_size);
+    T * temp = static_cast<T*>(realloc(m_pData, m_poolSize.GetSize() * sizeof(T)));
     if (temp == nullptr)
+    {
       throw std::exception("Failed to allocate memory");
+      m_poolSize = oldSizeManager;
+    }
     m_pData = temp;
-    m_poolSize.SetNextPoolSize();
   }
 
   void push_back(T const & a_item)
@@ -54,6 +78,16 @@ public:
       resize(newSize + 1);
     memcpy(&m_pData[m_nItems], a_buf, a_count);
     m_nItems += a_count;
+  }
+
+  T & back()
+  {
+    return m_pData[m_nItems - 1];
+  }
+
+  T const & cback() const
+  {
+    return m_pData[m_nItems - 1];
   }
 
   void pop_back()
@@ -87,11 +121,23 @@ public:
     return m_pData[a_ind];
   }
 
+  size_t mem_block_size() const
+  {
+    return m_poolSize.GetSize();
+  }
+
 private:
 
   void extend()
   {
     resize(m_poolSize.PeekNextPoolSize());
+  }
+
+  void Init(PODArray const & a_other)
+  {
+    resize(a_other.m_poolSize.GetSize());
+    memcpy(&m_pData, a_other.m_pData, a_other.m_nItems * sizeof(T));
+    m_nItems = a_other.m_nItems;
   }
 
 private:

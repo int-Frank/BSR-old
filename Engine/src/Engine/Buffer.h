@@ -67,7 +67,7 @@ namespace Engine
   public:
     virtual ~IVertexBuffer() {}
 
-    virtual void SetData(void* buffer, uint32_t size, uint32_t offset = 0) = 0;
+    virtual void SetData(void* buffer, uint32_t size, uint32_t offset) = 0;
     virtual void Bind() const = 0;
 
     virtual const BufferLayout& GetLayout() const = 0;
@@ -90,7 +90,7 @@ namespace Engine
   public:
     virtual ~IIndexBuffer() {}
 
-    virtual void SetData(void* buffer, uint32_t size, uint32_t offset = 0) = 0;
+    virtual void SetData(void* buffer, uint32_t size, uint32_t offset) = 0;
     virtual void Bind() const = 0;
 
     virtual uint32_t GetCount() const = 0;
