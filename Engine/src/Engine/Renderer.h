@@ -34,7 +34,6 @@ namespace Engine
     void Submit(RenderState a_state, FuncT&& func)
     {
       static_assert(std::is_trivially_destructible_v<FuncT>, "FuncT must be trivially destructible");
-      //auto renderCmd = [](void* ptr)
       RenderCommandFn renderCmd = [](void* ptr)
       {
         auto pFunc = (FuncT*)ptr;

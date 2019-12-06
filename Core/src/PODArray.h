@@ -142,9 +142,9 @@ private:
 
 private:
 
-  T*              m_pData;
-  size_t          m_nItems;
-  Dg::PoolSizeManager m_poolSize;
+  T*                        m_pData;
+  size_t                    m_nItems;
+  Dg::PoolSizeMngr_Default  m_poolSize;
 };
 
 #endif

@@ -133,7 +133,7 @@ namespace Engine
 
 
   public:
-
+     
     static RenderState Create();
 
     //No constructors/destructor. We want this to be a POD.

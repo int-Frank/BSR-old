@@ -121,7 +121,7 @@ namespace Engine
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
-
+    
     RENDER_SUBMIT(state, [rendererID = m_rendererID, size = m_size, usage = m_usage]() mutable
       {
         glCreateBuffers(1, &rendererID);
