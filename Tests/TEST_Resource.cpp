@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "TestHarness.h"
 #include "Engine/Ref.h"
 #include "Engine/Resource.h"
@@ -14,9 +16,8 @@ public:
   }
 };
 
-class TestClassWithID
+class TestClassWithID : public Engine::HasResourceID
 {
-  ALLOW_LINK_TO_REF
 public:
   ~TestClassWithID()
   {
@@ -24,17 +25,34 @@ public:
   }
 };
 
-TEST(Stack_Resource, creation_Resource)
+TEST(Stack_ResourceNoID, creation_ResourceNoID)
 {
-  Engine::InitResourceManager();
-
+  gVal = 0;
   {
-    Engine::impl::HasFn_SetRefID<TestClass>::value;
-    Engine::impl::HasFn_SetRefID<TestClassWithID>::value;
-
     Engine::Ref<TestClass> refTC(new TestClass());
+  }
+  CHECK(gVal == 1);
+}
+
+TEST(Stack_ResourceWithID, creation_ResourceWithID)
+{
+  gVal = 0;
+  {
     Engine::Ref<TestClassWithID> refTCWithID(new TestClassWithID());
+    CHECK(!refTCWithID->GetRefID().IsNull());
+  }
+  CHECK(gVal == 1);
+}
+
+TEST(Stack_User, creation_User)
+{
+  CHECK(Engine::RegisterResource(42, new TestClassWithID()));
+  {
+    Engine::Ref<TestClassWithID> refTCWithID(42);
+    CHECK(!refTCWithID.IsNull());
   }
 
-  Engine::ShutDownResourceManager();
+  gVal = 0;
+  Engine::DestroyResource(42);
+  CHECK(gVal == 1);
 }

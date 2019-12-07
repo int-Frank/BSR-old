@@ -3,14 +3,6 @@
 
 #include <stdint.h>
 
-//Add this to classes when you need to store (and use) ResourceManager generated
-//id when creating a Ref.
-#define ALLOW_LINK_TO_REF private:\
-Engine::impl::ResourceID64 m_resourceID;\
-public:\
-void SetRefID(Engine::impl::ResourceID64 a_id){m_resourceID = a_id;}\
-private:\
-
 namespace Engine
 {
   namespace impl

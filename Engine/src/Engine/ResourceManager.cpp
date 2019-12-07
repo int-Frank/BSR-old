@@ -4,16 +4,6 @@
 
 namespace Engine
 {
-  void InitResourceManager()
-  {
-    impl::ResourceManager::Init();
-  }
-
-  void ShutDownResourceManager()
-  {
-    impl::ResourceManager::ShutDown();
-  }
-
   void DestroyResource(ResourceID a_id)
   {
     impl::ResourceID64 id64;
@@ -48,20 +38,10 @@ namespace Engine
     //--------------------------------------------------------------------------------------
     ResourceManager * ResourceManager::s_instance = nullptr;
 
-    void ResourceManager::Init()
-    {
-      BSR_ASSERT(s_instance ==nullptr, "Attempt to initialize ResourceManager more than once!");
-      s_instance = new ResourceManager();
-    }
-
-    void ResourceManager::ShutDown()
-    {
-      delete s_instance;
-      s_instance = nullptr;
-    }
-
     ResourceManager* ResourceManager::Instance()
     {
+      if (s_instance == nullptr)
+        s_instance = new ResourceManager();
       return s_instance;
     }
 

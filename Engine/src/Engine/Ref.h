@@ -1,6 +1,7 @@
 #ifndef REF_H
 #define REF_H
 
+#include <type_traits>
 #include <stdint.h>
 #include "ResourceManager.h"
 #include "ResourceID.h"
@@ -19,7 +20,7 @@ namespace Engine
     template
       <
       typename U = T,
-      typename = typename std::enable_if< !impl::HasFn_SetRefID<U>::value >::type
+      typename = typename std::enable_if< !std::is_base_of<HasResourceID, U>::value >::type
       >
       constexpr Ref(T* a_pObj)
       : m_pObject(a_pObj)
@@ -34,7 +35,7 @@ namespace Engine
     template
       <
       typename U = T,
-      typename = typename std::enable_if< impl::HasFn_SetRefID<U>::value >::type,
+      typename = typename std::enable_if< std::is_base_of<HasResourceID, U>::value >::type,
       typename = U
       >
       constexpr Ref(T* a_pObj)
@@ -44,7 +45,7 @@ namespace Engine
       m_id.SetID(impl::ResourceManager::Instance()->GenerateUnique32());
       impl::ResourceManager::Instance()->RegisterResource(m_id, new impl::Resource<T>(m_pObject));
       impl::ResourceManager::Instance()->RegisterUser(m_id);
-      m_pObject->SetRefID(m_id);
+      dynamic_cast<HasResourceID*>(m_pObject)->SetRefID(m_id);
     }
 
     //Construct from an already registered resource
@@ -77,11 +78,12 @@ namespace Engine
   Ref<T>::Ref(ResourceID a_id)
     : m_pObject(nullptr)
   {
+    m_id.SetFlag(impl::ResourceID64::Flag::Persistant, true);
     m_id.SetType(impl::T_UserID);
     m_id.SetID(a_id);
-    impl::ResourceBase res = impl::ResourceManager::Instance()->GetResource(m_id, true);
+    impl::ResourceBase * res = impl::ResourceManager::Instance()->GetResource(m_id, true);
     if (res != nullptr)
-      m_pObject = static_cast<T*>(res.GetPointer());
+      m_pObject = static_cast<T*>(res->GetPointer());
     else
       m_id.SetNull();
   }

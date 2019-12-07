@@ -17,36 +17,6 @@ namespace Engine
       T_Generated = 2
     };
 
-    template <typename>
-    struct ValidSignature;
-
-    template <typename T>
-    struct ValidSignature<void(T::*)(ResourceID64)>
-    {
-      static bool const value = true;
-    };
-
-    template<typename T>
-    struct HasFn_SetRefID
-    {
-    private:
-      typedef std::true_type yes;
-      typedef std::false_type no;
-
-      static char const val = 9;
-
-      template<typename U>
-      static auto test(int) -> decltype(ValidSignature<decltype(&U::SetRefID)>::value, yes());
-
-      template<typename>
-      static no test(...);
-
-    public:
-
-      static constexpr bool value = std::is_same<decltype(test<T>(0)), yes>::value;
-
-    };
-
     class ResourceBase
     {
     public:
@@ -92,8 +62,6 @@ namespace Engine
 
       ResourceManager();
 
-      static void Init();
-      static void ShutDown();
       static ResourceManager* Instance();
 
       ResourceBase* GetResource(ResourceID64, bool registerUser);
