@@ -36,108 +36,71 @@ namespace Engine
 
   }
 
+  void Layer_InputHandler::HandleBinding(uint64_t a_key, Message const * a_pMsg)
+  {
+    auto it = m_bindings.find(a_key);
+    if (it != m_bindings.end())
+    {
+      TRef<Message> pMsg = it->second->CloneAsTref();
+      MessageTranslator::Translate(pMsg.Get(), a_pMsg);
+      Post(pMsg);
+    }
+  }
+
   void Layer_InputHandler::HandleMessage(MessageSub<MT_Input_Text> * a_pMsg)
   {
     uint64_t mapKey = PackKey(IC_UNKNOWN, MT_Input_Text);
-    auto it = m_bindings.find(mapKey);
-    if (it != m_bindings.end())
-    {
-      Message * pMsg = it->second->Clone();
-      MessageTranslator::Translate(pMsg, a_pMsg);
-      Post(pMsg);
-    }
-    a_pMsg->flags |= Message::E_Handled;
+    HandleBinding(mapKey, a_pMsg);
+    a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_KeyUp> * a_pMsg)
   {
     uint64_t mapKey = PackKey(a_pMsg->keyCode, MT_Input_KeyUp);
-    auto it = m_bindings.find(mapKey);
-    if (it != m_bindings.end())
-    {
-      Message * pMsg = it->second->Clone();
-      MessageTranslator::Translate(pMsg, a_pMsg);
-      Post(pMsg);
-    }
-    a_pMsg->flags |= Message::E_Handled;
+    HandleBinding(mapKey, a_pMsg);
+    a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_KeyDown> * a_pMsg)
   {
     uint64_t mapKey = PackKey(a_pMsg->keyCode, MT_Input_KeyDown);
-    auto it = m_bindings.find(mapKey);
-    if (it != m_bindings.end())
-    {
-      Message * pMsg = it->second->Clone();
-      MessageTranslator::Translate(pMsg, a_pMsg);
-      Post(pMsg);
-    }
-    a_pMsg->flags |= Message::E_Handled;
+    HandleBinding(mapKey, a_pMsg);
+    a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseButtonUp> * a_pMsg)
   {
     uint64_t mapKey = PackKey(a_pMsg->button, MT_Input_MouseButtonUp);
-    auto it = m_bindings.find(mapKey);
-    if (it != m_bindings.end())
-    {
-      Message * pMsg = it->second->Clone();
-      MessageTranslator::Translate(pMsg, a_pMsg);
-      Post(pMsg);
-    }
-    a_pMsg->flags |= Message::E_Handled;
+    HandleBinding(mapKey, a_pMsg);
+    a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseButtonDown> * a_pMsg)
   {
     uint64_t mapKey = PackKey(a_pMsg->button, MT_Input_MouseButtonDown);
-    auto it = m_bindings.find(mapKey);
-    if (it != m_bindings.end())
-    {
-      Message * pMsg = it->second->Clone();
-      MessageTranslator::Translate(pMsg, a_pMsg);
-      Post(pMsg);
-    }
-    a_pMsg->flags |= Message::E_Handled;
+    HandleBinding(mapKey, a_pMsg);
+    a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseWheelUp> * a_pMsg)
   {
     uint64_t mapKey = PackKey(IC_MOUSE_WHEEL_UP, MT_Input_MouseWheelUp);
-    auto it = m_bindings.find(mapKey);
-    if (it != m_bindings.end())
-    {
-      Message * pMsg = it->second->Clone();
-      MessageTranslator::Translate(pMsg, a_pMsg);
-      Post(pMsg);
-    }
-    a_pMsg->flags |= Message::E_Handled;
+    HandleBinding(mapKey, a_pMsg);
+    a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseWheelDown> * a_pMsg)
   {
     uint64_t mapKey = PackKey(IC_MOUSE_WHEEL_DOWN, MT_Input_MouseWheelDown);
-    auto it = m_bindings.find(mapKey);
-    if (it != m_bindings.end())
-    {
-      Message * pMsg = it->second->Clone();
-      MessageTranslator::Translate(pMsg, a_pMsg);
-      Post(pMsg);
-    }
-    a_pMsg->flags |= Message::E_Handled;
+    HandleBinding(mapKey, a_pMsg);
+    a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseMove> * a_pMsg)
   {
     uint64_t mapKey = PackKey(IC_MOUSE_MOTION, MT_Input_MouseMove);
-    auto it = m_bindings.find(mapKey);
-    if (it != m_bindings.end())
-    {
-      Message * pMsg = it->second->Clone();
-      MessageTranslator::Translate(pMsg, a_pMsg);
-      Post(pMsg);
-    }
-    a_pMsg->flags |= Message::E_Handled;
+    HandleBinding(mapKey, a_pMsg);
+    a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void Layer_InputHandler::GrabMouse()
@@ -237,14 +200,12 @@ namespace Engine
   {
     while (true)
     {
-      Message * pMsg = m_eventPoller->NextEvent();
-      if (pMsg == nullptr)
+      TRef<Message> pMsg = m_eventPoller->NextEvent();
+      if (pMsg.Get() == nullptr)
         break;
 
       pMsg->Submit(this);
-      if (pMsg->flags)
-        delete pMsg;
-      else
+      if (!pMsg->Is(Message::Flag::Handled))
         Post(pMsg);
     }
   }

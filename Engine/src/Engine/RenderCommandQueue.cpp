@@ -14,11 +14,12 @@ namespace Engine
 
   }
 
+  //TODO use a MemBuffer class
   void* RenderCommandQueue::Allocate(RenderState a_state, 
                                      RenderCommandFn a_fn, 
                                      uint32_t a_size)
   {
-    int align = 8;
+    int align = __STDCPP_DEFAULT_NEW_ALIGNMENT__;
 
     //Move to next aligned block
     m_currentIndex = m_currentIndex + ((align - (m_currentIndex % align)) % align);

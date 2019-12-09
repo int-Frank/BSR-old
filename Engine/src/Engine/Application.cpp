@@ -11,6 +11,7 @@
 #include "IWindow.h"
 #include "core_Assert.h"
 #include "Message.h"
+#include "Memory.h"
 
 #include "Layer_Console.h"
 #include "Layer_InputHandler.h"
@@ -103,6 +104,7 @@ namespace Engine
     while (!m_pimpl->shouldQuit)
     {
       float dt = 1.0f / 60.0f;
+      PFCLEAR();
 
       m_pimpl->msgBus.DispatchMessages();
 

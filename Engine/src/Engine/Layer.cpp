@@ -14,7 +14,7 @@ namespace Engine
 
   }
 
-  void Layer::Post(Message * a_msg)
+  void Layer::Post(TRef<Message> a_msg)
   {
     m_pMsgBus->Register(a_msg);
   }

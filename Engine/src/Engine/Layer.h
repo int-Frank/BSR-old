@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "Message.h"
 #include "MessageHandler.h"
+#include "Memory.h"
 
 #define ASSIGN_ID static uint32_t GetID() {return uint32_t(__COUNTER__);}
 
@@ -28,7 +29,7 @@ namespace Engine
     virtual void Render() {}
     virtual void DoImGui(){}
 
-    void Post(Message *);
+    void Post(TRef<Message>);
 
     Layer(Layer const &);
     Layer & operator=(Layer const &);

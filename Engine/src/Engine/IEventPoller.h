@@ -1,6 +1,9 @@
 #ifndef EN_IEVENTPOLLER_H
 #define EN_IEVENTPOLLER_H
 
+#include "Memory.h"
+#include "Message.h"
+
 namespace Engine
 {
   class Message;
@@ -9,10 +12,10 @@ namespace Engine
   {
   public:
 
-    ~IEventPoller(){}
+    virtual ~IEventPoller(){}
 
     //Returns nullptr if no new event
-    virtual Message * NextEvent() =0;
+    virtual TRef<Message> NextEvent() =0;
 
   };
 }

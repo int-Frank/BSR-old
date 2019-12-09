@@ -24,21 +24,21 @@ namespace Engine
 
     void Update(float);
 
-    void HandleMessage(MessageSub<MT_Window_Shown>*);
-    void HandleMessage(MessageSub<MT_Window_Hidden>*);
-    void HandleMessage(MessageSub<MT_Window_Exposed>*);
-    void HandleMessage(MessageSub<MT_Window_Moved>*);
-    void HandleMessage(MessageSub<MT_Window_Resized>*);
-    void HandleMessage(MessageSub<MT_Window_Size_Changed>*);
-    void HandleMessage(MessageSub<MT_Window_Minimized>*);
-    void HandleMessage(MessageSub<MT_Window_Maximized>*);
-    void HandleMessage(MessageSub<MT_Window_Restored>*);
-    void HandleMessage(MessageSub<MT_Window_Enter>*);
-    void HandleMessage(MessageSub<MT_Window_Leave>*);
-    void HandleMessage(MessageSub<MT_Window_Focus_Gained>*);
-    void HandleMessage(MessageSub<MT_Window_Focus_Lost>*);
-    void HandleMessage(MessageSub<MT_Window_Close>*);
-    void HandleMessage(MessageSub<MT_Window_Take_Focus>*);
+    void HandleMessage(MessageSub<MT_Window_Shown> *) override;
+    void HandleMessage(MessageSub<MT_Window_Hidden> *) override;
+    void HandleMessage(MessageSub<MT_Window_Exposed> *) override;
+    void HandleMessage(MessageSub<MT_Window_Moved> *) override;
+    void HandleMessage(MessageSub<MT_Window_Resized> *) override;
+    void HandleMessage(MessageSub<MT_Window_Size_Changed> *) override;
+    void HandleMessage(MessageSub<MT_Window_Minimized> *) override;
+    void HandleMessage(MessageSub<MT_Window_Maximized> *) override;
+    void HandleMessage(MessageSub<MT_Window_Restored> *) override;
+    void HandleMessage(MessageSub<MT_Window_Enter> *) override;
+    void HandleMessage(MessageSub<MT_Window_Leave> *) override;
+    void HandleMessage(MessageSub<MT_Window_Focus_Gained> *) override;
+    void HandleMessage(MessageSub<MT_Window_Focus_Lost> *) override;
+    void HandleMessage(MessageSub<MT_Window_Close> *) override;
+    void HandleMessage(MessageSub<MT_Window_Take_Focus> *) override;
 
   private:
 

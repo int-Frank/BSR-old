@@ -21,13 +21,4 @@
 #define INIT_COUNTER(val) namespace CONCAT(IMPL_COUNTER_, NEW_COUNTER) {int const COUNTER_BASE = __COUNTER__ - val + 1;}
 #define COUNTER (__COUNTER__ - CONCAT(IMPL_COUNTER_, NEW_COUNTER)::COUNTER_BASE)
 
-namespace Engine
-{
-  template<typename T>
-  using Scope = std::unique_ptr<T>;
-
-  template<typename T>
-  using Ref = std::shared_ptr<T>;
-}
-
 #endif

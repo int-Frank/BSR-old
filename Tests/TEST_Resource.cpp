@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "TestHarness.h"
-#include "Engine/Ref.h"
+#include "Engine/Memory.h"
 #include "Engine/Resource.h"
 
 static int gVal = 0;

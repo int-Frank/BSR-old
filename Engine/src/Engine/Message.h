@@ -4,8 +4,10 @@
 #include <stdint.h>
 #include <string>
 #include <sstream>
+#include <type_traits>
 
-#include  "core_utils.h"
+#include "core_utils.h"
+#include "Memory.h"
 
 #define TEXT_INPUT_TEXT_SIZE 32
 
@@ -73,42 +75,58 @@ namespace Engine
 
   class Message
   {
+  protected:
+    uint32_t m_flags;
   public:
 
-    enum
+    enum class Flag: uint32_t
     {
-      E_Handled = BIT(1),
-      E_Show    = BIT(2)
+      Handled = BIT(0),
+      Show    = BIT(1)
     };
 
   public:
-    uint32_t flags;
-
-    Message(): flags(0){}
-    virtual ~Message() = default;
+    Message(): m_flags(0){}
+    bool Is(Flag a_flag) const {return (m_flags & static_cast<uint32_t>(a_flag)) != 0;}
+    void SetFlag(Flag a_flag) {m_flags = (m_flags | static_cast<uint32_t>(a_flag));}
     virtual void Submit(MessageHandler *) = 0;
-    virtual Message * Clone() const = 0;
+    virtual size_t Size() const = 0;
+    virtual TRef<Message> CloneAsTref() const = 0; //Clone at a memory location
+    virtual void Clone(void *) const = 0; //Clone at a memory location
     virtual uint32_t GetID() const = 0;
     virtual std::string ToString() const = 0;
   };
+  static_assert(std::is_trivially_destructible<Message>::value, "Message must be trivially destructible");
 
 #define MESSAGE_CLASS_HEADER(MESSAGE_TYPE) template<>\
   class MessageSub<MESSAGE_TYPE> : public Message\
   {\
   public:\
-    MessageSub<MESSAGE_TYPE> * Clone() const {return new MessageSub<MESSAGE_TYPE>(*this);}\
-    void Submit(MessageHandler *);\
-    uint32_t GetID() const {return MESSAGE_TYPE;}\
+    size_t Size() const override {return sizeof(*this);}\
+    TRef<Message> CloneAsTref() const override\
+    {\
+      TRef<MessageSub<MESSAGE_TYPE>> cpy = TRef<MessageSub<MESSAGE_TYPE>>::MakeCopy(this);\
+      return StaticPointerCast<Message>(cpy);\
+    }\
+    void Clone(void * a_buf) const override {new (a_buf) MessageSub<MESSAGE_TYPE>(*this);}\
+    void Submit(MessageHandler *) override;\
+    uint32_t GetID() const override {return MESSAGE_TYPE;}\
     static uint32_t s_GetID() {return MESSAGE_TYPE;}\
-    std::string ToString() const {return #MESSAGE_TYPE;}
+    std::string ToString() const override {return #MESSAGE_TYPE;}
 
 #define MESSAGE_CLASS_HEADER_NO_STRING(MESSAGE_TYPE) template<>\
   class MessageSub<MESSAGE_TYPE> : public Message\
   {\
   public:\
-    MessageSub<MESSAGE_TYPE> * Clone() const {return new MessageSub<MESSAGE_TYPE>(*this);}\
-    void Submit(MessageHandler *);\
-    uint32_t GetID() const {return MESSAGE_TYPE;}\
+    size_t Size() const override {return sizeof(*this);}\
+    TRef<Message> CloneAsTref() const override\
+    {\
+      TRef<MessageSub<MESSAGE_TYPE>> cpy = TRef<MessageSub<MESSAGE_TYPE>>::MakeCopy(this);\
+      return StaticPointerCast<Message>(cpy);\
+    }\
+    void Clone(void * a_buf) const override {new (a_buf) MessageSub<MESSAGE_TYPE>(*this);}\
+    void Submit(MessageHandler *) override;\
+    uint32_t GetID() const override {return MESSAGE_TYPE;}\
     static uint32_t s_GetID() {return MESSAGE_TYPE;}
 
   //-----------------------------------------------------------------------------------
@@ -268,6 +286,13 @@ namespace Engine
     int32_t x;
     int32_t y;
   };
+
+  //-----------------------------------------------------------------------------------
+  // Make sure messages are trivially destructable
+  //-----------------------------------------------------------------------------------
+#undef ITEM
+#define ITEM(MESSAGE_TYPE) static_assert(std::is_trivially_destructible<MessageSub<MESSAGE_TYPE>>::value, #MESSAGE_TYPE " must be trivially destructible");\
+  MESSAGE_LIST
 
   //-----------------------------------------------------------------------------------
   // Message translators

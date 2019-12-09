@@ -29,6 +29,8 @@ namespace Engine
     return false;
   }
 
+  //Derive from this class if you want a resource to have access to
+  //its ResourceID
   class HasResourceID
   {
   public:

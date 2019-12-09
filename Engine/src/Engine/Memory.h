@@ -6,9 +6,115 @@
 #include "ResourceManager.h"
 #include "ResourceID.h"
 #include "Resource.h"
+#include "MemBuffer.h"
+
+//PFCLEAR should be called one at the start of the frame. No thread should be trying to PFALLOC at this time.
+#define PFCLEAR() ::Engine::impl::TRef::buf.clear()
 
 namespace Engine
 {
+  namespace impl
+  {
+    namespace TRef
+    {
+      extern std::mutex mutex;
+      extern Core::MemBuffer<10 * 1024 * 1024, __STDCPP_DEFAULT_NEW_ALIGNMENT__> buf;
+    }
+  }
+
+  template<typename T>
+  class TRef;
+
+  template<typename A, typename B>
+  TRef<A> StaticPointerCast(TRef<B> const&);
+
+  template<typename A, typename B>
+  TRef<A> DynamicPointerCast(TRef<B> const&);
+
+  //Tempory Reference. A per-frame reference. Memory is cleared at the end of each frame,
+  //but objects are not destructed
+  template<typename T>
+  class TRef
+  {
+    static_assert(std::is_trivially_destructible<T>::value, "TRef<T>: 'T' cannot have a custom destructor");
+
+    /*template<typename B>
+    friend TRef StaticPointerCast(TRef<B> const &);
+
+    template<typename B>
+    friend TRef<B> StaticPointerCast(TRef const&);*/
+
+    template<typename A, typename B>
+    friend TRef<A> StaticPointerCast(TRef<B> const&);
+
+    template<typename A, typename B>
+    friend TRef<B> StaticPointerCast(TRef<A> const&);
+
+    TRef(T * a_ptr)
+      : m_pObject(a_ptr)
+    {
+
+    }
+
+  public:
+
+    TRef()
+      : m_pObject(nullptr)
+    {
+
+    }
+
+    template<typename ... Args>
+    static TRef New(Args&&... args)
+    {
+      impl::TRef::mutex.lock();
+      TRef ref(static_cast<T*>(impl::TRef::buf.Allocate(sizeof(T))));
+      impl::TRef::mutex.unlock();
+      new (ref.m_pObject) T(std::forward<Args>(args)...);
+      return ref;
+    }
+
+    static TRef MakeCopy(T const * a_ptr)
+    {
+      impl::TRef::mutex.lock();
+      TRef ref(static_cast<T*>(impl::TRef::buf.Allocate(sizeof(T))));
+      impl::TRef::mutex.unlock();
+      new (ref.m_pObject) T(*a_ptr);
+      return ref;
+    }
+
+    T * operator->()
+    {
+      return m_pObject;
+    }
+
+    T & operator*()
+    {
+      return *m_pObject;
+    }
+
+    T* Get()
+    {
+      return m_pObject;
+    }
+
+  private:
+
+    T * m_pObject;
+  };
+
+  template<typename A, typename B>
+  TRef<A> StaticPointerCast(TRef<B> const& a_tref)
+  {
+    return TRef<A>(static_cast<A*>(a_tref.m_pObject));
+  }
+
+  template<typename A, typename B>
+  TRef<A> DynamicPointerCast(TRef<B> const& a_tref)
+  {
+    return TRef<A>(dynamic_cast<A*>(a_tref.m_pObject));
+  }
+
   template<typename T>
   class Ref
   {

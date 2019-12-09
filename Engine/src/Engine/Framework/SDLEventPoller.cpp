@@ -5,6 +5,7 @@
 #include "../Message.h"
 #include "../InputCodes.h"
 #include "core_Log.h"
+#include "../Memory.h"
 
 #include "SDL_events.h"
 #include "SDL.h"
@@ -22,7 +23,7 @@ namespace Engine
 
     FW_EventPoller();
     ~FW_EventPoller();
-    Message * NextEvent();
+    TRef<Message> NextEvent() override;
 
   private:
 
@@ -256,60 +257,57 @@ namespace Engine
     }
   }
 
-  static Message * TranslateWindowEvent(SDL_WindowEvent const & a_event)
+  static TRef<Message> TranslateWindowEvent(SDL_WindowEvent const & a_event)
   {
     switch (a_event.event)
     {
       case  SDL_WINDOWEVENT_SHOWN:
-        return new MessageSub<MT_Window_Shown>();
+        return StaticPointerCast<Message>(TRef<MessageSub<MT_Window_Shown>>::New());
       case  SDL_WINDOWEVENT_HIDDEN:
-        return new MessageSub<MT_Window_Hidden>();
+        return StaticPointerCast<Message>(TRef<MessageSub<MT_Window_Hidden>>::New());
       case  SDL_WINDOWEVENT_EXPOSED:
-        return new MessageSub<MT_Window_Exposed>();
+        return StaticPointerCast<Message>(TRef<MessageSub<MT_Window_Exposed>>::New());
       case  SDL_WINDOWEVENT_MOVED:
       {
-        auto pMsg = new MessageSub<MT_Window_Moved>();
+        TRef<MessageSub<MT_Window_Moved>> pMsg = TRef<MessageSub<MT_Window_Moved>>::New();
         pMsg->x = a_event.data1;
         pMsg->y = a_event.data2;
-      }
-      case  SDL_WINDOWEVENT_RESIZED:
-      {
-        auto pMsg = new MessageSub<MT_Window_Resized>();
-        pMsg->w = a_event.data1;
-        pMsg->h = a_event.data2;
+        return StaticPointerCast<Message>(pMsg);
       }
       case  SDL_WINDOWEVENT_SIZE_CHANGED:
+      case  SDL_WINDOWEVENT_RESIZED:
       {
-        auto pMsg = new MessageSub<MT_Window_Resized>();
+        TRef<MessageSub<MT_Window_Resized>> pMsg = TRef<MessageSub<MT_Window_Resized>>::New();
         pMsg->w = a_event.data1;
         pMsg->h = a_event.data2;
+        return StaticPointerCast<Message>(pMsg);
       }
       case  SDL_WINDOWEVENT_MINIMIZED:
-        return new MessageSub<MT_Window_Minimized>();
+        return StaticPointerCast<Message>(TRef<MessageSub<MT_Window_Minimized>>::New());
       case  SDL_WINDOWEVENT_MAXIMIZED:
-        return new MessageSub<MT_Window_Maximized>();
+        return StaticPointerCast<Message>(TRef<MessageSub<MT_Window_Maximized>>::New());
       case  SDL_WINDOWEVENT_RESTORED:
-        return new MessageSub<MT_Window_Restored>();
+        return StaticPointerCast<Message>(TRef<MessageSub<MT_Window_Restored>>::New());
       case  SDL_WINDOWEVENT_ENTER:
-        return new MessageSub<MT_Window_Enter>();
+        return StaticPointerCast<Message>(TRef<MessageSub<MT_Window_Enter>>::New());
       case  SDL_WINDOWEVENT_LEAVE:
-        return new MessageSub<MT_Window_Leave>();
+        return StaticPointerCast<Message>(TRef<MessageSub<MT_Window_Leave>>::New());
       case  SDL_WINDOWEVENT_FOCUS_GAINED:
-        return new MessageSub<MT_Window_Focus_Gained>();
+        return StaticPointerCast<Message>(TRef<MessageSub<MT_Window_Focus_Gained>>::New());
       case  SDL_WINDOWEVENT_FOCUS_LOST:
-        return new MessageSub<MT_Window_Focus_Lost>();
+        return StaticPointerCast<Message>(TRef<MessageSub<MT_Window_Focus_Lost>>::New());
       case  SDL_WINDOWEVENT_CLOSE:
-        return new MessageSub<MT_Window_Close>();
+        return StaticPointerCast<Message>(TRef<MessageSub<MT_Window_Close>>::New());
       case  SDL_WINDOWEVENT_TAKE_FOCUS:
-        return new MessageSub<MT_Window_Take_Focus>();
+        return StaticPointerCast<Message>(TRef<MessageSub<MT_Window_Take_Focus>>::New());
       default:
-        return new MessageSub<MT_None>();
+        return StaticPointerCast<Message>(TRef<MessageSub<MT_None>>::New());
     }
 
-    return new MessageSub<MT_None>();
+    return StaticPointerCast<Message>(TRef<MessageSub<MT_None>>::New());
   }
 
-  Message * FW_EventPoller::NextEvent()
+  TRef<Message> FW_EventPoller::NextEvent()
   {
     while (true)
     {
@@ -321,9 +319,9 @@ namespace Engine
       {
         case SDL_TEXTINPUT:
         {
-          MessageSub<MT_Input_Text> * pMsg= new MessageSub<MT_Input_Text>();
+          TRef<MessageSub<MT_Input_Text>> pMsg = TRef<MessageSub<MT_Input_Text>>::New();
           strncpy_s(pMsg->text, event.text.text, TEXT_INPUT_TEXT_SIZE);
-          return pMsg;
+          return StaticPointerCast<Message>(pMsg);
         }
         case SDL_KEYDOWN:
         {
@@ -331,45 +329,45 @@ namespace Engine
             break;
 
           UpdateModState(event);
-          MessageSub<MT_Input_KeyDown> * pMsg = new MessageSub<MT_Input_KeyDown>();
+          TRef<MessageSub<MT_Input_KeyDown>> pMsg = TRef<MessageSub<MT_Input_KeyDown>>::New();
           pMsg->keyCode = TranslateKeyCode(event.key.keysym.scancode);
           pMsg->modState = m_modState;
-          return pMsg;
+          return StaticPointerCast<Message>(pMsg);
         }
         case SDL_KEYUP:
         {
           UpdateModState(event);
-          MessageSub<MT_Input_KeyUp> * pMsg = new MessageSub<MT_Input_KeyUp>();
+          TRef<MessageSub<MT_Input_KeyUp>> pMsg = TRef<MessageSub<MT_Input_KeyUp>>::New();
           pMsg->keyCode = TranslateKeyCode(event.key.keysym.scancode);
           pMsg->modState = m_modState;
-          return pMsg;
+          return StaticPointerCast<Message>(pMsg);
         }
         case SDL_MOUSEBUTTONDOWN:
         {
-          MessageSub<MT_Input_MouseButtonDown> * pMsg = new MessageSub<MT_Input_MouseButtonDown>();
+          TRef<MessageSub<MT_Input_MouseButtonDown>> pMsg = TRef<MessageSub<MT_Input_MouseButtonDown>>::New();
           pMsg->button = TranslateMouseButtonCode(event.button.button);
           pMsg->x = event.button.x;
           pMsg->y = event.button.y;
-          return pMsg;
+          return StaticPointerCast<Message>(pMsg);
         }
         case SDL_MOUSEBUTTONUP:
         {
-          MessageSub<MT_Input_MouseButtonUp> * pMsg = new MessageSub<MT_Input_MouseButtonUp>();
+          TRef<MessageSub<MT_Input_MouseButtonUp>> pMsg = TRef<MessageSub<MT_Input_MouseButtonUp>>::New();
           pMsg->button = TranslateMouseButtonCode(event.button.button);
           pMsg->x = event.button.x;
           pMsg->y = event.button.y;
-          return pMsg;
+          return StaticPointerCast<Message>(pMsg);
         }
         case SDL_MOUSEWHEEL:
         {
           if (event.wheel.y > 0)
-            return new MessageSub<MT_Input_MouseWheelUp>();
+            return StaticPointerCast<Message>(TRef<MessageSub<MT_Input_MouseWheelUp>>::New());
           else
-            return new MessageSub<MT_Input_MouseWheelDown>();
+            return StaticPointerCast<Message>(TRef<MessageSub<MT_Input_MouseWheelDown>>::New());
         }
         case SDL_MOUSEMOTION:
         {
-          MessageSub<MT_Input_MouseMove> * pMsg = new MessageSub<MT_Input_MouseMove>();
+          TRef<MessageSub<MT_Input_MouseMove>> pMsg = TRef<MessageSub<MT_Input_MouseMove>>::New();
           if (SDL_GetRelativeMouseMode() == SDL_TRUE)
           {
             pMsg->x = event.motion.xrel;
@@ -380,16 +378,16 @@ namespace Engine
             pMsg->x = event.motion.x;
             pMsg->y = event.motion.y;
           }
-          return pMsg;
+          return StaticPointerCast<Message>(pMsg);
         }
         case SDL_WINDOWEVENT:
           return TranslateWindowEvent(event.window);
         case SDL_QUIT:
-          return new MessageSub<MT_Window_Close>();
+          return StaticPointerCast<Message>(TRef<MessageSub<MT_Window_Close>>::New());
         default:
           break;
       }
     }
-    return nullptr;
+    return TRef<Message>();
   }
 }
