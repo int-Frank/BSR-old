@@ -83,17 +83,17 @@ namespace Engine
       return ref;
     }
 
-    T * operator->()
+    T * operator->() const noexcept
     {
       return m_pObject;
     }
 
-    T & operator*()
+    T & operator*() const noexcept
     {
       return *m_pObject;
     }
 
-    T* Get()
+    T* Get() const noexcept
     {
       return m_pObject;
     }
@@ -162,8 +162,8 @@ namespace Engine
     Ref(Ref const&);
     Ref& operator=(Ref const&);
 
-    T* operator->();
-    T& operator*();
+    T* operator->() const noexcept;
+    T& operator*() const noexcept;
 
     bool IsNull() const;
 
@@ -222,13 +222,13 @@ namespace Engine
   }
 
   template<typename T>
-  T* Ref<T>::operator->()
+  T* Ref<T>::operator->() const noexcept
   {
     return m_pObject;
   }
 
   template<typename T>
-  T& Ref<T>::operator*()
+  T& Ref<T>::operator*() const noexcept
   {
     return *m_pObject;
   }

@@ -70,19 +70,19 @@ namespace Engine
     return 0;
   }
 
-  std::shared_ptr<IVertexBuffer> IVertexBuffer::Create(void* a_data, uint32_t a_size, VertexBufferUsage a_usage)
+  Ref<IVertexBuffer> IVertexBuffer::Create(void* a_data, uint32_t a_size, VertexBufferUsage a_usage)
   {
-    return std::make_shared<OpenGLVertexBuffer>(a_data, a_size, a_usage);
+    return Ref<IVertexBuffer>(new OpenGLVertexBuffer(a_data, a_size, a_usage));
   }
 
-  std::shared_ptr<IVertexBuffer> IVertexBuffer::Create(uint32_t a_size, VertexBufferUsage a_usage)
+  Ref<IVertexBuffer> IVertexBuffer::Create(uint32_t a_size, VertexBufferUsage a_usage)
   {
-    return std::make_shared<OpenGLVertexBuffer>(a_size, a_usage);
+    return Ref<IVertexBuffer>(new OpenGLVertexBuffer(a_size, a_usage));
   }
 
-  std::shared_ptr<IIndexBuffer> IIndexBuffer::Create(void* a_data, uint32_t a_size)
+  Ref<IIndexBuffer> IIndexBuffer::Create(void* a_data, uint32_t a_size)
   {
-    return std::make_shared<OpenGLIndexBuffer>(a_data, a_size);
+    return Ref<IIndexBuffer>(new OpenGLIndexBuffer(a_data, a_size));
   }
 
   OpenGLVertexBuffer::OpenGLVertexBuffer(void* a_data, uint32_t a_size, VertexBufferUsage a_usage)

@@ -15,7 +15,7 @@ namespace Engine
     virtual void Bind() const = 0;
     virtual void Unbind() const = 0;
 
-    static std::shared_ptr<IShader> Create(std::string const & vs, std::string const & fs);
+    static Ref<IShader> Create(std::string const & vs, std::string const & fs);
 
   };
 }

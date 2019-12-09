@@ -4,6 +4,7 @@
 #include "../Renderer.h"
 #include "../IVertexArray.h"
 #include "core_Assert.h"
+#include "../Memory.h"
 
 namespace Engine
 {
@@ -17,22 +18,22 @@ namespace Engine
     void Bind() const override;
     void Unbind() const override;
 
-    void AddVertexBuffer(const std::shared_ptr<IVertexBuffer>& vertexBuffer) override;
-    void SetIndexBuffer(const std::shared_ptr<IIndexBuffer>& indexBuffer) override;
+    void AddVertexBuffer(const Ref<IVertexBuffer>& vertexBuffer) override;
+    void SetIndexBuffer(const Ref<IIndexBuffer>& indexBuffer) override;
 
-    const std::vector<std::shared_ptr<IVertexBuffer>>& GetVertexBuffers() const override;
-    const std::shared_ptr<IIndexBuffer>& GetIndexBuffer() const override;
+    const std::vector<Ref<IVertexBuffer>>& GetVertexBuffers() const override;
+    const Ref<IIndexBuffer>& GetIndexBuffer() const override;
 
   private:
     RendererID m_rendererID = 0;
     uint32_t m_vertexBufferIndex = 0;
-    std::vector<std::shared_ptr<IVertexBuffer>> m_vertexBuffers;
-    std::shared_ptr<IIndexBuffer> m_indexBuffer;
+    std::vector<Ref<IVertexBuffer>> m_vertexBuffers;
+    Ref<IIndexBuffer> m_indexBuffer;
   };
 
-  std::shared_ptr<IVertexArray> IVertexArray::Create()
+  Ref<IVertexArray> IVertexArray::Create()
   {
-    return std::make_shared<OpenGLVertexArray>();
+    return Ref<IVertexArray>(new OpenGLVertexArray());
   }
 
   static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
@@ -104,7 +105,7 @@ namespace Engine
       });
   }
 
-  void OpenGLVertexArray::AddVertexBuffer(std::shared_ptr<IVertexBuffer> const & vertexBuffer)
+  void OpenGLVertexArray::AddVertexBuffer(Ref<IVertexBuffer> const & vertexBuffer)
   {
     BSR_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no layout!");
 
@@ -158,7 +159,7 @@ namespace Engine
 
   }
 
-  void OpenGLVertexArray::SetIndexBuffer(const std::shared_ptr<IIndexBuffer>& indexBuffer)
+  void OpenGLVertexArray::SetIndexBuffer(const Ref<IIndexBuffer>& indexBuffer)
   {
     Bind();
     indexBuffer->Bind();

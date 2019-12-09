@@ -1,7 +1,7 @@
 #ifndef RENDERCOMMANDQUEUE_H
 #define RENDERCOMMANDQUEUE_H
 
-#include <memory>
+#include "Memory.h"
 #include <stdint.h>
 
 #include "DgDynamicArray.h"
@@ -27,7 +27,7 @@ namespace Engine
     void* Allocate(RenderState, RenderCommandFn, uint32_t size);
     void Execute();
 
-    void PushCriterion(std::shared_ptr<RenderSortCriterion>);
+    void PushCriterion(Ref<RenderSortCriterion>);
     void ClearCriterion();
 
     void Sort();
@@ -47,7 +47,7 @@ namespace Engine
       uint32_t count;
     };
 
-    Dg::DynamicArray<std::shared_ptr<RenderSortCriterion>>  m_sortCriterion;
+    Dg::DynamicArray<Ref<RenderSortCriterion>>  m_sortCriterion;
     PODArray<SubArray>              m_sortableSegs;
     PODArray<KV>                    m_renderQueue;
 

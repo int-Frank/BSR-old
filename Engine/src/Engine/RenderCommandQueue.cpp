@@ -58,7 +58,7 @@ namespace Engine
     m_sortableSegs.clear();
   }
 
-  void RenderCommandQueue::PushCriterion(std::shared_ptr<RenderSortCriterion> a_crit)
+  void RenderCommandQueue::PushCriterion(Ref<RenderSortCriterion> a_crit)
   {
     m_sortCriterion.push_back(a_crit);
   }

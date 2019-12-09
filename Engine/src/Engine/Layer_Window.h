@@ -1,7 +1,7 @@
 #ifndef EN_LAYER_WINDOW_H
 #define EN_LAYER_WINDOW_H
 
-#include <memory>
+#include "Memory.h"
 
 #include "core_ErrorCodes.h"
 #include "Layer.h"

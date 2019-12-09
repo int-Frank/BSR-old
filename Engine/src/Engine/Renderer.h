@@ -2,7 +2,7 @@
 #define RENDERTEMP_H
 
 #include <stdint.h>
-#include <memory>
+#include "Memory.h"
 
 #include "IShader.h"
 #include "PODArray.h"
@@ -48,10 +48,10 @@ namespace Engine
     void EndScene();
     void RenderAndWait();
 
-    //uint64_t RegisterShader(std::shared_ptr<IShader>);
-    //uint64_t RegisterVAO(std::shared_ptr<IVAO>);
-    //uint64_t RegisterTexture(std::shared_ptr<ITexture>);
-    //uint64_t RegisterMaterial(std::shared_ptr<IMaterial>);
+    //uint64_t RegisterShader(Ref<IShader>);
+    //uint64_t RegisterVAO(Ref<IVAO>);
+    //uint64_t RegisterTexture(Ref<ITexture>);
+    //uint64_t RegisterMaterial(Ref<IMaterial>);
 
   private:
 

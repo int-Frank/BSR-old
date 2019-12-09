@@ -1,7 +1,7 @@
 #ifndef EN_BUFFER_H
 #define EN_BUFFER_H
 
-#include <memory>
+#include "Memory.h"
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -76,8 +76,8 @@ namespace Engine
     virtual unsigned int GetSize() const = 0;
     virtual RendererID GetRendererID() const = 0;
 
-    static std::shared_ptr<IVertexBuffer> Create(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
-    static std::shared_ptr<IVertexBuffer> Create(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
+    static Ref<IVertexBuffer> Create(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
+    static Ref<IVertexBuffer> Create(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
 
   };
 
@@ -98,7 +98,7 @@ namespace Engine
     virtual unsigned int GetSize() const = 0;
     virtual RendererID GetRendererID() const = 0;
 
-    static std::shared_ptr<IIndexBuffer> Create(void* data, uint32_t size = 0);
+    static Ref<IIndexBuffer> Create(void* data, uint32_t size = 0);
   };
 
 }
