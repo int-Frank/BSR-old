@@ -5,6 +5,7 @@
 
 #include "core_ErrorCodes.h"
 #include "Layer.h"
+#include "Memory.h"
 
 namespace Engine
 {
@@ -16,7 +17,7 @@ namespace Engine
 
     ASSIGN_ID
 
-      Layer_Window(MessageBus * a_pMsgBus, std::shared_ptr<IWindow>);
+      Layer_Window(MessageBus * a_pMsgBus, Ref<IWindow>);
     ~Layer_Window();
 
     void OnAttach();
@@ -42,7 +43,7 @@ namespace Engine
 
   private:
 
-    std::shared_ptr<IWindow> m_pWindow;
+    Ref<IWindow> m_pWindow;
   };
 }
 

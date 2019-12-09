@@ -131,7 +131,7 @@ namespace Engine
 
   void Layer_InputHandler::Bind(InputCode a_inputCode, MessageType a_event, Message * a_binding)
   {
-    m_bindings.insert(PackKey(a_inputCode, a_event), std::shared_ptr<Message>(a_binding));
+    m_bindings.insert(PackKey(a_inputCode, a_event), Ref<Message>(a_binding));
   }
 
   /*template<>

@@ -1,7 +1,6 @@
 #ifndef EN_FRAMEWORK_H
 #define EN_FRAMEWORK_H
 
-#include <memory>
 #include <string>
 
 #include "core_ErrorCodes.h"
@@ -11,6 +10,7 @@
 #include "../IMouseController.h"
 #include "../IShader.h"
 #include "../Buffer.h"
+#include "../Memory.h"
 
 namespace Engine
 {
@@ -34,9 +34,9 @@ namespace Engine
     static Core::ErrorCode ShutDown();
 
     //There can only be one of these objects...
-    std::shared_ptr<IWindow>          GetWindow();
-    std::shared_ptr<IEventPoller>     GetEventPoller();
-    std::shared_ptr<IMouseController> GetMouseController();
+    Ref<IWindow>          GetWindow();
+    Ref<IEventPoller>     GetEventPoller();
+    Ref<IMouseController> GetMouseController();
 
     //Audio
     //IAudio *       GetAudio();

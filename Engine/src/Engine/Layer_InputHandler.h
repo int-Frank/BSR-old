@@ -5,6 +5,7 @@
 
 #include "DgMap_AVL.h"
 
+#include "Memory.h"
 #include "MessageBus.h"
 #include "Message.h"
 #include "Layer.h"
@@ -48,12 +49,12 @@ namespace Engine
 
     uint64_t PackKey(uint32_t inputCode, MessageType MessageType);
 
-    std::shared_ptr<IEventPoller>                   m_eventPoller;
-    std::shared_ptr<IMouseController>               m_mouseController;
+    Ref<IEventPoller>                   m_eventPoller;
+    Ref<IMouseController>               m_mouseController;
 
     float                                           m_xMouseRotRate;
     float                                           m_yMouseRotRate;
-    Dg::Map_AVL<uint64_t, std::shared_ptr<Message>> m_bindings;
+    Dg::Map_AVL<uint64_t, Ref<Message>> m_bindings;
 
   };
 }

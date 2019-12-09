@@ -30,9 +30,9 @@ namespace Engine
 
     }
 
-    std::shared_ptr<IWindow>          window;
-    std::shared_ptr<IEventPoller>     eventPoller;
-    std::shared_ptr<IMouseController> mouseController;
+    Ref<IWindow>          window;
+    Ref<IEventPoller>     eventPoller;
+    Ref<IMouseController> mouseController;
   };
 
   Framework * Framework::s_instance(nullptr);
@@ -102,37 +102,37 @@ namespace Engine
     return result;
   }
 
-  std::shared_ptr<IWindow> Framework::GetWindow()
+  Ref<IWindow> Framework::GetWindow()
   {
     return m_pimpl->window;
   }
 
-  std::shared_ptr<IEventPoller> Framework::GetEventPoller()
+  Ref<IEventPoller> Framework::GetEventPoller()
   {
     return m_pimpl->eventPoller;
   }
 
-  std::shared_ptr<IMouseController> Framework::GetMouseController()
+  Ref<IMouseController> Framework::GetMouseController()
   {
     return m_pimpl->mouseController;
   }
 
   void Framework::SetWindow(IWindow * a_window)
   {
-    BSR_ASSERT(m_pimpl->window == nullptr, "Window already exists!");
-    m_pimpl->window = std::shared_ptr<IWindow>(a_window);
+    BSR_ASSERT(m_pimpl->window.IsNull(), "Window already exists!");
+    m_pimpl->window = Ref<IWindow>(a_window);
   }
 
   void Framework::SetEventPoller(IEventPoller * a_ep)
   {
-    BSR_ASSERT(m_pimpl->eventPoller == nullptr, "EventPoller already exists!");
-    m_pimpl->eventPoller = std::shared_ptr<IEventPoller>(a_ep);
+    BSR_ASSERT(m_pimpl->eventPoller.IsNull(), "EventPoller already exists!");
+    m_pimpl->eventPoller = Ref<IEventPoller>(a_ep);
   }
 
   void Framework::SetMouseController(IMouseController * a_mc)
   {
-    BSR_ASSERT(m_pimpl->mouseController == nullptr, "MouseController already exists!");
-    m_pimpl->mouseController = std::shared_ptr<IMouseController>(a_mc);
+    BSR_ASSERT(m_pimpl->mouseController.IsNull(), "MouseController already exists!");
+    m_pimpl->mouseController = Ref<IMouseController>(a_mc);
   }
 
   static const char* ImGui_ImplSDL2_GetClipboardText(void*)

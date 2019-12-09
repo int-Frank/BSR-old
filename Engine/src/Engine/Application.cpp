@@ -33,7 +33,7 @@ namespace Engine
     }
 
     bool shouldQuit;
-    std::shared_ptr<IWindow> pWindow;
+    Ref<IWindow> pWindow;
 
     LayerStack        layerStack;
     MessageBus        msgBus;
@@ -47,7 +47,7 @@ namespace Engine
   void Application::InitWindow()
   {
     m_pimpl->pWindow = Framework::Instance()->GetWindow();
-    if (m_pimpl->pWindow == nullptr)
+    if (m_pimpl->pWindow.IsNull())
       throw std::runtime_error("GetWindow() has returned a null pointer!");
 
     if (m_pimpl->pWindow->Init() != Core::EC_None)
