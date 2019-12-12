@@ -126,6 +126,11 @@ public:
     return m_poolSize.GetSize();
   }
 
+  T * data() const
+  {
+    return m_pData;
+  }
+
 private:
 
   void extend()

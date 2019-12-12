@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "core_Assert.h"
+#include "Resource.h"
 
 namespace Engine 
 {
@@ -62,7 +63,7 @@ namespace Engine
     None = 0, Static = 1, Dynamic = 2
   };
 
-  class IVertexBuffer
+  class IVertexBuffer: public Resource
   {
   public:
     virtual ~IVertexBuffer() {}
@@ -81,7 +82,7 @@ namespace Engine
 
   };
 
-  class IIndexBuffer
+  class IIndexBuffer: public Resource
   {
   public:
 

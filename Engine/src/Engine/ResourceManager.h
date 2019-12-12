@@ -1,6 +1,7 @@
 #ifndef RESOURCEMANAGER_H
 #define RESOURCEMANAGER_H
 
+#include <typeinfo>
 #include <mutex>
 #include <atomic>
 #include <stdint.h>
@@ -17,15 +18,16 @@ namespace Engine
       T_Generated = 2
     };
 
-    class ResourceBase
+    class ResourceWrapperBase
     {
     public:
 
-      ResourceBase(void*);
-      virtual ~ResourceBase();
+      ResourceWrapperBase(void*, std::type_info const &);
+      virtual ~ResourceWrapperBase();
       void * GetPointer();
+      std::type_info const& GetType();
     protected:
-
+      std::type_info const & m_info;
       void* m_pObj;
     };
 
@@ -54,7 +56,7 @@ namespace Engine
 
       struct Data
       {
-        ResourceBase *  pResource;
+        ResourceWrapperBase *  pResource;
         uint32_t        counter;
       };
 
@@ -64,13 +66,13 @@ namespace Engine
 
       static ResourceManager* Instance();
 
-      ResourceBase* GetResource(ResourceID64, bool registerUser);
+      ResourceWrapperBase* GetResource(ResourceID64, bool registerUser);
       uint32_t GenerateUnique32();
 
       void RegisterUser(ResourceID64);
       void DeregisterUser(ResourceID64);
 
-      void RegisterResource(ResourceID64, ResourceBase*);
+      void RegisterResource(ResourceID64, ResourceWrapperBase*);
       void DestroyResource(ResourceID64);
 
     private:
@@ -83,31 +85,31 @@ namespace Engine
     };
 
     template<typename T>
-    class Resource : public ResourceBase
+    class ResourceWrapper : public ResourceWrapperBase
     {
     public:
 
-      Resource();
-      Resource(T*);
-      ~Resource();
+      ResourceWrapper();
+      ResourceWrapper(T*);
+      ~ResourceWrapper();
     };
 
     template<typename T>
-    Resource<T>::Resource()
-      : ResourceBase(nullptr)
+    ResourceWrapper<T>::ResourceWrapper()
+      : ResourceWrapperBase(nullptr)
     {
 
     }
 
     template<typename T>
-    Resource<T>::Resource(T* a_pObj)
-      : ResourceBase(a_pObj)
+    ResourceWrapper<T>::ResourceWrapper(T* a_pObj)
+      : ResourceWrapperBase(a_pObj, typeid(T))
     {
 
     }
 
     template<typename T>
-    Resource<T>::~Resource()
+    ResourceWrapper<T>::~ResourceWrapper()
     {
       delete static_cast<T*>(m_pObj);
       m_pObj = nullptr;

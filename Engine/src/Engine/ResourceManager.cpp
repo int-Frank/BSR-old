@@ -15,22 +15,28 @@ namespace Engine
   namespace impl
   {
     //--------------------------------------------------------------------------------------
-    // ResourceBase
+    // ResourceWrapperBase
     //--------------------------------------------------------------------------------------
-    ResourceBase::ResourceBase(void * a_pObj)
+    ResourceWrapperBase::ResourceWrapperBase(void * a_pObj, std::type_info const& a_info)
       : m_pObj(a_pObj)
+      , m_info(a_info)
     {
 
     }
 
-    ResourceBase::~ResourceBase()
+    ResourceWrapperBase::~ResourceWrapperBase()
     {
 
     }
 
-    void * ResourceBase::GetPointer()
+    void* ResourceWrapperBase::GetPointer()
     {
       return m_pObj;
+    }
+
+    std::type_info const& ResourceWrapperBase::GetType()
+    {
+      return m_info;
     }
 
     //--------------------------------------------------------------------------------------
@@ -51,7 +57,7 @@ namespace Engine
 
     }
 
-    ResourceBase* ResourceManager::GetResource(ResourceID64 a_id, bool a_registerUser)
+    ResourceWrapperBase* ResourceManager::GetResource(ResourceID64 a_id, bool a_registerUser)
     {
       std::lock_guard<std::mutex> lck(m_mutex);
       Data * pData = m_resourceMap.at(a_id);
@@ -91,7 +97,7 @@ namespace Engine
       }
     }
 
-    void ResourceManager::RegisterResource(ResourceID64 a_id, ResourceBase* a_pRes)
+    void ResourceManager::RegisterResource(ResourceID64 a_id, ResourceWrapperBase* a_pRes)
     {
       std::lock_guard<std::mutex> lck(m_mutex);
       BSR_ASSERT(m_resourceMap.at(a_id) == nullptr, "Attempt to register an existing resource!");

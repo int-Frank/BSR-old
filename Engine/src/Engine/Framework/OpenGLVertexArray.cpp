@@ -5,10 +5,11 @@
 #include "../IVertexArray.h"
 #include "core_Assert.h"
 #include "../Memory.h"
+#include "../Resource.h"
 
 namespace Engine
 {
-  class OpenGLVertexArray : public IVertexArray
+  class OpenGLVertexArray : public IVertexArray, public Resource
   {
   public:
 
@@ -63,9 +64,11 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::VertexArrayCreate);
 
-    RENDER_SUBMIT(state, [rendererID = m_rendererID]() mutable
+    RegisterMe();
+    RENDER_SUBMIT(state, [this]() mutable
       {
-        glCreateVertexArrays(1, &rendererID);
+        glCreateVertexArrays(1, &this->m_rendererID);
+        this->DeregisterMe();
       });
   }
 
@@ -105,58 +108,52 @@ namespace Engine
       });
   }
 
-  void OpenGLVertexArray::AddVertexBuffer(Ref<IVertexBuffer> const & vertexBuffer)
+  void OpenGLVertexArray::AddVertexBuffer(Ref<IVertexBuffer> const & a_vertexBuffer)
   {
-    BSR_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no layout!");
+    BSR_ASSERT(a_vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no layout!");
 
     Renderer::Instance()->BeginNewGroup();
 
     Bind();
-    vertexBuffer->Bind();
+    a_vertexBuffer->Bind();
 
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::VertexArrayAddVertexBuffer);
 
-    BufferLayout const * pLayout = new BufferLayout(vertexBuffer->GetLayout());
-
-    RENDER_SUBMIT(state, [layout = pLayout, vertexBufferIndex = m_vertexBufferIndex]() mutable
+    RegisterMe();
+    a_vertexBuffer->RegisterMe();
+    RENDER_SUBMIT(state, [this, pvb = &*a_vertexBuffer]() mutable
       {
-        for (auto it = layout->begin(); it != layout->end(); it++)
+        for (auto it = pvb->GetLayout().begin(); it != pvb->GetLayout().end(); it++)
         {
           auto glBaseType = ShaderDataTypeToOpenGLBaseType(it->type);
-          glEnableVertexAttribArray(vertexBufferIndex);
+          glEnableVertexAttribArray(this->m_vertexBufferIndex);
           if (glBaseType == GL_INT)
           {
-            glVertexAttribIPointer(vertexBufferIndex,
-              it->GetComponentCount(),
-              glBaseType,
-              layout->GetStride(),
-              (const void*)(intptr_t)it->offset);
+            glVertexAttribIPointer(this->m_vertexBufferIndex,
+                                   it->GetComponentCount(),
+                                   glBaseType,
+                                   pvb->GetLayout().GetStride(),
+                                   (const void*)(intptr_t)it->offset);
           }
           else
           {
-            glVertexAttribPointer(vertexBufferIndex,
-              it->GetComponentCount(),
-              glBaseType,
-              it->normalized ? GL_TRUE : GL_FALSE,
-              layout->GetStride(),
-              (const void*)(intptr_t)it->offset);
+            glVertexAttribPointer(this->m_vertexBufferIndex,
+                                  it->GetComponentCount(),
+                                  glBaseType,
+                                  it->normalized ? GL_TRUE : GL_FALSE,
+                                  pvb->GetLayout().GetStride(),
+                                  (const void*)(intptr_t)it->offset);
           }
-          vertexBufferIndex++;
+          this->m_vertexBufferIndex++;
         }
-        delete layout;
+        this->DeregisterMe();
+        pvb->DeregisterMe();
       });
 
     Renderer::Instance()->EndCurrentGroup();
-    /*
-      Here is one of those cases where we just have to trust the Renderer will perform this
-      RENDER_SUBMIT. Ideally we would have the Render call back to this VertexArray to 
-      increment m_vertexBufferIndex, but that seems messy.
-    */
-    m_vertexBufferIndex += (uint32_t)vertexBuffer->GetLayout().GetElements().size();
-    m_vertexBuffers.push_back(vertexBuffer);
-
+    m_vertexBuffers.push_back(a_vertexBuffer);
   }
 
   void OpenGLVertexArray::SetIndexBuffer(const Ref<IIndexBuffer>& indexBuffer)

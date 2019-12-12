@@ -11,6 +11,7 @@
 #include "Group.h"
 #include "DgDynamicArray.h"
 #include "RenderCommandQueue.h"
+#include "MemBuffer.h"
 
 namespace Engine
 {
@@ -24,7 +25,9 @@ namespace Engine
     static void ShutDown();
     static Renderer * Instance();
 
+    //Everything must happen between these two functions.
     void BeginScene();
+    void EndScene();
 
     //Group commands together
     void BeginNewGroup();
@@ -45,7 +48,6 @@ namespace Engine
       new (pStorageBuffer) FuncT(std::forward<FuncT>(func));
     }
 
-    void EndScene();
     void RenderAndWait();
 
     //uint64_t RegisterShader(Ref<IShader>);
@@ -53,12 +55,15 @@ namespace Engine
     //uint64_t RegisterTexture(Ref<ITexture>);
     //uint64_t RegisterMaterial(Ref<IMaterial>);
 
+    void * Allocate(size_t);
+
   private:
 
     static Renderer * s_instance;
 
-  public:
+  private:
 
+    Core::MemBuffer<10 * 1024 * 1024> m_memBuffer;
     RenderCommandQueue m_commandQueue;
 
     Core::Group m_group;
@@ -71,6 +76,7 @@ namespace Engine
   };
 
 #define RENDER_SUBMIT(...) Renderer::Instance()->Submit(__VA_ARGS__)
+#define RENDER_ALLOCATE(size) Renderer::Instance()->Allocate(size)
 }
 
 #endif

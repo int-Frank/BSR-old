@@ -7,9 +7,11 @@
 #include "ResourceID.h"
 #include "Resource.h"
 #include "MemBuffer.h"
+#include "core_Log.h"
+#include "core_Assert.h"
 
-//PFCLEAR should be called one at the start of the frame. No thread should be trying to PFALLOC at this time.
-#define PFCLEAR() ::Engine::impl::TRef::buf.clear()
+//This should be called one at the start of the frame.
+#define TREFCLEAR() ::Engine::impl::TRef::buf.clear()
 
 namespace Engine
 {
@@ -38,15 +40,9 @@ namespace Engine
   {
     static_assert(std::is_trivially_destructible<T>::value, "TRef<T>: 'T' cannot have a custom destructor");
 
-    /*template<typename B>
-    friend TRef StaticPointerCast(TRef<B> const &);
-
-    template<typename B>
-    friend TRef<B> StaticPointerCast(TRef const&);*/
-
     template<typename A, typename B>
     friend TRef<A> StaticPointerCast(TRef<B> const&);
-
+    
     template<typename A, typename B>
     friend TRef<B> StaticPointerCast(TRef<A> const&);
 
@@ -126,14 +122,14 @@ namespace Engine
     template
       <
       typename U = T,
-      typename = typename std::enable_if< !std::is_base_of<HasResourceID, U>::value >::type
+      typename = typename std::enable_if< !std::is_base_of<Resource, U>::value >::type
       >
       constexpr Ref(T* a_pObj)
       : m_pObject(a_pObj)
     {
       m_id.SetType(impl::T_Generated);
       m_id.SetID(impl::ResourceManager::Instance()->GenerateUnique32());
-      impl::ResourceManager::Instance()->RegisterResource(m_id, new impl::Resource<T>(m_pObject));
+      impl::ResourceManager::Instance()->RegisterResource(m_id, new impl::ResourceWrapper<T>(m_pObject));
       impl::ResourceManager::Instance()->RegisterUser(m_id);
     }
 
@@ -141,7 +137,7 @@ namespace Engine
     template
       <
       typename U = T,
-      typename = typename std::enable_if< std::is_base_of<HasResourceID, U>::value >::type,
+      typename = typename std::enable_if< std::is_base_of<Resource, U>::value >::type,
       typename = U
       >
       constexpr Ref(T* a_pObj)
@@ -149,13 +145,16 @@ namespace Engine
     {
       m_id.SetType(impl::T_Generated);
       m_id.SetID(impl::ResourceManager::Instance()->GenerateUnique32());
-      impl::ResourceManager::Instance()->RegisterResource(m_id, new impl::Resource<T>(m_pObject));
+      impl::ResourceManager::Instance()->RegisterResource(m_id, new impl::ResourceWrapper<T>(m_pObject));
       impl::ResourceManager::Instance()->RegisterUser(m_id);
-      dynamic_cast<HasResourceID*>(m_pObject)->SetRefID(m_id);
+      dynamic_cast<Resource*>(m_pObject)->SetRefID(m_id);
     }
 
     //Construct from an already registered resource
     Ref(ResourceID a_id);
+
+    //Construct from an already registered resource
+    Ref(impl::ResourceID64 a_id);
 
     ~Ref();
 
@@ -169,6 +168,8 @@ namespace Engine
 
   private:
 
+    void RetrieveResource(impl::ResourceID64 a_id);
+
     impl::ResourceID64  m_id;
     T* m_pObject;
   };
@@ -181,17 +182,44 @@ namespace Engine
   }
 
   template<typename T>
+  void Ref<T>::RetrieveResource(impl::ResourceID64 a_id)
+  {
+    impl::ResourceWrapperBase* res = impl::ResourceManager::Instance()->GetResource(a_id, true);
+    if (res != nullptr)
+    {
+      if (typeid(T) != res->GetType())
+      {
+        LOG_WARN("Attempt to retrieve resource of different type. Attempting to cast...");
+        m_pObject = dynamic_cast<T*>(res->GetPointer());
+        BSR_ASSERT(m_pObject != nullptr, "Attempt to retrieve object of different type!");
+        m_id = a_id;
+      }
+      else
+      {
+        m_pObject = static_cast<T*>(res->GetPointer());
+        m_id = a_id;
+      }
+    }
+    else
+      m_id.SetNull();
+  }
+
+  template<typename T>
   Ref<T>::Ref(ResourceID a_id)
     : m_pObject(nullptr)
   {
     m_id.SetFlag(impl::ResourceID64::Flag::Persistant, true);
     m_id.SetType(impl::T_UserID);
     m_id.SetID(a_id);
-    impl::ResourceBase * res = impl::ResourceManager::Instance()->GetResource(m_id, true);
-    if (res != nullptr)
-      m_pObject = static_cast<T*>(res->GetPointer());
-    else
-      m_id.SetNull();
+    RetrieveResource(m_id);
+  }
+
+  template<typename T>
+  Ref<T>::Ref(impl::ResourceID64 a_id)
+    : m_pObject(nullptr)
+    , m_id(a_id)
+  {
+    RetrieveResource(m_id);
   }
 
   template<typename T>

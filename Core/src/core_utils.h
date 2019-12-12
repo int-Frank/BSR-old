@@ -1,7 +1,9 @@
 #ifndef CORE_H
 #define CORE_H
 
-#include <memory>
+#include "DgR2Vector.h"
+#include "DgR3Vector.h"
+#include "DgR3Matrix.h"
 
 #define BIT(x) (1 << x)
 
@@ -20,5 +22,16 @@
 #define NEW_COUNTER TEMP
 #define INIT_COUNTER(val) namespace CONCAT(IMPL_COUNTER_, NEW_COUNTER) {int const COUNTER_BASE = __COUNTER__ - val + 1;}
 #define COUNTER (__COUNTER__ - CONCAT(IMPL_COUNTER_, NEW_COUNTER)::COUNTER_BASE)
+
+typedef unsigned char byte;
+
+typedef Dg::R2::Vector<float>           vec3;
+typedef Dg::R2::Vector_cartesian<float> vec2;
+typedef Dg::R3::Vector<float>           vec4;
+typedef Dg::R3::Matrix<float>           mat4;
+
+#undef ITEM
+#define STATIC_STRINGS \
+  ITEM()
 
 #endif

@@ -24,12 +24,12 @@ namespace Engine
     GLuint m_program;
   };
 
-  Ref<IShader> IShader::Create(std::string const & a_vs, std::string const & a_fs)
+  /*Ref<IShader> IShader::Create(std::string const & a_vs, std::string const & a_fs)
   {
     OpenGLShader * temp = new OpenGLShader();
     BSR_ASSERT(temp->Init(a_vs, a_fs) == Core::EC_None);
     return Ref<IShader>(temp);
-  }
+  }*/
 
   OpenGLShader::OpenGLShader()
     : m_program(0)

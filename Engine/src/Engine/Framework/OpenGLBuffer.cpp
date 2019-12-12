@@ -4,6 +4,7 @@
 #include "../Buffer.h"
 #include "../Renderer.h"
 #include  "core_Log.h"
+#include "../Resource.h"
 
 namespace Engine 
 {
@@ -90,26 +91,19 @@ namespace Engine
     , m_size(a_size)
     , m_usage(a_usage)
   {
-    uint8_t * data = (uint8_t*)malloc(a_size);
-
-    if (data == nullptr)
-    {
-      LOG_ERROR("Failed to allocate memory in OpenGLVertexBuffer()");
-      m_size = 0;
-      return;
-    }
-
+    uint8_t * data = (uint8_t*)RENDER_ALLOCATE(a_size);
     memcpy(data, a_data, a_size);
 
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
 
-    RENDER_SUBMIT(state, [rendererID = m_rendererID, size = m_size, data, usage = m_usage]() mutable
+    RegisterMe();
+    RENDER_SUBMIT(state, [this, data]() mutable
       {
-        glCreateBuffers(1, &rendererID);
-        glNamedBufferData(rendererID, size, data, OpenGLUsage(usage));
-        free(data);
+        glCreateBuffers(1, &this->m_rendererID);
+        glNamedBufferData(this->m_rendererID, this->m_size, data, OpenGLUsage(this->m_usage));
+        this->DeregisterMe();
       });
   }
 
@@ -121,11 +115,13 @@ namespace Engine
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
-    
-    RENDER_SUBMIT(state, [rendererID = m_rendererID, size = m_size, usage = m_usage]() mutable
+
+    RegisterMe();
+    RENDER_SUBMIT(state, [this]() mutable
       {
-        glCreateBuffers(1, &rendererID);
-        glNamedBufferData(rendererID, size, nullptr, OpenGLUsage(usage));
+        glCreateBuffers(1, &this->m_rendererID);
+        glNamedBufferData(this->m_rendererID, this->m_size, nullptr, OpenGLUsage(this->m_usage));
+        this->DeregisterMe();
       });
   }
 
@@ -143,13 +139,16 @@ namespace Engine
 
   void OpenGLVertexBuffer::SetData(void* a_data, uint32_t a_size, uint32_t a_offset)
   {
+    uint8_t* data = (uint8_t*)RENDER_ALLOCATE(a_size);
+    memcpy(data, a_data, a_size);
+
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferSetData);
 
-    RENDER_SUBMIT(state, [rendererID = m_rendererID, a_offset, a_size, a_data]()
+    RENDER_SUBMIT(state, [rendererID = m_rendererID, offset = a_offset, size = a_size, data]()
       {
-        glNamedBufferSubData(rendererID, a_offset, a_size, a_data);
+        glNamedBufferSubData(rendererID, offset, size, data);
       });
   }
 
@@ -189,26 +188,19 @@ namespace Engine
     : m_rendererID(0)
     , m_size(a_size)
   {
-    uint8_t* data = (uint8_t*)malloc(a_size);
-
-    if (data == nullptr)
-    {
-      LOG_ERROR("Failed to allocate memory in OpenGLVertexBuffer()");
-      m_size = 0;
-      return;
-    }
-
+    uint8_t* data = (uint8_t*)RENDER_ALLOCATE(a_size);
     memcpy(data, a_data, a_size);
 
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
 
-    RENDER_SUBMIT(state, [rendererID = m_rendererID, size = m_size, data]() mutable
+    RegisterMe();
+    RENDER_SUBMIT(state, [this, data]() mutable
       {
-        glCreateBuffers(1, &rendererID);
-        glNamedBufferData(rendererID, size, data, GL_STATIC_DRAW);
-        free(data);
+        glCreateBuffers(1, &this->m_rendererID);
+        glNamedBufferData(this->m_rendererID, this->m_size, data, GL_STATIC_DRAW);
+        this->DeregisterMe();
       });
   }
 
@@ -226,13 +218,16 @@ namespace Engine
 
   void OpenGLIndexBuffer::SetData(void* a_data, uint32_t a_size, uint32_t a_offset)
   {
+    uint8_t* data = (uint8_t*)RENDER_ALLOCATE(a_size);
+    memcpy(data, a_data, a_size);
+
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferSetData);
 
-    RENDER_SUBMIT(state, [rendererID = m_rendererID, a_offset, a_size, a_data]()
+    RENDER_SUBMIT(state, [rendererID = m_rendererID, offset = a_offset, size = a_size, data]()
       {
-        glNamedBufferSubData(rendererID, a_offset, a_size, a_data);
+        glNamedBufferSubData(rendererID, offset, size, data);
       });
   }
 

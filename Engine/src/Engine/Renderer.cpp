@@ -26,6 +26,7 @@ namespace Engine
 
   void Renderer::BeginScene()
   {
+    m_memBuffer.clear();
     m_group.Reset();
   }
 
@@ -37,6 +38,11 @@ namespace Engine
   void Renderer::RenderAndWait()
   {
 
+  }
+
+  void * Renderer::Allocate(size_t a_size)
+  {
+    return m_memBuffer.Allocate(a_size);
   }
 
   void Renderer::BeginNewGroup()
