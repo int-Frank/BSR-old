@@ -4,6 +4,7 @@
 #include "DgR2Vector.h"
 #include "DgR3Vector.h"
 #include "DgR3Matrix.h"
+#include "DgR2Matrix.h"
 
 #define BIT(x) (1 << x)
 
@@ -28,6 +29,7 @@ typedef unsigned char byte;
 typedef Dg::R2::Vector<float>           vec3;
 typedef Dg::R2::Vector_cartesian<float> vec2;
 typedef Dg::R3::Vector<float>           vec4;
+typedef Dg::R2::Matrix<float>           mat3;
 typedef Dg::R3::Matrix<float>           mat4;
 
 #undef ITEM

@@ -1,152 +1,167 @@
-#ifndef EN_ISHADER_H
-#define EN_ISHADER_H
+#ifndef EN_SHADER_H
+#define EN_SHADER_H
 
 #include "MemBuffer.h"
 #include "core_utils.h"
+#include "StaticString.h"
+#include "DgMemoryStream.h"
+#include "ShaderUniform.h"
 
 namespace Engine
 {
-  //struct ShaderUniform
-  //{
+  /*template<unsigned int N, unsigned int U>
+  struct UniformBufferDeclaration : public UniformBufferBase
+  {
+    byte buffer[N];
+    UniformDecl uniforms[U];
+    std::ptrdiff_t cursor = 0;
+    int index = 0;
 
-  //};
+    virtual byte const * GetBuffer() const override
+    {
+      return buffer;
+    }
+    virtual UniformDecl const * GetUniforms() const override
+    {
+      return uniforms;
+    }
+    virtual unsigned int GetUniformCount() const
+    {
+      return U;
+    }
 
-  //struct ShaderUniformCollection
-  //{
+    template<typename T>
+    void Push(std::string const & a_name, T const & a_data)
+    {
+    }
 
-  //};
+    template<>
+    void Push(std::string const & a_name, float const & a_data)
+    {
+      uniforms[index++] ={UniformType::Float, cursor, a_name};
+      memcpy(buffer + cursor, &a_data, sizeof(float));
+      cursor += sizeof(float);
+    }
 
-  //enum class UniformType
-  //{
-  //  None = 0,
-  //  Float, Float2, Float3, Float4,
-  //  Matrix3x3, Matrix4x4,
-  //  Int32, Uint32
-  //};
+    template<>
+    void Push(std::string const & a_name, vec3 const & a_data)
+    {
+      uniforms[index++] ={UniformType::Float3, cursor, a_name};
+      memcpy(buffer + cursor, a_data.GetData(), sizeof(vec3));
+      cursor += sizeof(vec3);
+    }
 
-  //struct UniformDecl
-  //{
-  //  UniformType Type;
-  //  std::ptrdiff_t Offset;
-  //  std::string Name;
-  //};
+    template<>                                   
+    void Push(std::string const & a_name, vec4 const & a_data)
+    {
+      uniforms[index++] ={UniformType::Float4, cursor, a_name};
+      memcpy(buffer + cursor, a_data.GetData(), sizeof(vec4));
+      cursor += sizeof(vec4);
+    }
 
-  //struct UniformBuffer
-  //{
-  //  // TODO: This currently represents a byte buffer that has been
-  //  // packed with uniforms. This was primarily created for OpenGL,
-  //  // and needs to be revisted for other rendering APIs. Furthermore,
-  //  // this currently does not assume any alignment. This also has
-  //  // nothing to do with GL uniform buffers, this is simply a CPU-side
-  //  // buffer abstraction.
-  //  Core::MemBufferDynamic<> buffer;
-  //  std::vector<UniformDecl> uniforms;
-  //};
+    template<>
+    void Push(std::string const & a_name, mat4 const & a_data)
+    {
+      uniforms[index++] ={UniformType::Matrix4x4, cursor, a_name};
+      memcpy(buffer + cursor, a_data.GetData(), sizeof(mat4));
+      cursor += sizeof(mat4);
+    }
 
-  //struct UniformBufferBase
-  //{
-  //  virtual byte const * GetBuffer() const = 0;
-  //  virtual UniformDecl const * GetUniforms() const = 0;
-  //  virtual unsigned int GetUniformCount() const = 0;
-  //};
+  };*/
 
-  //template<unsigned int N, unsigned int U>
-  //struct UniformBufferDeclaration : public UniformBufferBase
-  //{
-  //  byte buffer[N];
-  //  UniformDecl uniforms[U];
-  //  std::ptrdiff_t cursor = 0;
-  //  int index = 0;
-
-  //  virtual byte const * GetBuffer() const override
-  //  {
-  //    return buffer;
-  //  }
-  //  virtual UniformDecl const * GetUniforms() const override
-  //  {
-  //    return uniforms;
-  //  }
-  //  virtual unsigned int GetUniformCount() const
-  //  {
-  //    return U;
-  //  }
-
-  //  template<typename T>
-  //  void Push(std::string const & a_name, T const & a_data)
-  //  {
-  //  }
-
-  //  template<>
-  //  void Push(std::string const & a_name, float const & a_data)
-  //  {
-  //    uniforms[index++] ={UniformType::Float, cursor, a_name};
-  //    memcpy(buffer + cursor, &a_data, sizeof(float));
-  //    cursor += sizeof(float);
-  //  }
-
-  //  template<>
-  //  void Push(std::string const & a_name, vec3 const & a_data)
-  //  {
-  //    uniforms[index++] ={UniformType::Float3, cursor, a_name};
-  //    memcpy(buffer + cursor, a_data.GetData(), sizeof(vec3));
-  //    cursor += sizeof(vec3);
-  //  }
-
-  //  template<>
-  //  void Push(std::string const & a_name, vec4 const & a_data)
-  //  {
-  //    uniforms[index++] ={UniformType::Float4, cursor, a_name};
-  //    memcpy(buffer + cursor, a_data.GetData(), sizeof(vec4));
-  //    cursor += sizeof(vec4);
-  //  }
-
-  //  template<>
-  //  void Push(std::string const & a_name, mat4 const & a_data)
-  //  {
-  //    uniforms[index++] ={UniformType::Matrix4x4, cursor, a_name};
-  //    memcpy(buffer + cursor, a_data.GetData(), sizeof(mat4));
-  //    cursor += sizeof(mat4);
-  //  }
-
-  //};
-
-  class IShader
+  class Shader
   {
   public:
     using ShaderReloadedCallback = std::function<void()>;
 
-    virtual void Reload() = 0;
+    Shader() = default;
+    Shader(const std::string& filepath);
+    static Ref<Shader> CreateFromString(const std::string& source);
 
-    virtual void Bind() = 0;
-    //virtual void UploadUniformBuffer(const UniformBufferBase& uniformBuffer) = 0;
+    void Reload(); 
+    void AddShaderReloadedCallback(const ShaderReloadedCallback& callback);
 
-    // Temporary while we don't have materials
-    //virtual void SetFloat(const std::string& name, float value) = 0;
-    //virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;
-    //virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value) = 0;
+    void Bind();
 
-    virtual const std::string& GetName() const = 0;
+    //Not sure this is even used
+    //void UploadUniformBuffer(const UniformBufferBase& uniformBuffer) override;
 
-    // Represents a complete shader program stored in a single file.
-    // Note: currently for simplicity this is simply a string filepath, however
-    //       in the future this will be an asset object + metadata
-    //static Ref<IShader> Create(const std::string& filepath);
-    //static Ref<IShader> CreateFromString(const std::string& source);
+    void SetVSMaterialUniformBuffer(Dg::MemoryStream buffer);
+    void SetPSMaterialUniformBuffer(Dg::MemoryStream buffer);
 
-    //virtual void SetVSMaterialUniformBuffer(buffer buffer) = 0;
-    //virtual void SetPSMaterialUniformBuffer(buffer buffer) = 0;
+    void SetFloat(StringID name, float);
+    void SetMat4(StringID name, const mat4& value);
+    void SetMat4FromRenderThread(StringID name, const mat4& value);
 
-    //virtual const ShaderUniformBufferList& GetVSRendererUniforms() const = 0;
-    //virtual const ShaderUniformBufferList& GetPSRendererUniforms() const = 0;
-    //virtual const ShaderUniformBufferDeclaration& GetVSMaterialUniformBuffer() const = 0;
-    //virtual const ShaderUniformBufferDeclaration& GetPSMaterialUniformBuffer() const = 0;
-    //
-    //virtual const ShaderResourceList& GetResources() const = 0;
+    const std::string& GetName() const
+    {
+      return m_Name;
+    }
+  private:
 
-    virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) = 0;
+    void Load(const std::string& source);
 
-    // Temporary, before we have an asset manager
-    //static std::vector<Ref<Shader>> s_AllShaders;
+    std::string ReadShaderFromFile(const std::string& filepath) const;
+    std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
+    void Parse();
+    void ParseUniform(const std::string& statement, ShaderDomain domain);
+    void ParseUniformStruct(const std::string& block, ShaderDomain domain);
+    ShaderStruct* FindStruct(const std::string& name);
+
+    int32_t GetUniformLocation(const std::string& name) const;
+
+    void ResolveUniforms();
+    void ValidateUniforms();
+    void CompileAndUploadShader();
+    static GLenum ShaderTypeFromString(const std::string& type);
+
+    void ResolveAndSetUniforms(ShaderUniformBufferDeclaration * decl, Dg::MemoryStream buffer);
+    void ResolveAndSetUniform(ShaderUniformDeclaration * uniform, Dg::MemoryStream buffer);
+    void ResolveAndSetUniformArray(ShaderUniformDeclaration* uniform, Dg::MemoryStream buffer);
+    void ResolveAndSetUniformField(ShaderUniformDeclaration const & field, byte* data, int32_t offset);
+
+    void UploadUniformInt(uint32_t location, int32_t value);
+    void UploadUniformIntArray(uint32_t location, int32_t* values, int32_t count);
+    void UploadUniformFloat(uint32_t location, float value);
+    void UploadUniformFloat2(uint32_t location, vec2 const & value);
+    void UploadUniformFloat3(uint32_t location, vec3 const & value);
+    void UploadUniformFloat4(uint32_t location, vec4 const& value);
+    void UploadUniformMat3(uint32_t location, mat3 const& values);
+    void UploadUniformMat4(uint32_t location, mat4 const& values);
+    void UploadUniformMat4Array(uint32_t location, mat4& values, uint32_t count);
+
+    void UploadUniformStruct(ShaderUniformDeclaration* uniform, byte* buffer, uint32_t offset);
+
+    void UploadUniformInt(const std::string& name, int32_t value);
+    void UploadUniformIntArray(const std::string& name, int32_t* values, int32_t count);
+
+    void UploadUniformFloat(const std::string& name, float value);
+    void UploadUniformFloat2(const std::string& name, vec2 const& value);
+    void UploadUniformFloat3(const std::string& name, vec3 const& value);
+    void UploadUniformFloat4(const std::string& name, vec4 const& value);
+
+    void UploadUniformMat4(const std::string& name, mat4 const& value);
+
+    ShaderUniformBufferList const & GetVSRendererUniforms() const;
+    ShaderUniformBufferList const & GetPSRendererUniforms() const;
+    ShaderUniformBufferDeclaration const & GetVSMaterialUniformBuffer() const;
+    ShaderUniformBufferDeclaration const & GetPSMaterialUniformBuffer() const;
+    ShaderResourceList const & GetResources() const;
+  private:
+    RendererID m_RendererID = 0;
+    bool m_Loaded = false;
+
+    std::string m_Name, m_AssetPath;
+    std::unordered_map<GLenum, std::string> m_ShaderSource;
+
+    std::vector<ShaderReloadedCallback> m_ShaderReloadedCallbacks;
+
+    ShaderUniformBufferList m_VSRendererUniformBuffers;
+    ShaderUniformBufferList m_PSRendererUniformBuffers;
+    ShaderUniformBufferDeclaration * m_VSMaterialUniformBuffer;
+    ShaderUniformBufferDeclaration * m_PSMaterialUniformBuffer;
+    ShaderResourceList m_Resources;
+    ShaderStructList m_Structs;
   };
 
 }

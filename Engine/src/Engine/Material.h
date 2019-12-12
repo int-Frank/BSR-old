@@ -2,6 +2,7 @@
 #define MATERIAL_H
 
 #include "Memory.h"
+#include "DgMemoryStream.h"
 #include "IShader.h"
 
 namespace Engine
@@ -10,13 +11,13 @@ namespace Engine
   {
     friend class MaterialInstance;
   public:
-    Material(const Ref<Shader>& shader);
+    Material(const Ref<Shader>&);
     virtual ~Material();
 
     void Bind() const;
 
     template <typename T>
-    void Set(const std::string& name, const T& value)
+    void Set(StringID uniform, T const &)
     {
       auto decl = FindUniformDeclaration(name);
       // HZ_CORE_ASSERT(decl, "Could not find uniform with name '{0}'", name);
@@ -28,7 +29,7 @@ namespace Engine
         mi->OnMaterialValueUpdated(decl);
     }
 
-    void Set(const std::string& name, const Ref<Texture>& texture)
+    void Set(StringID, const Ref<Texture>& texture)
     {
       auto decl = FindResourceDeclaration(name);
       uint32_t slot = decl->GetRegister();
@@ -60,8 +61,8 @@ namespace Engine
     Ref<Shader> m_Shader;
     std::unordered_set<MaterialInstance*> m_MaterialInstances;
 
-    Buffer m_VSUniformStorageBuffer;
-    Buffer m_PSUniformStorageBuffer;
+    Dg::MemoryStream m_VSUniformStorageBuffer;
+    Dg::MemoryStream m_PSUniformStorageBuffer;
     std::vector<Ref<Texture>> m_Textures;
 
     int32_t m_RenderFlags = 0;

@@ -147,6 +147,10 @@ namespace Engine
     uint32_t m_size;
     ShaderDomain m_domain;
   };
+
+  typedef Dg::DynamicArray<ShaderUniformBufferDeclaration*> ShaderUniformBufferList;
+  typedef Dg::DynamicArray<ShaderResourceDeclaration*> ShaderResourceList;
+  typedef Dg::DynamicArray<ShaderStruct*> ShaderStructList;
 }
 
 #endif
