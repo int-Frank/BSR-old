@@ -32,8 +32,4 @@ typedef Dg::R3::Vector<float>           vec4;
 typedef Dg::R2::Matrix<float>           mat3;
 typedef Dg::R3::Matrix<float>           mat4;
 
-#undef ITEM
-#define STATIC_STRINGS \
-  ITEM()
-
 #endif

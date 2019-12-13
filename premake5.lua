@@ -190,6 +190,8 @@ project "Engine"
 		"%{IncludeDir.imgui}"
   }
   
+  include "Engine/Engine_vpaths.lua"
+  
   filter "configurations:Debug"
 		defines "BSR_DEBUG"
 		runtime "Debug"
