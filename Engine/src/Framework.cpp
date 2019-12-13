@@ -22,6 +22,7 @@ namespace Engine
       : window(nullptr)
       , eventPoller(nullptr)
       , mouseController(nullptr)
+      , graphicsContext(nullptr)
     {
 
     }
@@ -34,6 +35,7 @@ namespace Engine
     Ref<IWindow>          window;
     Ref<IEventPoller>     eventPoller;
     Ref<IMouseController> mouseController;
+    Ref<IGraphicsContext> graphicsContext;
   };
 
   Framework * Framework::s_instance(nullptr);
@@ -82,6 +84,7 @@ namespace Engine
       s_instance->InitWindow(); //Init window, create OpenGL context, init GLAD
       s_instance->InitEventPoller();
       s_instance->InitMouseController();
+      s_instance->InitGraphicsContext();
 
     } while (false);
     return result;
@@ -118,6 +121,11 @@ namespace Engine
     return m_pimpl->mouseController;
   }
 
+  Ref<IGraphicsContext> Framework::GetGraphicsContext()
+  {
+    return m_pimpl->graphicsContext;
+  }
+
   void Framework::SetWindow(IWindow * a_window)
   {
     BSR_ASSERT(m_pimpl->window.IsNull(), "Window already exists!");
@@ -130,10 +138,16 @@ namespace Engine
     m_pimpl->eventPoller = Ref<IEventPoller>(a_ep);
   }
 
-  void Framework::SetMouseController(IMouseController * a_mc)
+  void Framework::SetMouseController(IMouseController* a_mc)
   {
     BSR_ASSERT(m_pimpl->mouseController.IsNull(), "MouseController already exists!");
     m_pimpl->mouseController = Ref<IMouseController>(a_mc);
+  }
+
+  void Framework::SetGraphicsContext(IGraphicsContext* a_gc)
+  {
+    BSR_ASSERT(m_pimpl->graphicsContext.IsNull(), "GraphicsContext already exists!");
+    m_pimpl->graphicsContext = Ref<IGraphicsContext>(a_gc);
   }
 
   static const char* ImGui_ImplSDL2_GetClipboardText(void*)

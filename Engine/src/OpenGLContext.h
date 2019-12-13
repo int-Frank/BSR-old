@@ -16,9 +16,10 @@ namespace Engine
   public:
 
     ~OpenGLContext();
-    OpenGLContext(SDL_Window *);
+    OpenGLContext();
 
     Core::ErrorCode Init() override;
+    Core::ErrorCode Init(SDL_Window *);
     void SwapBuffers() override;
 
   private:

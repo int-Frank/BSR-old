@@ -1,6 +1,7 @@
 //@group Renderer
 
 #include "OpenGLContext.h"
+#include "Framework.h"
 #include "glad/glad.h"
 #include "core_Log.h"
 #include "core_ErrorCodes.h"
@@ -9,22 +10,34 @@
 
 namespace Engine
 {
+  void Framework::InitGraphicsContext()
+  {
+    SetGraphicsContext(new OpenGLContext());
+  }
+
   OpenGLContext::~OpenGLContext()
   {
     SDL_GL_DeleteContext(m_context);
     m_context = nullptr;
   }
 
-  OpenGLContext::OpenGLContext(SDL_Window * a_pWindow)
+  OpenGLContext::OpenGLContext()
     : m_pWindow(nullptr)
     , m_context(nullptr)
   {
-    BSR_ASSERT(a_pWindow != nullptr);
-    m_pWindow = a_pWindow;
+
   }
 
   Core::ErrorCode OpenGLContext::Init()
   {
+    return Core::EC_None;
+  }
+
+  Core::ErrorCode OpenGLContext::Init(SDL_Window* a_pWindow)
+  {
+    BSR_ASSERT(a_pWindow != nullptr);
+    m_pWindow = a_pWindow;
+
     // Create OpenGL context
     m_context = SDL_GL_CreateContext(m_pWindow);
     if (m_context == nullptr)

@@ -10,6 +10,7 @@
 #include "IWindow.h"
 #include "IEventPoller.h"
 #include "IMouseController.h"
+#include "IGraphicsContext.h"
 #include "Shader.h"
 #include "Buffer.h"
 #include "Memory.h"
@@ -39,6 +40,7 @@ namespace Engine
     Ref<IWindow>          GetWindow();
     Ref<IEventPoller>     GetEventPoller();
     Ref<IMouseController> GetMouseController();
+    Ref<IGraphicsContext> GetGraphicsContext();
 
     //Audio
     //IAudio *       GetAudio();
@@ -52,12 +54,14 @@ namespace Engine
     void InitWindow();
     void InitEventPoller();
     void InitMouseController();
+    void InitGraphicsContext();
 
-  private:
+  public:
 
     void SetWindow(IWindow *);
     void SetEventPoller(IEventPoller *);
-    void SetMouseController(IMouseController *);
+    void SetMouseController(IMouseController*);
+    void SetGraphicsContext(IGraphicsContext*);
 
   private:
 

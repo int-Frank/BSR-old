@@ -37,7 +37,6 @@ namespace Engine
   private:
 
     SDL_Window *        m_pWindow;
-    IGraphicsContext *  m_pContext; //TODO this context should live in Framework
   };
 
   void Framework::InitWindow()
@@ -47,7 +46,6 @@ namespace Engine
 
   FW_SDLWindow::FW_SDLWindow()
     : m_pWindow(nullptr)
-    , m_pContext(nullptr)
   {
 
   }
@@ -59,7 +57,7 @@ namespace Engine
 
   void FW_SDLWindow::Update()
   {
-    m_pContext->SwapBuffers();
+    Framework::Instance()->GetGraphicsContext()->SwapBuffers();
   }
 
   void FW_SDLWindow::SetVSync(bool a_val)
@@ -82,7 +80,7 @@ namespace Engine
 
   Core::ErrorCode FW_SDLWindow::Init(WindowProps const & a_props)
   {
-    BSR_ASSERT(m_pWindow == nullptr && m_pContext == nullptr, "FW_SDLWindow already initialised!");
+    BSR_ASSERT(m_pWindow == nullptr, "FW_SDLWindow already initialised!");
 
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, OPENGL_MAJOR);
@@ -100,8 +98,12 @@ namespace Engine
       return Core::EC_Error;
     }
 
-    m_pContext = new OpenGLContext(m_pWindow);
-    if (m_pContext->Init() != Core::EC_None)
+    OpenGLContext * m_pContext = dynamic_cast<OpenGLContext*>
+      (
+        &*Framework::Instance()->GetGraphicsContext()
+      );
+
+    if (m_pContext->Init(m_pWindow) != Core::EC_None)
     {
       LOG_ERROR("Failed to create opengl context!");
       Destroy();
@@ -113,9 +115,6 @@ namespace Engine
 
   void FW_SDLWindow::Destroy()
   {
-    delete m_pContext;
-    m_pContext = nullptr;
-
     SDL_DestroyWindow(m_pWindow);
     m_pWindow = nullptr;
   }
