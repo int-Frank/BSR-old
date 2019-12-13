@@ -139,12 +139,10 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
 
-    RegisterMe();
     RENDER_SUBMIT(state, [this, data]() mutable
       {
         glCreateBuffers(1, &this->m_rendererID);
         glNamedBufferData(this->m_rendererID, this->m_size, data, OpenGLUsage(this->m_usage));
-        this->DeregisterMe();
       });
   }
 
@@ -157,12 +155,10 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
 
-    RegisterMe();
     RENDER_SUBMIT(state, [this]() mutable
       {
         glCreateBuffers(1, &this->m_rendererID);
         glNamedBufferData(this->m_rendererID, this->m_size, nullptr, OpenGLUsage(this->m_usage));
-        this->DeregisterMe();
       });
   }
 
@@ -236,12 +232,10 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
 
-    RegisterMe();
     RENDER_SUBMIT(state, [this, data]() mutable
       {
         glCreateBuffers(1, &this->m_rendererID);
         glNamedBufferData(this->m_rendererID, this->m_size, data, GL_STATIC_DRAW);
-        this->DeregisterMe();
       });
   }
 

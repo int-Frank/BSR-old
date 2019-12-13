@@ -37,11 +37,9 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::VertexArrayCreate);
 
-    RegisterMe();
     RENDER_SUBMIT(state, [this]() mutable
       {
         glCreateVertexArrays(1, &this->m_rendererID);
-        this->DeregisterMe();
       });
   }
 
@@ -94,8 +92,6 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::VertexArrayAddVertexBuffer);
 
-    RegisterMe();
-    a_vertexBuffer->RegisterMe();
     RENDER_SUBMIT(state, [this, pvb = &*a_vertexBuffer]() mutable
       {
         for (auto it = pvb->GetLayout().begin(); it != pvb->GetLayout().end(); it++)
@@ -121,8 +117,6 @@ namespace Engine
           }
           this->m_vertexBufferIndex++;
         }
-        this->DeregisterMe();
-        pvb->DeregisterMe();
       });
 
     Renderer::Instance()->EndCurrentGroup();

@@ -38,7 +38,7 @@ namespace Engine
   //cleared between when we submit and when the renderer processes the resource, we are
   //left with a dangling pointer. To avoid this, we manually register a user before we 
   //submit, and manually deregister after the renderer processes it.
-  class Resource
+  /*class Resource
   {
   public:
 
@@ -66,5 +66,5 @@ namespace Engine
 
   private:
     impl::ResourceID64 m_resourceID;
-  };
+  };*/
 }

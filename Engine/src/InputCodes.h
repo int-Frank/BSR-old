@@ -1,4 +1,4 @@
-//@group Input
+//@group Core
 
 #ifndef EN_INPUTCODES_H
 #define EN_INPUTCODES_H

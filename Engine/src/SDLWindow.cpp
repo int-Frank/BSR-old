@@ -36,7 +36,7 @@ namespace Engine
 
   private:
 
-    SDL_Window *        m_pWindow;
+    SDL_Window * m_pWindow;
   };
 
   void Framework::InitWindow()

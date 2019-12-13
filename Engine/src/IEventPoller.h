@@ -1,4 +1,4 @@
-//@group Events
+//@group Core
 
 #ifndef EN_IEVENTPOLLER_H
 #define EN_IEVENTPOLLER_H

@@ -120,36 +120,16 @@ namespace Engine
 
     Ref();
 
-    // default constructor when T has no SetRefID method
-    template
-      <
-      typename U = T,
-      typename = typename std::enable_if< !std::is_base_of<Resource, U>::value >::type
-      >
-      constexpr Ref(T* a_pObj)
+    Ref(T* a_pObj)
       : m_pObject(a_pObj)
     {
-      m_id.SetType(impl::T_Generated);
-      m_id.SetID(impl::ResourceManager::Instance()->GenerateUnique32());
-      impl::ResourceManager::Instance()->RegisterResource(m_id, new impl::ResourceWrapper<T>(m_pObject));
-      impl::ResourceManager::Instance()->RegisterUser(m_id);
-    }
+      if (m_pObject == nullptr)
+        return;
 
-    // default constructor when T does have SetRefID method
-    template
-      <
-      typename U = T,
-      typename = typename std::enable_if< std::is_base_of<Resource, U>::value >::type,
-      typename = U
-      >
-      constexpr Ref(T* a_pObj)
-      : m_pObject(a_pObj)
-    {
       m_id.SetType(impl::T_Generated);
       m_id.SetID(impl::ResourceManager::Instance()->GenerateUnique32());
       impl::ResourceManager::Instance()->RegisterResource(m_id, new impl::ResourceWrapper<T>(m_pObject));
       impl::ResourceManager::Instance()->RegisterUser(m_id);
-      dynamic_cast<Resource*>(m_pObject)->SetRefID(m_id);
     }
 
     //Construct from an already registered resource

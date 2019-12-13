@@ -11,66 +11,6 @@
 
 namespace Engine
 {
-  /*template<unsigned int N, unsigned int U>
-  struct UniformBufferDeclaration : public UniformBufferBase
-  {
-    byte buffer[N];
-    UniformDecl uniforms[U];
-    std::ptrdiff_t cursor = 0;
-    int index = 0;
-
-    virtual byte const * GetBuffer() const override
-    {
-      return buffer;
-    }
-    virtual UniformDecl const * GetUniforms() const override
-    {
-      return uniforms;
-    }
-    virtual unsigned int GetUniformCount() const
-    {
-      return U;
-    }
-
-    template<typename T>
-    void Push(std::string const & a_name, T const & a_data)
-    {
-    }
-
-    template<>
-    void Push(std::string const & a_name, float const & a_data)
-    {
-      uniforms[index++] ={UniformType::Float, cursor, a_name};
-      memcpy(buffer + cursor, &a_data, sizeof(float));
-      cursor += sizeof(float);
-    }
-
-    template<>
-    void Push(std::string const & a_name, vec3 const & a_data)
-    {
-      uniforms[index++] ={UniformType::Float3, cursor, a_name};
-      memcpy(buffer + cursor, a_data.GetData(), sizeof(vec3));
-      cursor += sizeof(vec3);
-    }
-
-    template<>                                   
-    void Push(std::string const & a_name, vec4 const & a_data)
-    {
-      uniforms[index++] ={UniformType::Float4, cursor, a_name};
-      memcpy(buffer + cursor, a_data.GetData(), sizeof(vec4));
-      cursor += sizeof(vec4);
-    }
-
-    template<>
-    void Push(std::string const & a_name, mat4 const & a_data)
-    {
-      uniforms[index++] ={UniformType::Matrix4x4, cursor, a_name};
-      memcpy(buffer + cursor, a_data.GetData(), sizeof(mat4));
-      cursor += sizeof(mat4);
-    }
-
-  };*/
-
   class Shader
   {
   //public:
@@ -84,9 +24,6 @@ namespace Engine
   //  void AddShaderReloadedCallback(const ShaderReloadedCallback& callback);
 
   //  void Bind();
-
-  //  //Not sure this is even used
-  //  //void UploadUniformBuffer(const UniformBufferBase& uniformBuffer) override;
 
   //  void SetVSMaterialUniformBuffer(Dg::MemoryStream buffer);
   //  void SetPSMaterialUniformBuffer(Dg::MemoryStream buffer);

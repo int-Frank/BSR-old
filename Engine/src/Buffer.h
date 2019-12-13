@@ -68,7 +68,7 @@ namespace Engine
   // VertexBuffer
   //------------------------------------------------------------------------------------------------
 
-  class VertexBuffer : public Resource
+  class VertexBuffer
   {
   public:
 
@@ -97,7 +97,7 @@ namespace Engine
   // IndexBuffer
   //------------------------------------------------------------------------------------------------
 
-  class IndexBuffer : public Resource
+  class IndexBuffer
   {
     typedef uint16_t intType;
   public:

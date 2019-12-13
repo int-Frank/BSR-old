@@ -9,7 +9,7 @@
 
 namespace Engine {
 
-  class VertexArray : public Resource
+  class VertexArray
   {
   public:
 

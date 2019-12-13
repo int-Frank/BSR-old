@@ -6,6 +6,9 @@ vpaths
     "D:/dev/projects/BSR/Engine/src/Application.h",
     "D:/dev/projects/BSR/Engine/src/Engine.h",
     "D:/dev/projects/BSR/Engine/src/EntryPoint.h",
+    "D:/dev/projects/BSR/Engine/src/IEventPoller.h",
+    "D:/dev/projects/BSR/Engine/src/IMouseController.h",
+    "D:/dev/projects/BSR/Engine/src/InputCodes.h",
     "D:/dev/projects/BSR/Engine/src/IWindow.h",
     "D:/dev/projects/BSR/Engine/src/Options.h"
   },
@@ -14,14 +17,9 @@ vpaths
     "D:/dev/projects/BSR/Engine/src/Buffer.cpp",
     "D:/dev/projects/BSR/Engine/src/Buffer.h",
     "D:/dev/projects/BSR/Engine/src/IGraphicsContext.h",
-    "D:/dev/projects/BSR/Engine/src/IShader.h",
-    "D:/dev/projects/BSR/Engine/src/IVertexArray.h",
     "D:/dev/projects/BSR/Engine/src/Material.h",
-    "D:/dev/projects/BSR/Engine/src/OpenGLBuffer.cpp",
     "D:/dev/projects/BSR/Engine/src/OpenGLContext.cpp",
     "D:/dev/projects/BSR/Engine/src/OpenGLContext.h",
-    "D:/dev/projects/BSR/Engine/src/OpenGLShader.cpp",
-    "D:/dev/projects/BSR/Engine/src/OpenGLVertexArray.cpp",
     "D:/dev/projects/BSR/Engine/src/RenderCommandQueue.cpp",
     "D:/dev/projects/BSR/Engine/src/RenderCommandQueue.h",
     "D:/dev/projects/BSR/Engine/src/Renderer.cpp",
@@ -30,9 +28,13 @@ vpaths
     "D:/dev/projects/BSR/Engine/src/RendererAPI.h",
     "D:/dev/projects/BSR/Engine/src/RenderState.cpp",
     "D:/dev/projects/BSR/Engine/src/RenderState.h",
+    "D:/dev/projects/BSR/Engine/src/Shader.cpp",
+    "D:/dev/projects/BSR/Engine/src/Shader.h",
     "D:/dev/projects/BSR/Engine/src/ShaderUniform.cpp",
     "D:/dev/projects/BSR/Engine/src/ShaderUniform.h",
-    "D:/dev/projects/BSR/Engine/src/Texture.h"
+    "D:/dev/projects/BSR/Engine/src/Texture.h",
+    "D:/dev/projects/BSR/Engine/src/VertexArray.cpp",
+    "D:/dev/projects/BSR/Engine/src/VertexArray.h"
   },
   ["Framework"] =
   {
@@ -42,19 +44,10 @@ vpaths
     "D:/dev/projects/BSR/Engine/src/SDLMouseController.cpp",
     "D:/dev/projects/BSR/Engine/src/SDLWindow.cpp"
   },
-  ["Events"] =
-  {
-    "D:/dev/projects/BSR/Engine/src/IEventPoller.h"
-  },
   ["ImGui"] =
   {
     "D:/dev/projects/BSR/Engine/src/imgui_impl_opengl3.cpp",
     "D:/dev/projects/BSR/Engine/src/imgui_impl_opengl3.h"
-  },
-  ["Input"] =
-  {
-    "D:/dev/projects/BSR/Engine/src/IMouseController.h",
-    "D:/dev/projects/BSR/Engine/src/InputCodes.h"
   },
   ["Layers"] =
   {
