@@ -1,4 +1,4 @@
-//@group Renderer
+//@group Interface
 
 #ifndef EN_IGRAPHICSCONTEXT_H
 #define EN_IGRAPHICSCONTEXT_H

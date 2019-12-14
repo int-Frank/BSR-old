@@ -50,7 +50,7 @@ namespace Engine
       new (pStorageBuffer) FuncT(std::forward<FuncT>(func));
     }
 
-    void RenderAndWait();
+    void Render();
 
     //uint64_t RegisterShader(Ref<IShader>);
     //uint64_t RegisterVAO(Ref<IVAO>);

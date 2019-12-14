@@ -6,17 +6,13 @@ vpaths
     "D:/dev/projects/BSR/Engine/src/Application.h",
     "D:/dev/projects/BSR/Engine/src/Engine.h",
     "D:/dev/projects/BSR/Engine/src/EntryPoint.h",
-    "D:/dev/projects/BSR/Engine/src/IEventPoller.h",
-    "D:/dev/projects/BSR/Engine/src/IMouseController.h",
     "D:/dev/projects/BSR/Engine/src/InputCodes.h",
-    "D:/dev/projects/BSR/Engine/src/IWindow.h",
     "D:/dev/projects/BSR/Engine/src/Options.h"
   },
   ["Renderer"] =
   {
     "D:/dev/projects/BSR/Engine/src/Buffer.cpp",
     "D:/dev/projects/BSR/Engine/src/Buffer.h",
-    "D:/dev/projects/BSR/Engine/src/IGraphicsContext.h",
     "D:/dev/projects/BSR/Engine/src/Material.h",
     "D:/dev/projects/BSR/Engine/src/OpenGLContext.cpp",
     "D:/dev/projects/BSR/Engine/src/OpenGLContext.h",
@@ -43,6 +39,13 @@ vpaths
     "D:/dev/projects/BSR/Engine/src/SDLEventPoller.cpp",
     "D:/dev/projects/BSR/Engine/src/SDLMouseController.cpp",
     "D:/dev/projects/BSR/Engine/src/SDLWindow.cpp"
+  },
+  ["Interface"] =
+  {
+    "D:/dev/projects/BSR/Engine/src/IEventPoller.h",
+    "D:/dev/projects/BSR/Engine/src/IGraphicsContext.h",
+    "D:/dev/projects/BSR/Engine/src/IMouseController.h",
+    "D:/dev/projects/BSR/Engine/src/IWindow.h"
   },
   ["ImGui"] =
   {

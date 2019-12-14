@@ -170,17 +170,9 @@ namespace Engine
     if (res != nullptr)
     {
       if (typeid(T) != res->GetType())
-      {
-        LOG_WARN("Attempt to retrieve resource of different type. Attempting to cast...");
-        m_pObject = dynamic_cast<T*>(res->GetPointer());
-        BSR_ASSERT(m_pObject != nullptr, "Attempt to retrieve object of different type!");
-        m_id = a_id;
-      }
-      else
-      {
-        m_pObject = static_cast<T*>(res->GetPointer());
-        m_id = a_id;
-      }
+        LOG_WARN("Attempt to retrieve resource of different type! Casting anyway...");
+      m_pObject = static_cast<T*>(res->GetPointer());
+      m_id = a_id;
     }
     else
       m_id.SetNull();

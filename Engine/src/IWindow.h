@@ -1,4 +1,4 @@
-//@group Core
+//@group Interface
 
 #ifndef EN_IWINDOW_H
 #define EN_IWINDOW_H

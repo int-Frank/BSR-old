@@ -1,4 +1,4 @@
-//@group Core
+//@group Interface
 
 #ifndef EN_IMOUSECONTROLLER_H
 #define EN_IMOUSECONTROLLER_H

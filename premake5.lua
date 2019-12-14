@@ -96,6 +96,7 @@ project "Tests"
   includedirs
   {
     "%{IncludeDir.cppunitlite}",
+		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.DgLib}",
     "%{wks.location}/Core/src",
     "%{wks.location}/Engine/src",

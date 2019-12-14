@@ -1,5 +1,5 @@
 #include "TestHarness.h"
-#include "Engine/ResourceID.h"
+#include "ResourceID.h"
 
 typedef Engine::impl::ResourceID64 ResourceID64;
 

@@ -37,9 +37,9 @@ namespace Engine
 
   }
 
-  void Renderer::RenderAndWait()
+  void Renderer::Render()
   {
-
+    //This relesases the render thread...
   }
 
   void * Renderer::Allocate(size_t a_size)

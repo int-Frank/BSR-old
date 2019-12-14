@@ -12,7 +12,6 @@ def Make_vpaths(outputFile, sourcePath):
     noGroupTag = "NO_GROUP"
 
     for (dirpath, dirnames, filenames) in walk(sourcePath):
-
         sourceFiles.extend(filenames)
         break
 

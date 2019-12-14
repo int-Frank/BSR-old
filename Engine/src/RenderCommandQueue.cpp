@@ -17,6 +17,7 @@ namespace Engine
   }
 
   //TODO use a MemBuffer class
+  //TODO this needs to be double buffered
   void* RenderCommandQueue::Allocate(RenderState a_state, 
                                      RenderCommandFn a_fn, 
                                      uint32_t a_size)
