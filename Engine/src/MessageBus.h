@@ -21,12 +21,12 @@ namespace Engine
   class MessageBus
   {
     static size_t const s_bufSize = 1 * 1024 * 1024;
-    typedef Core::MemBuffer<s_bufSize, __STDCPP_DEFAULT_NEW_ALIGNMENT__> MemBuffer;
   public:
 
     MessageBus(LayerStack &);
 
-    //Add message to the queue to be processed at a later time
+    //Add message to the queue to be processed at a later time.
+    //Can be used from any thread.
     void Register(TRef<Message>);
 
     void DispatchMessages();

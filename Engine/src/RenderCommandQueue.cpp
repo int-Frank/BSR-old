@@ -4,9 +4,23 @@
 
 namespace Engine
 {
+  RenderCommandQueue::Buffer::Buffer(size_t a_size)
+    : buf(a_size)
+  {
+
+  }
+
+  void RenderCommandQueue::Buffer::Clear()
+  {
+    buf.clear();
+    allocs.clear();
+  }
+
   RenderCommandQueue::RenderCommandQueue()
-    : m_commandBuffer(1 * 1024 * 1024)
-    , m_currentIndex(0)
+    : m_commandBuffer{Buffer(s_cmdBufSize), Buffer(s_cmdBufSize)}
+    , m_outputBuffer{Buffer(s_outBufSize), Buffer(s_outBufSize)}
+    , m_mem{MemBuffer(s_memBufSize), MemBuffer(s_memBufSize)}
+    , m_writeIndex(0)
   {
 
   }
@@ -16,49 +30,74 @@ namespace Engine
 
   }
 
-  //TODO use a MemBuffer class
-  //TODO this needs to be double buffered
-  void* RenderCommandQueue::Allocate(RenderState a_state, 
-                                     RenderCommandFn a_fn, 
-                                     uint32_t a_size)
+  void * RenderCommandQueue::Allocate(uint32_t a_size)
   {
-    int align = __STDCPP_DEFAULT_NEW_ALIGNMENT__;
-
-    //Move to next aligned block
-    m_currentIndex = m_currentIndex + ((align - (m_currentIndex % align)) % align);
-    uint32_t requiredSize = m_currentIndex + a_size + 1;
-
-    if (m_commandBuffer.mem_block_size() < requiredSize)
-      m_commandBuffer.resize(requiredSize);
-
-    KV kv;
-    kv.renderState = a_state;
-    kv.offset = m_currentIndex;
-    m_renderQueue.push_back(kv);
-
-    *(RenderCommandFn*)&m_commandBuffer[m_currentIndex] = a_fn;
-    m_currentIndex += uint32_t(sizeof(RenderCommandFn));
-
-    void * memory = &m_commandBuffer[m_currentIndex];
-    m_currentIndex += a_size;
-
-    return memory;
+    return m_mem[m_writeIndex].Allocate(a_size);
   }
 
+  //Main thread (producer)...
+  void* RenderCommandQueue::AllocateForCommand(RenderState a_state, 
+                                               RenderCommandFn a_fn, 
+                                               uint32_t a_size)
+  {
+    void* ptr = m_commandBuffer[m_writeIndex].buf.Allocate(sizeof(RenderState) + sizeof(RenderCommandFn) + a_size);
+    m_commandBuffer[m_writeIndex].allocs.push_back(ptr);
+
+    *static_cast<RenderState*>(ptr) = a_state;
+    ptr = static_cast<void*>(static_cast<byte*>(ptr) + sizeof(RenderState));
+
+    *static_cast<RenderCommandFn*>(ptr) = a_fn;
+    ptr = static_cast<void*>(static_cast<byte*>(ptr) + sizeof(RenderCommandFn));
+
+    return ptr;
+  }
+
+  void* RenderCommandQueue::AllocateForOutput(RenderCommandFn a_fn, 
+                                              uint32_t a_size)
+  {
+    void* ptr = m_outputBuffer[m_writeIndex].buf.Allocate(sizeof(RenderCommandFn) + a_size);
+    m_outputBuffer[m_writeIndex].allocs.push_back(ptr);
+
+    *static_cast<RenderCommandFn*>(ptr) = a_fn;
+    ptr = static_cast<void*>(static_cast<byte*>(ptr) + sizeof(RenderCommandFn));
+
+    return ptr;
+  }
+
+  //Render thread (consumer)...
+  //The render thread could just repeat this...
   void RenderCommandQueue::Execute()
   {
-    for (size_t i = 0; i < m_renderQueue.size(); i++)
+    Sort();
+
+    int readInd = (m_writeIndex + 1) % 2;
+    for (size_t i = 0; i < m_sortedCommands.size(); i++)
     {
-      uint32_t offset = m_renderQueue[i].offset;
+      uint32_t ind = m_sortedCommands[i];
 
-      RenderCommandFn function = *(RenderCommandFn*)&m_commandBuffer[offset];
-      void * data = &m_commandBuffer[offset + sizeof(RenderCommandFn)];
-      function(data);
+      void * ptr = m_commandBuffer[readInd].allocs[ind];
+      ptr = static_cast<void*>(static_cast<byte*>(ptr) + sizeof(RenderState));
+
+      RenderCommandFn function = *(RenderCommandFn*)ptr;
+      ptr = static_cast<void*>(static_cast<byte*>(ptr) + sizeof(RenderCommandFn));
+
+      function(ptr);
     }
+  }
 
-    m_commandBuffer.clear();
-    m_renderQueue.clear();
-    m_sortableSegs.clear();
+  PODArray<void*> RenderCommandQueue::GetOutputCommands()
+  {
+    int readInd = (m_writeIndex + 1) % 2;
+    return m_outputBuffer[readInd].allocs;
+  }
+
+  void RenderCommandQueue::Swap()
+  {
+    int readInd = (m_writeIndex + 1) % 2;
+    m_commandBuffer[readInd].Clear();
+    m_outputBuffer[readInd].Clear();
+    m_mem[readInd].clear();
+    m_writeIndex = readInd;
   }
 
   void RenderCommandQueue::PushCriterion(Ref<RenderSortCriterion> a_crit)
@@ -73,6 +112,14 @@ namespace Engine
 
   void RenderCommandQueue::Sort()
   {
+    //No sort for now...
+    m_sortedCommands.clear();
+    int readInd = (m_writeIndex + 1) % 2;
+    for (uint32_t i = 0; i < (uint32_t)m_commandBuffer[readInd].allocs.size(); i++)
+    {
+      m_sortedCommands.push_back(i);
+    }
 
+    m_sortableSegs.clear();
   }
 }

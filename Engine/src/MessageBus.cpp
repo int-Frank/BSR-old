@@ -32,6 +32,7 @@ namespace Engine
     m_mutex.unlock();
     a_message->Clone(buf);
     m_currentlyWriting[ind]--;
+    m_cv.notify_all();
   } 
 
   void MessageBus::DispatchMessages()

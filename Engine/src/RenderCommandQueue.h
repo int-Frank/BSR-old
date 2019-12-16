@@ -21,13 +21,25 @@ namespace Engine
 
   class RenderCommandQueue
   {
+    static size_t const s_cmdBufSize = 1 * 1024 * 1024;
+    static size_t const s_outBufSize = 1 * 1024 * 1024;
+    static size_t const s_memBufSize = 10 * 1024 * 1024;
+
   public:
 
     RenderCommandQueue();
     ~RenderCommandQueue();
 
-    void* Allocate(RenderState, RenderCommandFn, uint32_t size);
+    //Main thread...
+    void * AllocateForCommand(RenderState, RenderCommandFn, uint32_t size);
+    PODArray<void*> GetOutputCommands();
+
+    //Render thread
+    void * AllocateForOutput(RenderCommandFn, uint32_t size);
+    void Swap();
     void Execute();
+
+    void * Allocate(uint32_t size);
 
     void PushCriterion(Ref<RenderSortCriterion>);
     void ClearCriterion();
@@ -36,26 +48,29 @@ namespace Engine
 
   private:
 
-
-    struct KV
-    {
-      RenderState renderState;
-      uint32_t    offset;
-    };
-
     struct SubArray
     {
-      uint32_t offset;
+      uint32_t index;
       uint32_t count;
     };
 
+    struct Buffer
+    {
+      Buffer(size_t memBufSize);
+      void Clear();
+
+      MemBuffer       buf;
+      PODArray<void*> allocs;
+    };
+
+    PODArray<uint32_t>  m_sortedCommands;
+    int                 m_writeIndex;
+    Buffer              m_outputBuffer[2];
+    Buffer              m_commandBuffer[2];
+    MemBuffer           m_mem[2];
+
     Dg::DynamicArray<Ref<RenderSortCriterion>>  m_sortCriterion;
     PODArray<SubArray>              m_sortableSegs;
-    PODArray<KV>                    m_renderQueue;
-
-    //Function to execute the lambda (64)| the lambda we added
-    uint32_t                        m_currentIndex;
-    PODArray<uint8_t>               m_commandBuffer;
 
   };
 }

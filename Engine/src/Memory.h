@@ -22,7 +22,7 @@ namespace Engine
     namespace TRef
     {
       extern std::mutex mutex;
-      extern Core::MemBuffer<10 * 1024 * 1024, __STDCPP_DEFAULT_NEW_ALIGNMENT__> buf;
+      extern MemBuffer buf;
     }
   }
 

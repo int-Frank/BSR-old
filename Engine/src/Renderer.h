@@ -4,6 +4,11 @@
 #define RENDERTEMP_H
 
 #include <stdint.h>
+#include <mutex>
+#include <atomic>
+#include <condition_variable>
+#include <thread>
+
 #include "Memory.h"
 
 #include "Shader.h"
@@ -27,6 +32,9 @@ namespace Engine
     static void ShutDown();
     static Renderer * Instance();
 
+    Renderer();
+    ~Renderer();
+
     //Everything must happen between these two functions.
     void BeginScene();
     void EndScene();
@@ -46,18 +54,22 @@ namespace Engine
         pFunc->~FuncT();
       };
       a_state.Set(RenderState::Attr::Group, uint64_t(m_group.GetCurrentID()));
-      auto pStorageBuffer = s_instance->m_commandQueue.Allocate(a_state, renderCmd, sizeof(func));
+      auto pStorageBuffer = s_instance->m_commandQueue.AllocateForCommand(a_state, renderCmd, sizeof(func));
       new (pStorageBuffer) FuncT(std::forward<FuncT>(func));
     }
 
-    void Render();
+    bool ShouldExit() const;
 
-    //uint64_t RegisterShader(Ref<IShader>);
-    //uint64_t RegisterVAO(Ref<IVAO>);
-    //uint64_t RegisterTexture(Ref<ITexture>);
-    //uint64_t RegisterMaterial(Ref<IMaterial>);
+    //Main thread
+    void WaitForRenderer();
 
-    void * Allocate(size_t);
+    //Render thread
+    void RenderThreadInit();
+    void RenderThreadShutDown();
+    void FinishRender();
+    void ExecuteRenderCommands();
+
+    void * Allocate(uint32_t);
 
   private:
 
@@ -65,16 +77,22 @@ namespace Engine
 
   private:
 
-    Core::MemBuffer<10 * 1024 * 1024> m_memBuffer;
     RenderCommandQueue m_commandQueue;
 
     Core::Group m_group;
 
-    //Should these belong in an asset manager?
-    //std::unique_ptr<ShaderLibrary> m_shaderLibrary;
-    //std::unique_ptr<VAOLibrary> m_vaoLibrary;
-    //std::unique_ptr<TextureLibrary> m_textureLibrary;
+    std::mutex        m_mutex[2];
+    std::mutex        m_mutex3;
+    std::atomic<bool> m_shouldExit;
+    std::atomic<bool> m_ready;
+    std::condition_variable m_cv;
 
+    std::thread m_renderThread;
+
+    int m_trender_ind;
+    bool m_trender_hasMutex3;
+    int m_tmain_ind;
+    bool m_tmain_hasMutex3;
   };
 
 #define RENDER_SUBMIT(...) Renderer::Instance()->Submit(__VA_ARGS__)

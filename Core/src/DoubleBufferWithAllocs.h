@@ -1,5 +1,5 @@
-#ifndef DOUBLEBUFFER_H
-#define DOUBLEBUFFER_H
+#ifndef DOUBLEBUFFERWITHALLOCS_H
+#define DOUBLEBUFFERWITHALLOCS_H
 
 #include <mutex>
 #include <atomic>
@@ -12,14 +12,14 @@
 #include "PODArray.h"
 
 //A double buffer which supports many producer threads, and one consumer thread.
-class DoubleBuffer
+class DoubleBufferWithAllocs
 {
 public:
 
   class Ref
   {
-    friend class DoubleBuffer;
-    Ref(std::atomic<size_t> *, void *);
+    friend class DoubleBufferWithAllocs;
+    Ref(std::atomic<size_t>*, void*);
   public:
 
     Ref();
@@ -28,25 +28,25 @@ public:
     Ref(Ref const&);
     Ref& operator=(Ref const&);
 
-    Ref(Ref &&);
-    Ref& operator=(Ref &&);
+    Ref(Ref&&);
+    Ref& operator=(Ref&&);
 
-    void * GetBuffer() const;
+    void* GetBuffer() const;
 
   private:
-    std::atomic<size_t> * m_nProdRefs;
-    void * m_buf;
+    std::atomic<size_t>* m_nProdRefs;
+    void* m_buf;
   };
 
 public:
 
-  DoubleBuffer();
-  DoubleBuffer(size_t size);
-  DoubleBuffer(size_t size, size_t alignment);
-  ~DoubleBuffer();
+  DoubleBufferWithAllocs();
+  DoubleBufferWithAllocs(size_t size);
+  DoubleBufferWithAllocs(size_t size, size_t alignment);
+  ~DoubleBufferWithAllocs();
 
-  DoubleBuffer(DoubleBuffer const &) = delete;
-  DoubleBuffer& operator=(DoubleBuffer const &) = delete;
+  DoubleBufferWithAllocs(DoubleBufferWithAllocs const&) = delete;
+  DoubleBufferWithAllocs& operator=(DoubleBufferWithAllocs const&) = delete;
 
   //Producer: Can be called from any thread.
   //Allocates on the current producer buffer
@@ -55,7 +55,10 @@ public:
   void Swap();
 
   //Consumer: Get the current consumer buffer
-  MemBuffer & GetBuffer();
+  MemBuffer& GetBuffer();
+
+  //Consumer: Get the current allocation addresses
+  PODArray<void*>& GetAllocations();
 
   //Get the number of Refs which currently have access to the producer buffer. 
   size_t GetCurrentRefCount();
@@ -64,6 +67,7 @@ private:
 
   int                     m_producerIndex;
   MemBuffer               m_buffer[2];
+  PODArray<void*>        m_allocations[2];
   std::atomic<size_t>     m_nProdRefs[2];
   std::mutex              m_mutex;
   std::condition_variable m_cv;
