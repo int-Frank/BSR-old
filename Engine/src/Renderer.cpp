@@ -4,9 +4,18 @@
 #include "Renderer.h"
 #include "core_Log.h"
 #include "core_Assert.h"
+#include "Framework.h"
+#include "core_Log.h"
 
 static void RenderThread()
 {
+  if (Engine::Framework::Instance()->GetGraphicsContext()->Init() != Core::ErrorCode::EC_None)
+  {
+    LOG_ERROR("Unable to set rendering context!");
+    Engine::Renderer::Instance()->RenderThreadInitFailed();
+    return;
+  }
+
   Engine::Renderer::Instance()->RenderThreadInit();
 
   while (!Engine::Renderer::Instance()->ShouldExit())
@@ -14,6 +23,8 @@ static void RenderThread()
     Engine::Renderer::Instance()->FinishRender();
     Engine::Renderer::Instance()->ExecuteRenderCommands();
   }
+  if (Engine::Framework::Instance()->GetGraphicsContext()->ShutDown() != Core::ErrorCode::EC_None)
+    LOG_ERROR("Trouble shutting down the rendering context!!");
   Engine::Renderer::Instance()->RenderThreadShutDown();
 }
 
@@ -27,24 +38,7 @@ namespace Engine
     return s_instance;
   }
 
-  void Renderer::Init()
-  {
-    BSR_ASSERT(s_instance == nullptr, "Renderer instance already initialised!");
-    s_instance = new Renderer();
-  }
-
-  void Renderer::ShutDown()
-  {
-    delete s_instance;
-    s_instance = nullptr;
-  }
-
-  Renderer::Renderer()
-    : m_ready(false)
-    , m_tmain_ind(1)
-    , m_trender_ind(0)
-    , m_tmain_hasMutex3(true)
-    , m_trender_hasMutex3(false)
+  bool Renderer::__Init()
   {
     m_mutex[m_tmain_ind].lock();
     m_mutex3.lock();
@@ -54,9 +48,34 @@ namespace Engine
       std::unique_lock<std::mutex> lck(mutex_start);
       m_cv.wait(lck, [this]
         {
-          return m_ready == true;
+          return m_treturnCode != ReturnCode::None;
         });
     }
+    return m_treturnCode == ReturnCode::Ready;
+  }
+
+  bool Renderer::Init()
+  {
+    BSR_ASSERT(s_instance == nullptr, "Renderer instance already initialised!");
+    s_instance = new Renderer();
+    return s_instance->__Init();
+  }
+
+  void Renderer::ShutDown()
+  {
+    delete s_instance;
+    s_instance = nullptr;
+  }
+
+  Renderer::Renderer()
+    : m_treturnCode(ReturnCode::None)
+    , m_tmain_ind(1)
+    , m_trender_ind(0)
+    , m_tmain_hasMutex3(true)
+    , m_trender_hasMutex3(false)
+    , m_shouldExit(false)
+  {
+    
   }
 
   Renderer::~Renderer()
@@ -88,7 +107,13 @@ namespace Engine
   void Renderer::RenderThreadInit()
   {
     m_mutex[m_trender_ind].lock();
-    m_ready = true;
+    m_treturnCode = ReturnCode::Ready;
+    m_cv.notify_all();
+  }
+
+  void Renderer::RenderThreadInitFailed()
+  {
+    m_treturnCode = ReturnCode::Fail;
     m_cv.notify_all();
   }
 
@@ -100,7 +125,7 @@ namespace Engine
   }
 
   //m_mutex1 locked;
-  void Renderer::WaitForRenderer()
+  void Renderer::Swap()
   {
     m_mutex[m_tmain_ind].unlock(); //Allow render thread through
     m_mutex[(m_tmain_ind + 1) % 2].lock();   //Wait for render thread to finish work

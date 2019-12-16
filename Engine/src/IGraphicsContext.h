@@ -14,6 +14,7 @@ namespace Engine
     virtual ~IGraphicsContext(){};
 
     virtual Core::ErrorCode Init() = 0;
+    virtual Core::ErrorCode ShutDown() = 0;
     virtual void SwapBuffers() = 0;
 
   private:

@@ -1,5 +1,12 @@
 //@group Core
 
+//Debug
+#include <cstdlib>
+#include <chrono>
+#include "DgRNG_Global.h"
+#include "Renderer.h"
+//End debug
+
 #include <exception>
 
 #include "MessageBus.h"
@@ -14,6 +21,7 @@
 #include "core_Assert.h"
 #include "Message.h"
 #include "Memory.h"
+#include "Renderer.h"
 
 #include "Layer_Console.h"
 #include "Layer_InputHandler.h"
@@ -79,9 +87,12 @@ namespace Engine
 
     InitWindow();
 
+    if (!Renderer::Init())
+      throw std::runtime_error("Failed to initialise Renderer!");
+
     Framework::ImGui_InitData imguiData;
     m_pimpl->pWindow->GetDimensions(imguiData.window_w, imguiData.window_h);
-    Framework::Instance()->InitImGui(imguiData);
+    //Framework::Instance()->InitImGui(imguiData);
 
     m_pimpl->layerStack.PushLayer(new Layer_InputHandler(&m_pimpl->msgBus), Layer_InputHandler::GetID());
     m_pimpl->layerStack.PushLayer(new Layer_Window(&m_pimpl->msgBus, m_pimpl->pWindow), Layer_Window::GetID());
@@ -93,6 +104,8 @@ namespace Engine
 
   Application::~Application()
   {
+    Renderer::ShutDown();
+
     if (Framework::ShutDown() != Core::EC_None)
       LOG_ERROR("Failed to shut down framework!");
 
@@ -103,6 +116,7 @@ namespace Engine
 
   void Application::Run()
   {
+
     while (!m_pimpl->shouldQuit)
     {
       float dt = 1.0f / 60.0f;
@@ -113,10 +127,10 @@ namespace Engine
       for (auto it = m_pimpl->layerStack.begin(); it != m_pimpl->layerStack.end(); it++)
         it->second->Update(dt);
 
-      Layer_imgui * imguiLayer = static_cast<Layer_imgui*>(m_pimpl->layerStack.GetLayer(Layer_imgui::GetID()));
-      imguiLayer->NewFrame();
-      for (auto it = m_pimpl->layerStack.begin(); it != m_pimpl->layerStack.end(); it++)
-        it->second->DoImGui();
+      //Layer_imgui * imguiLayer = static_cast<Layer_imgui*>(m_pimpl->layerStack.GetLayer(Layer_imgui::GetID()));
+      //imguiLayer->NewFrame();
+      //for (auto it = m_pimpl->layerStack.begin(); it != m_pimpl->layerStack.end(); it++)
+      //  it->second->DoImGui();
 
       auto it = m_pimpl->layerStack.end();
       while (it != m_pimpl->layerStack.begin())
@@ -124,6 +138,29 @@ namespace Engine
         it--;
         it->second->Render();
       }
+
+      //------------------------------------------------------------------------------------------------
+      // END DEBUG
+      //------------------------------------------------------------------------------------------------
+      /*Dg::RNG_Global rng;
+      unsigned val = rng.GetUintRange(1, 100);
+
+      RenderState state = RenderState::Create();
+      state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+      state.Set<RenderState::Attr::Command>(RenderState::Command::None);
+
+      RENDER_SUBMIT(state, [val = val]()
+        {
+          Dg::RNG_Global rng;
+          unsigned val2 = rng.GetUintRange(1, 100);
+          LOG_DEBUG("Renderer recieved {}, sending back {}", val, val2);
+        });*/
+
+      //------------------------------------------------------------------------------------------------
+      // END DEBUG
+      //------------------------------------------------------------------------------------------------
+
+      Renderer::Instance()->Swap();
     }
   }
 

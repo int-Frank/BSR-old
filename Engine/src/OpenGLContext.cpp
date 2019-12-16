@@ -17,8 +17,7 @@ namespace Engine
 
   OpenGLContext::~OpenGLContext()
   {
-    SDL_GL_DeleteContext(m_context);
-    m_context = nullptr;
+
   }
 
   OpenGLContext::OpenGLContext()
@@ -28,15 +27,16 @@ namespace Engine
 
   }
 
-  Core::ErrorCode OpenGLContext::Init()
+  Core::ErrorCode OpenGLContext::ShutDown()
   {
-    return Core::EC_None;
+    SDL_GL_DeleteContext(m_context);
+    m_context = nullptr;
+    return Core::ErrorCode::EC_None;
   }
 
-  Core::ErrorCode OpenGLContext::Init(SDL_Window* a_pWindow)
+  Core::ErrorCode OpenGLContext::Init()
   {
-    BSR_ASSERT(a_pWindow != nullptr);
-    m_pWindow = a_pWindow;
+    BSR_ASSERT(m_pWindow != nullptr, "Render context does not have a window! Make sure you set the window first!");
 
     // Create OpenGL context
     m_context = SDL_GL_CreateContext(m_pWindow);
@@ -58,6 +58,11 @@ namespace Engine
     LOG_TRACE("Version:  {}", glGetString(GL_VERSION));
 
     return Core::EC_None;
+  }
+
+  void OpenGLContext::SetSDLWindow(SDL_Window* a_pWindow)
+  {
+    m_pWindow = a_pWindow;
   }
 
   void OpenGLContext::SwapBuffers()

@@ -98,21 +98,12 @@ namespace Engine
       return Core::EC_Error;
     }
 
-    //TODO this should happen on the render thread.
-    //     Or call SDL_GL_MakeCurrent in the rendering thread, but not sure
-    //     if you have to 'disconnect' the context from the main thread first.
-    //     Best to just create the context on the rendering thread.
-    OpenGLContext * m_pContext = dynamic_cast<OpenGLContext*>
+    OpenGLContext * pContext = dynamic_cast<OpenGLContext*>
       (
         &*Framework::Instance()->GetGraphicsContext()
       );
 
-    if (m_pContext->Init(m_pWindow) != Core::EC_None)
-    {
-      LOG_ERROR("Failed to create opengl context!");
-      Destroy();
-      return Core::EC_Error;
-    }
+    pContext->SetSDLWindow(m_pWindow);
 
     return Core::EC_None;
   }

@@ -50,7 +50,7 @@ namespace Engine
   {
     delete m_pimpl;
 
-    ImGui_ImplOpenGL3_Shutdown();
+    //ImGui_ImplOpenGL3_Shutdown();
   }
 
   Framework * Framework::Instance()

@@ -11,12 +11,9 @@
 
 #include "Memory.h"
 
-#include "Shader.h"
 #include "PODArray.h"
-#include "DgMap_AVL.h"
 #include "RenderState.h"
 #include "Group.h"
-#include "DgDynamicArray.h"
 #include "RenderCommandQueue.h"
 #include "MemBuffer.h"
 
@@ -28,7 +25,7 @@ namespace Engine
 
     typedef int32_t ID;
 
-    static void Init();
+    static bool Init();
     static void ShutDown();
     static Renderer * Instance();
 
@@ -61,10 +58,11 @@ namespace Engine
     bool ShouldExit() const;
 
     //Main thread
-    void WaitForRenderer();
+    void Swap();
 
     //Render thread
     void RenderThreadInit();
+    void RenderThreadInitFailed();
     void RenderThreadShutDown();
     void FinishRender();
     void ExecuteRenderCommands();
@@ -73,9 +71,20 @@ namespace Engine
 
   private:
 
+    bool __Init();
+
+  private:
+
     static Renderer * s_instance;
 
   private:
+
+    enum class ReturnCode
+    {
+      None,
+      Ready,
+      Fail,
+    };
 
     RenderCommandQueue m_commandQueue;
 
@@ -84,7 +93,7 @@ namespace Engine
     std::mutex        m_mutex[2];
     std::mutex        m_mutex3;
     std::atomic<bool> m_shouldExit;
-    std::atomic<bool> m_ready;
+    std::atomic<ReturnCode>  m_treturnCode;
     std::condition_variable m_cv;
 
     std::thread m_renderThread;
