@@ -58,7 +58,9 @@ namespace Engine
     bool ShouldExit() const;
 
     //Main thread
-    void Swap();
+    void SyncAndHoldRenderThread();
+    void SwapBuffers();
+    void ReleaseRenderThread();
 
     //Render thread
     void RenderThreadInit();
@@ -91,7 +93,6 @@ namespace Engine
     Core::Group m_group;
 
     std::mutex        m_mutex[2];
-    std::mutex        m_mutex3;
     std::atomic<bool> m_shouldExit;
     std::atomic<ReturnCode>  m_treturnCode;
     std::condition_variable m_cv;
@@ -99,9 +100,7 @@ namespace Engine
     std::thread m_renderThread;
 
     int m_trender_ind;
-    bool m_trender_hasMutex3;
     int m_tmain_ind;
-    bool m_tmain_hasMutex3;
   };
 
 #define RENDER_SUBMIT(...) Renderer::Instance()->Submit(__VA_ARGS__)

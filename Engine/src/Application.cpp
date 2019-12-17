@@ -120,7 +120,6 @@ namespace Engine
     while (!m_pimpl->shouldQuit)
     {
       float dt = 1.0f / 60.0f;
-      TREFCLEAR();
 
       m_pimpl->msgBus.DispatchMessages();
 
@@ -159,8 +158,14 @@ namespace Engine
       //------------------------------------------------------------------------------------------------
       // END DEBUG
       //------------------------------------------------------------------------------------------------
+      std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+      LOG_DEBUG("Main: Frame Done!");
 
-      Renderer::Instance()->Swap();
+      Renderer::Instance()->SyncAndHoldRenderThread();
+      LOG_INFO("Main: Swapping Buffers!!");
+      Renderer::Instance()->SwapBuffers();
+      TREFCLEAR();  
+      Renderer::Instance()->ReleaseRenderThread();
     }
   }
 

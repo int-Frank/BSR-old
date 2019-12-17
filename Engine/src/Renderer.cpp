@@ -21,6 +21,7 @@ static void RenderThread()
   while (!Engine::Renderer::Instance()->ShouldExit())
   {
     Engine::Renderer::Instance()->FinishRender();
+    LOG_TRACE("Render: Starting new Command list");
     Engine::Renderer::Instance()->ExecuteRenderCommands();
   }
   if (Engine::Framework::Instance()->GetGraphicsContext()->ShutDown() != Core::ErrorCode::EC_None)
@@ -41,7 +42,6 @@ namespace Engine
   bool Renderer::__Init()
   {
     m_mutex[m_tmain_ind].lock();
-    m_mutex3.lock();
     m_renderThread = std::thread(RenderThread);
     {
       std::mutex mutex_start;
@@ -71,8 +71,6 @@ namespace Engine
     : m_treturnCode(ReturnCode::None)
     , m_tmain_ind(1)
     , m_trender_ind(0)
-    , m_tmain_hasMutex3(true)
-    , m_trender_hasMutex3(false)
     , m_shouldExit(false)
   {
     
@@ -81,11 +79,7 @@ namespace Engine
   Renderer::~Renderer()
   {
     m_shouldExit = true;
-
     m_mutex[m_tmain_ind].unlock();
-    if (m_tmain_hasMutex3)
-      m_mutex3.unlock();
-
     m_renderThread.join();
   }
 
@@ -120,34 +114,33 @@ namespace Engine
   void Renderer::RenderThreadShutDown()
   {
     m_mutex[m_trender_ind].unlock();
-    if (m_trender_hasMutex3)
-      m_mutex3.unlock();
   }
 
-  //m_mutex1 locked;
-  void Renderer::Swap()
+  void Renderer::SyncAndHoldRenderThread()
   {
-    m_mutex[m_tmain_ind].unlock(); //Allow render thread through
-    m_mutex[(m_tmain_ind + 1) % 2].lock();   //Wait for render thread to finish work
-    if (m_tmain_hasMutex3)
-      m_mutex3.unlock();
-    else
-      m_mutex3.lock();
-    m_tmain_hasMutex3 = !m_tmain_hasMutex3;
-    m_tmain_ind = (m_tmain_ind + 1) % 2;
+    int other = (m_tmain_ind + 1) % 2;
+    m_mutex[other].lock();
+  }
+
+  void Renderer::SwapBuffers()
+  {
+    m_commandQueue.Swap();
+  }
+
+  void Renderer::ReleaseRenderThread()
+  {
+    int other = (m_tmain_ind + 1) % 2;
+    m_mutex[m_tmain_ind].unlock();
+    m_tmain_ind = other;
   }
 
   //m_mutex2 locked;
   void Renderer::FinishRender()
   {
-    m_mutex[(m_trender_ind + 1) % 2].lock();
+    int other = (m_trender_ind + 1) % 2;
     m_mutex[m_trender_ind].unlock();
-    if (m_trender_hasMutex3)
-      m_mutex3.unlock();
-    else
-      m_mutex3.lock();
-    m_trender_hasMutex3 = !m_trender_hasMutex3;
-    m_trender_ind = (m_trender_ind + 1) % 2;
+    m_mutex[other].lock(); //Main is doing work while we try to lock
+    m_trender_ind = other;
   }
 
   void Renderer::ExecuteRenderCommands()
