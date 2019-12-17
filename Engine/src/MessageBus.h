@@ -5,13 +5,13 @@
 
 #include <stdint.h>
 #include <mutex>
-#include <atomic>
-#include <condition_variable>
 
 #include "MemBuffer.h"
 #include "Message.h"
 #include "PODArray.h"
 #include "Memory.h"
+
+#define POST(msg) ::Engine::MessageBus::Instance()->Register(msg)
 
 namespace Engine
 {
@@ -21,23 +21,34 @@ namespace Engine
   class MessageBus
   {
     static size_t const s_bufSize = 1 * 1024 * 1024;
+    static MessageBus * s_instance;
+
+    MessageBus(LayerStack&);
+
   public:
 
-    MessageBus(LayerStack &);
+    static void Init(LayerStack&);
+    static void ShutDown();
+    static MessageBus * Instance();
+
+    //TODO maybe have an 'Emplace' method, so we can construct messages
+    //     directly on the MessageBus memory heap.
 
     //Add message to the queue to be processed at a later time.
     //Can be used from any thread.
-    void Register(TRef<Message>);
+    void Register(TRef<Message> const &);
 
+    //SwapBuffers needs to be called before DispatchMessages, at a time no
+    //Messages are being registered.
+    void SwapBuffers();
     void DispatchMessages();
+
     size_t MessageCount();
 
   private:
 
     std::mutex              m_mutex;
-    std::condition_variable m_cv;
     int                     m_producerIndex;
-    std::atomic<size_t>     m_currentlyWriting[2];
     PODArray<Message*>      m_messageQueue[2];
     MemBuffer               m_buf[2];
     LayerStack &            m_layerStack;

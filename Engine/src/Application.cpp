@@ -27,6 +27,7 @@
 #include "Layer_InputHandler.h"
 #include "Layer_Window.h"
 #include "Layer_ImGui.h"
+#include "Layer_Application.h"
 
 namespace Engine
 {
@@ -35,8 +36,7 @@ namespace Engine
   public:
 
     PIMPL()
-      : msgBus(layerStack)
-      , pWindow(nullptr)
+      : pWindow(nullptr)
       , shouldQuit(false)
     {
     
@@ -46,7 +46,6 @@ namespace Engine
     Ref<IWindow> pWindow;
 
     LayerStack        layerStack;
-    MessageBus        msgBus;
   };
 
   //------------------------------------------------------------------------------------
@@ -75,6 +74,8 @@ namespace Engine
     BSR_ASSERT(s_instance == nullptr, "Error, Application already created!");
     s_instance = this;
 
+    MessageBus::Init(m_pimpl->layerStack);
+
     if (a_opts.loggerType == E_UseFileLogger)
       Core::impl::Logger::Init_file(a_opts.loggerName.c_str(), a_opts.logFile.c_str());
     else
@@ -94,10 +95,11 @@ namespace Engine
     m_pimpl->pWindow->GetDimensions(imguiData.window_w, imguiData.window_h);
     //Framework::Instance()->InitImGui(imguiData);
 
-    m_pimpl->layerStack.PushLayer(new Layer_InputHandler(&m_pimpl->msgBus), Layer_InputHandler::GetID());
-    m_pimpl->layerStack.PushLayer(new Layer_Window(&m_pimpl->msgBus, m_pimpl->pWindow), Layer_Window::GetID());
-    m_pimpl->layerStack.PushLayer(new Layer_Console(&m_pimpl->msgBus), Layer_Console::GetID());
-    m_pimpl->layerStack.PushLayer(new Layer_imgui(&m_pimpl->msgBus), Layer_imgui::GetID());
+    m_pimpl->layerStack.PushLayer(new Layer_Application(), Layer_Application::GetID());
+    m_pimpl->layerStack.PushLayer(new Layer_InputHandler(), Layer_InputHandler::GetID());
+    m_pimpl->layerStack.PushLayer(new Layer_Window(m_pimpl->pWindow), Layer_Window::GetID());
+    m_pimpl->layerStack.PushLayer(new Layer_Console(), Layer_Console::GetID());
+    m_pimpl->layerStack.PushLayer(new Layer_imgui(), Layer_imgui::GetID());
 
     LOG_TRACE("Application initialised!");
   }
@@ -110,6 +112,7 @@ namespace Engine
       LOG_ERROR("Failed to shut down framework!");
 
     s_instance = nullptr;
+    MessageBus::ShutDown();
 
     LOG_TRACE("Shutdown complete!");
   }
@@ -121,7 +124,7 @@ namespace Engine
     {
       float dt = 1.0f / 60.0f;
 
-      m_pimpl->msgBus.DispatchMessages();
+      MessageBus::Instance()->DispatchMessages();
 
       for (auto it = m_pimpl->layerStack.begin(); it != m_pimpl->layerStack.end(); it++)
         it->second->Update(dt);
@@ -141,30 +144,35 @@ namespace Engine
       //------------------------------------------------------------------------------------------------
       // END DEBUG
       //------------------------------------------------------------------------------------------------
-      /*Dg::RNG_Global rng;
+      Dg::RNG_Global rng;
       unsigned val = rng.GetUintRange(1, 100);
 
       RenderState state = RenderState::Create();
       state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
       state.Set<RenderState::Attr::Command>(RenderState::Command::None);
-
+      LOG_DEBUG("Main sending {}", val);
       RENDER_SUBMIT(state, [val = val]()
         {
           Dg::RNG_Global rng;
           unsigned val2 = rng.GetUintRange(1, 100);
           LOG_DEBUG("Renderer recieved {}, sending back {}", val, val2);
-        });*/
+          TRef<Message> msg = GetCommandMessage([val2 = val2]
+            {
+              LOG_DEBUG("Main recieved {}", val2);
+            });
+          POST(msg);
+        });
+
+      std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
       //------------------------------------------------------------------------------------------------
       // END DEBUG
       //------------------------------------------------------------------------------------------------
-      std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-      LOG_DEBUG("Main: Frame Done!");
-
+    
       Renderer::Instance()->SyncAndHoldRenderThread();
-      LOG_INFO("Main: Swapping Buffers!!");
       Renderer::Instance()->SwapBuffers();
-      TREFCLEAR();  
+      MessageBus::Instance()->SwapBuffers();
+      Engine::TBUFClear();
       Renderer::Instance()->ReleaseRenderThread();
     }
   }

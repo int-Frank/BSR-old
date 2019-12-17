@@ -15,7 +15,7 @@ namespace Engine
     , type(a_type)
     , size(ShaderDataTypeSize(type))
     , offset(0)
-    , normalized(normalized)
+    , normalized(a_normalized)
   {
   }
 

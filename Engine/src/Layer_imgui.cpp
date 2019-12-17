@@ -9,9 +9,8 @@
 
 namespace Engine
 {
-  Layer_imgui::Layer_imgui(MessageBus * a_msgBus)
-    : Layer(a_msgBus)
-    , m_dt(1.0f / 60.0f)
+  Layer_imgui::Layer_imgui()
+    : m_dt(1.0f / 60.0f)
   {
   }
 

@@ -14,7 +14,7 @@ namespace Engine
 
     ASSIGN_ID
 
-    Layer_Console(MessageBus *);
+    Layer_Console();
     ~Layer_Console();
 
 #undef ITEM

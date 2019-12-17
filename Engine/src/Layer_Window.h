@@ -19,7 +19,7 @@ namespace Engine
 
     ASSIGN_ID
 
-      Layer_Window(MessageBus * a_pMsgBus, Ref<IWindow>);
+    Layer_Window(Ref<IWindow>);
     ~Layer_Window();
 
     void OnAttach();

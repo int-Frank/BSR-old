@@ -9,9 +9,8 @@
 
 namespace Engine
 {
-  Layer_Window::Layer_Window(MessageBus * a_pMsgBus, Ref<IWindow> a_pWindow)
-    : Layer(a_pMsgBus)
-    , m_pWindow(a_pWindow)
+  Layer_Window::Layer_Window(Ref<IWindow> a_pWindow)
+    : m_pWindow(a_pWindow)
   {
 
   }

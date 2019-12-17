@@ -4,7 +4,6 @@
 #define EN_LAYER_H
 
 #include <stdint.h>
-#include "Message.h"
 #include "MessageHandler.h"
 #include "Memory.h"
 
@@ -21,8 +20,7 @@ namespace Engine
   {
   public: 
 
-    Layer(MessageBus * a_pMsgBus);
-    virtual ~Layer();
+    virtual ~Layer(){}
 
     virtual void OnAttach(){}
     virtual void OnDetach(){}
@@ -31,12 +29,10 @@ namespace Engine
     virtual void Render() {}
     virtual void DoImGui(){}
 
-    void Post(TRef<Message>);
+    //Layer(Layer const &);
+    //Layer & operator=(Layer const &);
 
-    Layer(Layer const &);
-    Layer & operator=(Layer const &);
-
-    MessageBus * m_pMsgBus;
+    //MessageBus * m_pMsgBus;
   };
 }
 

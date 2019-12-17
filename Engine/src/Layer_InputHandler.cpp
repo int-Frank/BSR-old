@@ -7,15 +7,15 @@
 #include "core_Log.h"
 #include "InputCodes.h"
 #include "Message.h"
+#include "MessageBus.h"
 
 #include "IEventPoller.h"
 #include "IMouseController.h"
 
 namespace Engine
 {
-  Layer_InputHandler::Layer_InputHandler(MessageBus * a_pMsgBus)
-    : Layer(a_pMsgBus)
-    , m_eventPoller(Framework::Instance()->GetEventPoller())
+  Layer_InputHandler::Layer_InputHandler()
+    : m_eventPoller(Framework::Instance()->GetEventPoller())
     , m_mouseController(Framework::Instance()->GetMouseController())
     , m_xMouseRotRate(1.0f)
     , m_yMouseRotRate(1.0f)
@@ -44,7 +44,7 @@ namespace Engine
     {
       TRef<Message> pMsg = it->second->CloneAsTref();
       MessageTranslator::Translate(pMsg.Get(), a_pMsg);
-      Post(pMsg);
+      POST(pMsg);
     }
   }
 
@@ -207,7 +207,7 @@ namespace Engine
 
       pMsg->Submit(this);
       if (!pMsg->Is(Message::Flag::Handled))
-        Post(pMsg);
+        POST(pMsg);
     }
   }
 }

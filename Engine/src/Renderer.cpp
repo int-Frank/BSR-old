@@ -21,7 +21,6 @@ static void RenderThread()
   while (!Engine::Renderer::Instance()->ShouldExit())
   {
     Engine::Renderer::Instance()->FinishRender();
-    LOG_TRACE("Render: Starting new Command list");
     Engine::Renderer::Instance()->ExecuteRenderCommands();
   }
   if (Engine::Framework::Instance()->GetGraphicsContext()->ShutDown() != Core::ErrorCode::EC_None)
@@ -145,7 +144,7 @@ namespace Engine
 
   void Renderer::ExecuteRenderCommands()
   {
-
+    m_commandQueue.Execute();
   }
 
   bool Renderer::ShouldExit() const

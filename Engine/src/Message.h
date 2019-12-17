@@ -50,12 +50,16 @@ namespace Engine
   ITEM(Input_MouseWheelUp) \
   ITEM(Input_MouseWheelDown) \
   ITEM(Input_MouseMove) \
+  ITEM(Command) \
   MORE_MESSAGE_TYPES
 
 #undef ITEM
 #ifndef MORE_MESSAGE_TYPES
 #define MORE_MESSAGE_TYPES
 #endif
+
+  //General Message command
+  typedef void(*MessageCommandFn)(void*);
 
   //Create enum of all message types
 #define ITEM(x) MT_##x,
@@ -72,7 +76,8 @@ namespace Engine
 #undef ITEM
 #define ITEM(MESSAGE_TYPE) template<> class MessageSub<MT_##MESSAGE_TYPE>;
   MESSAGE_LIST
-  
+
+
   class MessageHandler;
 
   class Message
@@ -99,6 +104,32 @@ namespace Engine
     virtual std::string ToString() const = 0;
   };
   static_assert(std::is_trivially_destructible<Message>::value, "Message must be trivially destructible");
+
+  template<typename FuncT>
+  TRef<Message> GetCommandMessage(FuncT&& func)
+  {
+    static_assert(std::is_trivially_destructible<FuncT>::value, "FuncT must be trivially destructible");
+    MessageCommandFn renderCmd = [](void* ptr)
+    {
+      auto pFunc = (FuncT*)ptr;
+      (*pFunc)();
+      pFunc->~FuncT();
+    };
+
+    size_t sze = sizeof(uint64_t) + sizeof(MessageCommandFn) + sizeof(func);
+    void* pBuf = TBUFAlloc(sze);
+
+    *static_cast<uint64_t*>(pBuf) = sze;
+
+    void* ptr = AdvancePtr(pBuf, sizeof(uint64_t));
+    *static_cast<MessageCommandFn*>(ptr) = renderCmd;
+
+    ptr = AdvancePtr(ptr, sizeof(MessageCommandFn));
+    new (ptr) FuncT(std::forward<FuncT>(func));
+
+    TRef<MessageSub<MT_Command>> msg = TRef<MessageSub<MT_Command>>::New(pBuf);
+    return DynamicPointerCast<Message>(msg);
+  }
 
 #define MESSAGE_CLASS_HEADER(MESSAGE_TYPE) template<>\
   class MessageSub<MESSAGE_TYPE> : public Message\
@@ -287,6 +318,34 @@ namespace Engine
   MESSAGE_CLASS_HEADER(MT_Input_MouseMove)
     int32_t x;
     int32_t y;
+  };
+
+
+  template<>
+  class MessageSub<MT_Command> : public Message
+  {
+  public:
+
+    MessageSub()
+    : ptr(nullptr)
+    {}
+
+    MessageSub(void* a_ptr)
+      : ptr(a_ptr)
+    {}
+
+    size_t Size() const override;
+      
+    TRef<Message> CloneAsTref() const override;
+
+    void Clone(void* a_buf) const override;
+    void Submit(MessageHandler*) override;
+
+    uint32_t GetID() const override {return MT_Command;}
+    static uint32_t s_GetID()  {return MT_Command;}
+    std::string ToString() const override {return "MT_Renderer_OutputCmd";}
+
+    void* ptr;
   };
 
   //-----------------------------------------------------------------------------------

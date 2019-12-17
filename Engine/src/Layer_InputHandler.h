@@ -24,7 +24,7 @@ namespace Engine
 
     ASSIGN_ID
 
-    Layer_InputHandler(MessageBus *);
+    Layer_InputHandler();
     ~Layer_InputHandler();
 
     void ClearBindings();

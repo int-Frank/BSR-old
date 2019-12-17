@@ -1,6 +1,7 @@
 //@group Renderer
 
 #include "RenderCommandQueue.h"
+#include "core_Log.h"
 
 namespace Engine
 {
@@ -18,7 +19,6 @@ namespace Engine
 
   RenderCommandQueue::RenderCommandQueue()
     : m_commandBuffer{Buffer(s_cmdBufSize), Buffer(s_cmdBufSize)}
-    , m_outputBuffer{Buffer(s_outBufSize), Buffer(s_outBufSize)}
     , m_mem{MemBuffer(s_memBufSize), MemBuffer(s_memBufSize)}
     , m_writeIndex(0)
   {
@@ -52,18 +52,6 @@ namespace Engine
     return ptr;
   }
 
-  void* RenderCommandQueue::AllocateForOutput(RenderCommandFn a_fn, 
-                                              uint32_t a_size)
-  {
-    void* ptr = m_outputBuffer[m_writeIndex].buf.Allocate(sizeof(RenderCommandFn) + a_size);
-    m_outputBuffer[m_writeIndex].allocs.push_back(ptr);
-
-    *static_cast<RenderCommandFn*>(ptr) = a_fn;
-    ptr = static_cast<void*>(static_cast<byte*>(ptr) + sizeof(RenderCommandFn));
-
-    return ptr;
-  }
-
   //Render thread (consumer)...
   //The render thread could just repeat this...
   void RenderCommandQueue::Execute()
@@ -85,17 +73,10 @@ namespace Engine
     }
   }
 
-  PODArray<void*> RenderCommandQueue::GetOutputCommands()
-  {
-    int readInd = (m_writeIndex + 1) % 2;
-    return m_outputBuffer[readInd].allocs;
-  }
-
   void RenderCommandQueue::Swap()
   {
     int readInd = (m_writeIndex + 1) % 2;
     m_commandBuffer[readInd].Clear();
-    m_outputBuffer[readInd].Clear();
     m_mem[readInd].clear();
     m_writeIndex = readInd;
   }

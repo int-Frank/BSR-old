@@ -1,5 +1,7 @@
 //@group Messages
 
+#include <cstring>
+
 #include "Message.h"
 #include "MessageHandler.h"
 #include "DgMap_AVL.h"
@@ -11,6 +13,32 @@
 namespace Engine
 {
   MESSAGE_LIST
+
+  //TODO This needs to be a deep copy on the TBUF memory heap
+  TRef<Message> MessageSub<MT_Command>::CloneAsTref() const
+  {
+    TRef<MessageSub<MT_Command>> cpy = TRef<MessageSub<MT_Command>>::MakeCopy(this);
+    return StaticPointerCast<Message>(cpy);
+  }
+
+  size_t MessageSub<MT_Command>::Size() const
+  {
+    size_t sze = sizeof(MessageSub<MT_Command>);
+    if (ptr)
+      sze += *static_cast<uint64_t*>(ptr);
+    return sze;
+  }
+
+  void MessageSub<MT_Command>::Clone(void* a_buf) const
+  {
+    void * pData = AdvancePtr(a_buf, sizeof(MessageSub<MT_Command>));
+    new (a_buf) MessageSub<MT_Command>(pData);
+    if (ptr)
+    {
+      uint64_t sze = *static_cast<uint64_t*>(ptr);
+      memcpy(pData, ptr, sze);
+    }
+  }
 
   namespace MessageTranslator
   {

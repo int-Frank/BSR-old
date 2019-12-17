@@ -8,23 +8,15 @@
 #include "ResourceManager.h"
 #include "ResourceID.h"
 #include "Resource.h"
-#include "MemBuffer.h"
 #include "core_Log.h"
 #include "core_Assert.h"
 
-//This should be called one at the start of the frame.
-#define TREFCLEAR() ::Engine::impl::TRef::buf.clear()
-
 namespace Engine
 {
-  namespace impl
-  {
-    namespace TRef
-    {
-      extern std::mutex mutex;
-      extern MemBuffer buf;
-    }
-  }
+  void TBUFClear();
+  void * TBUFAlloc(size_t);
+
+  void * AdvancePtr(void *, size_t);
 
   template<typename T>
   class TRef;
@@ -35,6 +27,9 @@ namespace Engine
   template<typename A, typename B>
   TRef<A> DynamicPointerCast(TRef<B> const&);
 
+  //TODO add ability to allocate arrays in the per-frame memory
+  //See: https://stackoverflow.com/questions/13061979/shared-ptr-to-an-array-should-it-be-used
+
   //Tempory Reference. A per-frame reference. Memory is cleared at the end of each frame,
   //but objects are not destructed
   template<typename T>
@@ -44,9 +39,15 @@ namespace Engine
 
     template<typename A, typename B>
     friend TRef<A> StaticPointerCast(TRef<B> const&);
-    
+
     template<typename A, typename B>
     friend TRef<B> StaticPointerCast(TRef<A> const&);
+
+    template<typename A, typename B>
+    friend TRef<A> DynamicPointerCast(TRef<B> const&);
+
+    template<typename A, typename B>
+    friend TRef<B> DynamicPointerCast(TRef<A> const&);
 
     TRef(T * a_ptr)
       : m_pObject(a_ptr)
@@ -65,18 +66,14 @@ namespace Engine
     template<typename ... Args>
     static TRef New(Args&&... args)
     {
-      impl::TRef::mutex.lock();
-      TRef ref(static_cast<T*>(impl::TRef::buf.Allocate(sizeof(T))));
-      impl::TRef::mutex.unlock();
+      TRef ref(static_cast<T*>(TBUFAlloc(sizeof(T))));
       new (ref.m_pObject) T(std::forward<Args>(args)...);
       return ref;
     }
 
     static TRef MakeCopy(T const * a_ptr)
     {
-      impl::TRef::mutex.lock();
-      TRef ref(static_cast<T*>(impl::TRef::buf.Allocate(sizeof(T))));
-      impl::TRef::mutex.unlock();
+      TRef ref(static_cast<T*>(TBUFAlloc(sizeof(T))));
       new (ref.m_pObject) T(*a_ptr);
       return ref;
     }

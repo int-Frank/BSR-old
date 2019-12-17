@@ -9,6 +9,7 @@
 #include "DgDynamicArray.h"
 #include "PODArray.h"
 #include "RenderState.h"
+#include "MemBuffer.h"
 
 namespace Engine
 {
@@ -32,10 +33,8 @@ namespace Engine
 
     //Main thread...
     void * AllocateForCommand(RenderState, RenderCommandFn, uint32_t size);
-    PODArray<void*> GetOutputCommands();
 
     //Render thread
-    void * AllocateForOutput(RenderCommandFn, uint32_t size);
     void Swap();
     void Execute();
 
@@ -45,6 +44,9 @@ namespace Engine
     void ClearCriterion();
 
     void Sort();
+
+  private:
+
 
   private:
 
@@ -65,7 +67,6 @@ namespace Engine
 
     PODArray<uint32_t>  m_sortedCommands;
     int                 m_writeIndex;
-    Buffer              m_outputBuffer[2];
     Buffer              m_commandBuffer[2];
     MemBuffer           m_mem[2];
 

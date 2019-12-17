@@ -16,7 +16,7 @@ namespace Engine
 
     ASSIGN_ID
 
-      Layer_imgui(MessageBus *);
+    Layer_imgui();
     ~Layer_imgui();
 
     void HandleMessage(MessageSub<MT_GUI_MouseMove> *) override;

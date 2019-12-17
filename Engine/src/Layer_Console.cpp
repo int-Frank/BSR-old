@@ -7,8 +7,7 @@
 
 namespace Engine
 {
-  Layer_Console::Layer_Console(MessageBus * a_msgBus)
-    : Layer(a_msgBus)
+  Layer_Console::Layer_Console()
   {
 
   }
