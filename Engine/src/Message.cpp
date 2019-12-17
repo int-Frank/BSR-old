@@ -40,6 +40,19 @@ namespace Engine
     }
   }
 
+  void MessageSub<MT_Command>::Run()
+  {
+    if (!ptr)
+      return;
+
+    void * _ptr = AdvancePtr(ptr, sizeof(uint64_t));
+
+    MessageCommandFn function = *(MessageCommandFn*)_ptr;
+    _ptr = AdvancePtr(_ptr, sizeof(MessageCommandFn));
+
+    function(_ptr);
+  }
+
   namespace MessageTranslator
   {
     static Dg::Map_AVL<uint64_t, MessageTranslatorFn> g_msgTrnsMap;

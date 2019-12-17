@@ -30,14 +30,7 @@ namespace Engine
 
   void Layer_Application::HandleMessage(MessageSub<MT_Command> * a_pMsg)
   {
-    void* ptr = a_pMsg->ptr;
-
-    ptr = AdvancePtr(ptr, sizeof(uint64_t));
-
-    MessageCommandFn function = *(MessageCommandFn*)ptr;
-    ptr = AdvancePtr(ptr, sizeof(MessageCommandFn));
-
-    function(ptr);
+    a_pMsg->Run();
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 }

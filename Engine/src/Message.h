@@ -105,32 +105,6 @@ namespace Engine
   };
   static_assert(std::is_trivially_destructible<Message>::value, "Message must be trivially destructible");
 
-  template<typename FuncT>
-  TRef<Message> GetCommandMessage(FuncT&& func)
-  {
-    static_assert(std::is_trivially_destructible<FuncT>::value, "FuncT must be trivially destructible");
-    MessageCommandFn renderCmd = [](void* ptr)
-    {
-      auto pFunc = (FuncT*)ptr;
-      (*pFunc)();
-      pFunc->~FuncT();
-    };
-
-    size_t sze = sizeof(uint64_t) + sizeof(MessageCommandFn) + sizeof(func);
-    void* pBuf = TBUFAlloc(sze);
-
-    *static_cast<uint64_t*>(pBuf) = sze;
-
-    void* ptr = AdvancePtr(pBuf, sizeof(uint64_t));
-    *static_cast<MessageCommandFn*>(ptr) = renderCmd;
-
-    ptr = AdvancePtr(ptr, sizeof(MessageCommandFn));
-    new (ptr) FuncT(std::forward<FuncT>(func));
-
-    TRef<MessageSub<MT_Command>> msg = TRef<MessageSub<MT_Command>>::New(pBuf);
-    return DynamicPointerCast<Message>(msg);
-  }
-
 #define MESSAGE_CLASS_HEADER(MESSAGE_TYPE) template<>\
   class MessageSub<MESSAGE_TYPE> : public Message\
   {\
@@ -320,11 +294,36 @@ namespace Engine
     int32_t y;
   };
 
-
   template<>
   class MessageSub<MT_Command> : public Message
   {
   public:
+
+    template<typename FuncT>
+    static TRef<Message> New(FuncT&& func)
+    {
+      static_assert(std::is_trivially_destructible<FuncT>::value, "FuncT must be trivially destructible");
+      MessageCommandFn renderCmd = [](void* ptr)
+      {
+        auto pFunc = (FuncT*)ptr;
+        (*pFunc)();
+        pFunc->~FuncT();
+      };
+
+      size_t sze = sizeof(uint64_t) + sizeof(MessageCommandFn) + sizeof(func);
+      void* pBuf = TBUFAlloc(sze);
+
+      *static_cast<uint64_t*>(pBuf) = sze;
+
+      void* ptr = AdvancePtr(pBuf, sizeof(uint64_t));
+      *static_cast<MessageCommandFn*>(ptr) = renderCmd;
+
+      ptr = AdvancePtr(ptr, sizeof(MessageCommandFn));
+      new (ptr) FuncT(std::forward<FuncT>(func));
+
+      TRef<MessageSub<MT_Command>> msg = TRef<MessageSub<MT_Command>>::New(pBuf);
+      return DynamicPointerCast<Message>(msg);
+    }
 
     MessageSub()
     : ptr(nullptr)
@@ -343,7 +342,8 @@ namespace Engine
 
     uint32_t GetID() const override {return MT_Command;}
     static uint32_t s_GetID()  {return MT_Command;}
-    std::string ToString() const override {return "MT_Renderer_OutputCmd";}
+    std::string ToString() const override {return "MT_Command";}
+    void Run();
 
     void* ptr;
   };
