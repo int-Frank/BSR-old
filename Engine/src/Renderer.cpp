@@ -1,14 +1,11 @@
 //@group Renderer
 
-
 #include "Renderer.h"
 #include "core_Log.h"
 #include "core_Assert.h"
 #include "Framework.h"
 #include "core_Log.h"
 #include "RendererAPI.h"
-
-
 
 namespace Engine
 {

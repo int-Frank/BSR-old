@@ -15,17 +15,8 @@ namespace Engine
 
   class Layer_Window : public Layer
   {
+    ASSIGN_ID
   public:
-
-    static uint32_t GetID()
-    {
-      return 5;
-    }
-
-    uint32_t GetThisID() override
-    {
-      return 5;
-    }
 
     Layer_Window(Ref<IWindow>);
     ~Layer_Window();

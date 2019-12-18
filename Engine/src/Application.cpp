@@ -70,8 +70,7 @@ namespace Engine
 
   void Application::PushLayer(Layer* a_pLayer)
   {
-    uint32_t val = a_pLayer->GetThisID();
-    m_pimpl->layerStack.PushLayer(a_pLayer, a_pLayer->GetThisID());
+    m_pimpl->layerStack.PushLayer(a_pLayer, a_pLayer->GetID());
   }
 
   Application::Application(Opts const & a_opts)
@@ -101,11 +100,11 @@ namespace Engine
     m_pimpl->pWindow->GetDimensions(imguiData.window_w, imguiData.window_h);
     //Framework::Instance()->InitImGui(imguiData);
 
-    m_pimpl->layerStack.PushLayer(new Layer_Application(), Layer_Application::GetID());
-    m_pimpl->layerStack.PushLayer(new Layer_InputHandler(), Layer_InputHandler::GetID());
-    m_pimpl->layerStack.PushLayer(new Layer_Window(m_pimpl->pWindow), Layer_Window::GetID());
-    m_pimpl->layerStack.PushLayer(new Layer_Console(), Layer_Console::GetID());
-    m_pimpl->layerStack.PushLayer(new Layer_imgui(), Layer_imgui::GetID());
+    m_pimpl->layerStack.PushLayer(new Layer_Application(), Layer_Application::GetStaticID());
+    m_pimpl->layerStack.PushLayer(new Layer_InputHandler(), Layer_InputHandler::GetStaticID());
+    m_pimpl->layerStack.PushLayer(new Layer_Window(m_pimpl->pWindow), Layer_Window::GetStaticID());
+    m_pimpl->layerStack.PushLayer(new Layer_Console(), Layer_Console::GetStaticID());
+    m_pimpl->layerStack.PushLayer(new Layer_imgui(), Layer_imgui::GetStaticID());
 
     LOG_TRACE("Application initialised!");
   }
@@ -150,7 +149,7 @@ namespace Engine
       //------------------------------------------------------------------------------------------------
       // END DEBUG
       //------------------------------------------------------------------------------------------------
-      /*Dg::RNG_Global rng;
+      Dg::RNG_Global rng;
       unsigned val = rng.GetUintRange(1, 100);
 
       RenderState state = RenderState::Create();
@@ -169,8 +168,7 @@ namespace Engine
           POST(msg);
         });
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(3000));*/
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      std::this_thread::sleep_for(std::chrono::milliseconds(300));
       //------------------------------------------------------------------------------------------------
       // END DEBUG
       //------------------------------------------------------------------------------------------------

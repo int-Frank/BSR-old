@@ -13,17 +13,8 @@ namespace Engine
 {
   class Layer_Application : public Layer
   {
+    ASSIGN_ID
   public:
-
-    static uint32_t GetID()
-    {
-      return 1;
-    }
-
-    uint32_t GetThisID() override
-    {
-      return 1;
-    }
 
       Layer_Application();
     ~Layer_Application();

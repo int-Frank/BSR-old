@@ -8,8 +8,11 @@
 #include "Memory.h"
 
 #define ASSIGN_ID public:\
-static uint32_t GetID() {return uint32_t(__COUNTER__ + 1);}\
-uint32_t GetThisID() override {return GetID();}
+static ::Engine::Layer::ID GetStaticID() \
+{\
+  return reinterpret_cast<::Engine::Layer::ID>(GetStaticID);\
+}\
+::Engine::Layer::ID GetID() override {return GetStaticID();}
 
 namespace Engine
 {
@@ -22,9 +25,11 @@ namespace Engine
   {
   public: 
 
+    typedef intptr_t ID;
+
     virtual ~Layer(){}
 
-    virtual uint32_t GetThisID() {return 0;}
+    virtual ID GetID() {return 0;}
 
     virtual void OnAttach(){}
     virtual void OnDetach(){}
@@ -35,8 +40,6 @@ namespace Engine
 
     //Layer(Layer const &);
     //Layer & operator=(Layer const &);
-
-    //MessageBus * m_pMsgBus;
   };
 }
 

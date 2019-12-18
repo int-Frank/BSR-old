@@ -1,6 +1,5 @@
 
-//#define MORE_MESSAGE_TYPES ITEM(TestMessage)
-
+#include "GameMessages.h"
 #include "Engine.h"
 #include "Renderer.h"
 #include "RendererAPI.h"
@@ -9,17 +8,8 @@
 
 class GameLayer : public Engine::Layer
 {
-
+  ASSIGN_ID
 public:
-  static uint32_t GetID()
-  {
-    return 6;
-  }
-
-  uint32_t GetThisID() override
-  {
-    return 6;
-  }
 
   GameLayer()
   {
@@ -54,8 +44,8 @@ public:
   Game(Opts const & a_opts)
     : Application(a_opts)
   {
-    GameLayer * pgl = new GameLayer();
-    PushLayer(pgl);
+    int val = Engine::MessageType::MT_COUNT;
+    PushLayer(new GameLayer());
     LOG_TRACE("Game initialised!");
   }
 

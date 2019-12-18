@@ -20,7 +20,7 @@ namespace Engine
 #define MORE_MESSAGE_TYPES
 #endif
 
-  //TODO this seems broken. Can't seem to add more messages
+  //TODO We can only do this if all messages are defined in this header file.
 #define ITEM()
 #define MESSAGE_LIST \
   ITEM(None) \
@@ -56,7 +56,7 @@ namespace Engine
   ITEM(Input_MouseWheelUp) \
   ITEM(Input_MouseWheelDown) \
   ITEM(Input_MouseMove) \
-  ITEM(Command) \
+  ITEM(Command)\
   MORE_MESSAGE_TYPES
 
 #undef ITEM
@@ -79,7 +79,6 @@ namespace Engine
 #undef ITEM
 #define ITEM(MESSAGE_TYPE) template<> class MessageSub<MT_##MESSAGE_TYPE>;
   MESSAGE_LIST
-
 
   class MessageHandler;
 

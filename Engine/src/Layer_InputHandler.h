@@ -20,17 +20,8 @@ namespace Engine
 
   class Layer_InputHandler : public Layer
   {
+    ASSIGN_ID
   public:
-
-    static uint32_t GetID()
-    {
-      return 4;
-    }
-
-    uint32_t GetThisID() override
-    {
-      return 4;
-    }
 
     Layer_InputHandler();
     ~Layer_InputHandler();

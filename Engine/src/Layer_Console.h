@@ -10,17 +10,8 @@ namespace Engine
 {
   class Layer_Console : public Layer
   {
+    ASSIGN_ID
   public:
-
-    static uint32_t GetID()
-    {
-      return 2;
-    }
-
-    uint32_t GetThisID() override
-    {
-      return 2;
-    }
 
     Layer_Console();
     ~Layer_Console();

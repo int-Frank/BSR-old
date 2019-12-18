@@ -15,7 +15,7 @@ namespace Engine
     Clear();
   }
 
-  bool LayerStack::PushLayer(Layer * a_layer, LayerID a_ID)
+  bool LayerStack::PushLayer(Layer * a_layer, Layer::ID a_ID)
   {
     if (m_layerStack.find(a_ID) != m_layerStack.end())
       return false;
@@ -25,7 +25,7 @@ namespace Engine
     return true;
   }
 
-  void LayerStack::PopLayer(LayerID a_ID)
+  void LayerStack::PopLayer(Layer::ID a_ID)
   {
     auto it = m_layerStack.find(a_ID);
     if (it != m_layerStack.end())
@@ -43,7 +43,7 @@ namespace Engine
     m_layerStack.clear();
   }
 
-  Layer * LayerStack::GetLayer(LayerID a_ID)
+  Layer * LayerStack::GetLayer(Layer::ID a_ID)
   {
     Layer * result(nullptr);
     auto it = m_layerStack.find(a_ID);
@@ -52,12 +52,12 @@ namespace Engine
     return result;
   }
 
-  Dg::Map_AVL<LayerStack::LayerID, Layer *>::iterator LayerStack::begin()
+  Dg::Map_AVL<Layer::ID, Layer *>::iterator LayerStack::begin()
   {
     return m_layerStack.begin();
   }
 
-  Dg::Map_AVL<LayerStack::LayerID, Layer *>::iterator LayerStack::end()
+  Dg::Map_AVL<Layer::ID, Layer *>::iterator LayerStack::end()
   {
     return m_layerStack.end();
   }
