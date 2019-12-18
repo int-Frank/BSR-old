@@ -6,6 +6,13 @@
 
 #include "imgui.h"
 
+class GameLayer : public Engine::Layer
+{
+public:
+
+private:
+};
+
 class Game : public Engine::Application
 {
 public:

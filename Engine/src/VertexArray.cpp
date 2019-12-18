@@ -7,6 +7,8 @@
 #include "core_Assert.h"
 #include "Memory.h"
 #include "Resource.h"
+#include "Message.h"
+#include "MessageBus.h"
 
 namespace Engine
 {
@@ -32,14 +34,29 @@ namespace Engine
   }
 
   VertexArray::VertexArray()
+    : m_rendererID(0)
+    , m_vertexAttribIndex(0)
   {
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::VertexArrayCreate);
 
-    RENDER_SUBMIT(state, [this]() mutable
+    auto refID = GetRefID();
+
+    RENDER_SUBMIT(state, [rendererID = m_rendererID, refID = refID]() mutable
       {
-        glCreateVertexArrays(1, &this->m_rendererID);
+        glCreateVertexArrays(1, &rendererID);
+        auto msg = MessageSub<MT_Command>::New([refID = refID, rendererID = rendererID]()
+          {
+            Ref<VertexArray> ref(refID);
+            if (ref.IsNull())
+            {
+              LOG_WARN("Attempt to update the renderer ID of a VertexBuffer that doesn't exist!");
+              return;
+            }
+            ref->SetRendererID(rendererID);
+          });
+        POST(msg);
       });
   }
 
@@ -53,6 +70,11 @@ namespace Engine
       {
         glDeleteVertexArrays(1, &rendererID);
       });
+  }
+
+  void VertexArray::SetRendererID(RendererID a_id)
+  {
+    m_rendererID = a_id;
   }
 
   void VertexArray::Bind() const
@@ -92,35 +114,45 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::VertexArrayAddVertexBuffer);
 
-    RENDER_SUBMIT(state, [this, pvb = &*a_vertexBuffer]() mutable
+    RENDER_SUBMIT(state, [vbRefID = a_vertexBuffer->GetRefID(), vertexAttribIndex = m_vertexAttribIndex]() mutable
       {
-        for (auto it = pvb->GetLayout().begin(); it != pvb->GetLayout().end(); it++)
+        Ref<VertexBuffer> vbRef(vbRefID);
+        if (vbRef.IsNull())
         {
-          auto glBaseType = ShaderDataTypeToOpenGLBaseType(it->type);
-          glEnableVertexAttribArray(this->m_vertexBufferIndex);
+          LOG_WARN("VertexArray::AddVertexBuffer(): Failed to find the vertex buffer! ");
+          return;
+        }
+
+        for (auto it = vbRef->GetLayout().begin(); it != vbRef->GetLayout().end(); it++)
+        {
+          GLenum glBaseType = ShaderDataTypeToOpenGLBaseType(it->type);
+          glEnableVertexAttribArray(vertexAttribIndex);
           if (glBaseType == GL_INT)
           {
-            glVertexAttribIPointer(this->m_vertexBufferIndex,
+            glVertexAttribIPointer(vertexAttribIndex,
                                    it->GetComponentCount(),
                                    glBaseType,
-                                   pvb->GetLayout().GetStride(),
+                                   vbRef->GetLayout().GetStride(),
                                    (const void*)(intptr_t)it->offset);
           }
           else
           {
-            glVertexAttribPointer(this->m_vertexBufferIndex,
+            glVertexAttribPointer(vertexAttribIndex,
                                   it->GetComponentCount(),
                                   glBaseType,
                                   it->normalized ? GL_TRUE : GL_FALSE,
-                                  pvb->GetLayout().GetStride(),
+                                  vbRef->GetLayout().GetStride(),
                                   (const void*)(intptr_t)it->offset);
           }
-          this->m_vertexBufferIndex++;
+          vertexAttribIndex++;
         }
       });
 
     Renderer::Instance()->EndCurrentGroup();
     m_vertexBuffers.push_back(a_vertexBuffer);
+
+    //We just have to trust the above RENDER_SUBMIT succeeds.
+    m_vertexAttribIndex += a_vertexBuffer->GetLayout().GetElements().size();
   }
 
   void VertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)

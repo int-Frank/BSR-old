@@ -55,6 +55,8 @@ namespace Engine
     void CalculateOffsetsAndStride();
 
   private:
+    //TODO Make this a Dg::DynamicArray, only, I need to implement constructor from
+    //     initializer list.
     std::vector<BufferElement> m_elements;
     uint32_t m_stride;
   };
@@ -68,7 +70,7 @@ namespace Engine
   // VertexBuffer
   //------------------------------------------------------------------------------------------------
 
-  class VertexBuffer
+  class VertexBuffer : public Resource
   {
   public:
 
@@ -85,6 +87,8 @@ namespace Engine
     uint32_t GetSize() const;
     RendererID GetRendererID() const;
 
+    void SetRendererID(RendererID);
+
   private:
 
     RendererID m_rendererID;
@@ -97,7 +101,7 @@ namespace Engine
   // IndexBuffer
   //------------------------------------------------------------------------------------------------
 
-  class IndexBuffer
+  class IndexBuffer : public Resource
   {
     typedef uint16_t intType;
   public:
@@ -111,6 +115,8 @@ namespace Engine
 
     uint32_t GetSize() const;
     RendererID GetRendererID() const;
+    void SetRendererID(RendererID);
+
   private:
     RendererID m_rendererID;
     uint32_t m_size; //buffer size

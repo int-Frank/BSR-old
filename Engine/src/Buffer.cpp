@@ -7,6 +7,7 @@
 #include "Renderer.h"
 #include  "core_Log.h"
 #include "Resource.h"
+#include "MessageBus.h"
 
 namespace Engine 
 {
@@ -139,10 +140,24 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
 
-    RENDER_SUBMIT(state, [this, data]() mutable
+    impl::ResourceID64 refID = GetRefID();
+
+    RENDER_SUBMIT(state, [refID = refID, size = m_size, usage = m_usage, data]()
       {
-        glCreateBuffers(1, &this->m_rendererID);
-        glNamedBufferData(this->m_rendererID, this->m_size, data, OpenGLUsage(this->m_usage));
+        uint32_t rendererID(0);
+        glCreateBuffers(1, &rendererID);
+        glNamedBufferData(rendererID, size, data, OpenGLUsage(usage));
+        auto msg = MessageSub<MT_Command>::New([refID = refID, rendererID = rendererID]()
+          {
+            Ref<VertexBuffer> ref(refID);
+            if (ref.IsNull())
+            {
+              LOG_WARN("Attempt to update the renderer ID of a VertexBuffer that doesn't exist!");
+              return;
+            }
+            ref->SetRendererID(rendererID);
+          });
+        POST(msg);
       });
   }
 
@@ -155,10 +170,24 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
 
-    RENDER_SUBMIT(state, [this]() mutable
+    impl::ResourceID64 refID = GetRefID();
+
+    RENDER_SUBMIT(state, [refID = refID, size = m_size, usage = m_usage]()
       {
-        glCreateBuffers(1, &this->m_rendererID);
-        glNamedBufferData(this->m_rendererID, this->m_size, nullptr, OpenGLUsage(this->m_usage));
+        uint32_t rendererID(0);
+        glCreateBuffers(1, &rendererID);
+        glNamedBufferData(rendererID, size, nullptr, OpenGLUsage(usage));
+        auto msg = MessageSub<MT_Command>::New([refID = refID, rendererID = rendererID]()
+          {
+            Ref<VertexBuffer> ref(refID);
+            if (ref.IsNull())
+            {
+              LOG_WARN("Attempt to update the renderer ID of a VertexBuffer that doesn't exist!");
+              return;
+            }
+            ref->SetRendererID(rendererID);
+          });
+        POST(msg);
       });
   }
 
@@ -221,6 +250,11 @@ namespace Engine
     return m_rendererID;
   }
 
+  void VertexBuffer::SetRendererID(RendererID a_id)
+  {
+    m_rendererID = a_id;
+  }
+
   IndexBuffer::IndexBuffer(void* a_data, uint32_t a_size)
     : m_rendererID(0)
     , m_size(a_size)
@@ -232,10 +266,24 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
 
-    RENDER_SUBMIT(state, [this, data]() mutable
+    impl::ResourceID64 refID = GetRefID();
+
+    RENDER_SUBMIT(state, [refID = refID, size = m_size, data]()
       {
-        glCreateBuffers(1, &this->m_rendererID);
-        glNamedBufferData(this->m_rendererID, this->m_size, data, GL_STATIC_DRAW);
+        uint32_t rendererID(0);
+        glCreateBuffers(1, &rendererID);
+        glNamedBufferData(rendererID, size, data, GL_STATIC_DRAW);
+        auto msg = MessageSub<MT_Command>::New([refID = refID, rendererID = rendererID]()
+          {
+            Ref<IndexBuffer> ref(refID);
+            if (ref.IsNull())
+            {
+              LOG_WARN("Attempt to update the renderer ID of a VertexBuffer that doesn't exist!");
+              return;
+            }
+            ref->SetRendererID(rendererID);
+          });
+        POST(msg);
       });
   }
 
@@ -249,6 +297,11 @@ namespace Engine
       {
         glDeleteBuffers(1, &rendererID);
       });
+  }
+
+  void IndexBuffer::SetRendererID(RendererID a_id)
+  {
+    m_rendererID = a_id;
   }
 
   void IndexBuffer::SetData(void* a_data, uint32_t a_size, uint32_t a_offset)

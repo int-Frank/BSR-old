@@ -129,6 +129,38 @@ namespace Engine
       impl::ResourceManager::Instance()->RegisterUser(m_id);
     }
 
+    // default constructor when T is not derived from Resource
+    template
+      <
+      typename U = T,
+      typename = typename std::enable_if< !std::is_base_of<Resource, U>::value >::type
+      >
+      constexpr Ref(T* a_pObj)
+      : m_pObject(a_pObj)
+    {
+      m_id.SetType(impl::T_Generated);
+      m_id.SetID(impl::ResourceManager::Instance()->GenerateUnique32());
+      impl::ResourceManager::Instance()->RegisterResource(m_id, new impl::ResourceWrapper<T>(m_pObject));
+      impl::ResourceManager::Instance()->RegisterUser(m_id);
+    }
+
+    // default constructor when T is derived from Resource
+    template
+      <
+      typename U = T,
+      typename = typename std::enable_if< std::is_base_of<Resource, U>::value >::type,
+      typename = U
+      >
+      constexpr Ref(T* a_pObj)
+      : m_pObject(a_pObj)
+    {
+      m_id.SetType(impl::T_Generated);
+      m_id.SetID(impl::ResourceManager::Instance()->GenerateUnique32());
+      impl::ResourceManager::Instance()->RegisterResource(m_id, new impl::ResourceWrapper<T>(m_pObject));
+      impl::ResourceManager::Instance()->RegisterUser(m_id);
+      dynamic_cast<Resource*>(m_pObject)->SetRefID(m_id);
+    }
+
     //Construct from an already registered resource
     Ref(ResourceID a_id);
 

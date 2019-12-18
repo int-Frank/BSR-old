@@ -21,6 +21,7 @@ namespace Engine
       return false;
 
     m_layerStack.insert(a_ID, a_layer);
+    a_layer->OnAttach();
     return true;
   }
 
@@ -29,6 +30,7 @@ namespace Engine
     auto it = m_layerStack.find(a_ID);
     if (it != m_layerStack.end())
     {
+      it->second->OnDetach();
       delete it->second;
       m_layerStack.erase(it);
     }

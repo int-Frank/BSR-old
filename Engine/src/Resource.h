@@ -31,14 +31,8 @@ namespace Engine
     return false;
   }
 
-  //Derive from this class if you want a resource to have the ability to manually
-  //register/deregister itself as a resource. This is useful if we need the resource
-  //to stick around in memory even after all users have been deregisted. For example,
-  //we submit a resource pointer during RENDER_SUBMIT, not a Ref. If the resouce is
-  //cleared between when we submit and when the renderer processes the resource, we are
-  //left with a dangling pointer. To avoid this, we manually register a user before we 
-  //submit, and manually deregister after the renderer processes it.
-  /*class Resource
+  //Derive from this class if you want a resource to have access to its resource ID.
+  class Resource
   {
   public:
 
@@ -54,7 +48,7 @@ namespace Engine
       m_resourceID = a_id;
     }
 
-    void RegisterMe() const
+    /*void RegisterMe() const
     {
       impl::ResourceManager::Instance()->RegisterUser(m_resourceID);
     }
@@ -62,9 +56,9 @@ namespace Engine
     void DeregisterMe() const
     {
       impl::ResourceManager::Instance()->DeregisterUser(m_resourceID);
-    }
+    }*/
 
   private:
     impl::ResourceID64 m_resourceID;
-  };*/
+  };
 }
