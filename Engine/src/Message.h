@@ -15,6 +15,12 @@
 
 namespace Engine
 {
+
+#ifndef MORE_MESSAGE_TYPES
+#define MORE_MESSAGE_TYPES
+#endif
+
+  //TODO this seems broken. Can't seem to add more messages
 #define ITEM()
 #define MESSAGE_LIST \
   ITEM(None) \
@@ -54,9 +60,6 @@ namespace Engine
   MORE_MESSAGE_TYPES
 
 #undef ITEM
-#ifndef MORE_MESSAGE_TYPES
-#define MORE_MESSAGE_TYPES
-#endif
 
   //General Message command
   typedef void(*MessageCommandFn)(void*);

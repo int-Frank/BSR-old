@@ -7,7 +7,9 @@
 #include "MessageHandler.h"
 #include "Memory.h"
 
-#define ASSIGN_ID static uint32_t GetID() {return uint32_t(__COUNTER__);}
+#define ASSIGN_ID public:\
+static uint32_t GetID() {return uint32_t(__COUNTER__ + 1);}\
+uint32_t GetThisID() override {return GetID();}
 
 namespace Engine
 {
@@ -21,6 +23,8 @@ namespace Engine
   public: 
 
     virtual ~Layer(){}
+
+    virtual uint32_t GetThisID() {return 0;}
 
     virtual void OnAttach(){}
     virtual void OnDetach(){}

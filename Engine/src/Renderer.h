@@ -16,6 +16,7 @@
 #include "Group.h"
 #include "RenderCommandQueue.h"
 #include "MemBuffer.h"
+#include "IWindow.h"
 
 namespace Engine
 {
@@ -25,12 +26,16 @@ namespace Engine
 
     typedef int32_t ID;
 
-    static bool Init();
+    static bool Init(Ref<IWindow>);
     static void ShutDown();
     static Renderer * Instance();
 
     Renderer();
     ~Renderer();
+
+    static void Clear();
+    static void Clear(float r, float g, float b, float a = 1.0f);
+    static void SetClearColor(float r, float g, float b, float a = 1.0f);
 
     //Everything must happen between these two functions.
     void BeginScene();
@@ -63,7 +68,7 @@ namespace Engine
     void ReleaseRenderThread();
 
     //Render thread
-    void RenderThreadInit();
+    void RenderThreadFinishInit();
     void RenderThreadInitFailed();
     void RenderThreadShutDown();
     void FinishRender();
@@ -73,7 +78,7 @@ namespace Engine
 
   private:
 
-    bool __Init();
+    bool __Init(Ref<IWindow>);
 
   private:
 
@@ -103,8 +108,8 @@ namespace Engine
     int m_tmain_ind;
   };
 
-#define RENDER_SUBMIT(...) Renderer::Instance()->Submit(__VA_ARGS__)
-#define RENDER_ALLOCATE(size) Renderer::Instance()->Allocate(size)
+#define RENDER_SUBMIT(...) ::Engine::Renderer::Instance()->Submit(__VA_ARGS__)
+#define RENDER_ALLOCATE(size) ::Engine::Renderer::Instance()->Allocate(size)
 }
 
 #endif

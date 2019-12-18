@@ -40,6 +40,8 @@ namespace Engine
 
     static Application * Instance();
 
+    void PushLayer(Layer*);
+
     void Run();
     void RequestQuit();
 

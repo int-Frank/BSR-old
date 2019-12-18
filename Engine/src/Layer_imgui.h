@@ -14,7 +14,15 @@ namespace Engine
   {
   public:
 
-    ASSIGN_ID
+    static uint32_t GetID()
+    {
+      return 3;
+    }
+
+    uint32_t GetThisID() override
+    {
+      return 3;
+    }
 
     Layer_imgui();
     ~Layer_imgui();

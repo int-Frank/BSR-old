@@ -12,7 +12,15 @@ namespace Engine
   {
   public:
 
-    ASSIGN_ID
+    static uint32_t GetID()
+    {
+      return 2;
+    }
+
+    uint32_t GetThisID() override
+    {
+      return 2;
+    }
 
     Layer_Console();
     ~Layer_Console();

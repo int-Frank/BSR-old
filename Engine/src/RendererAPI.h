@@ -28,10 +28,13 @@ namespace Engine
     static void Init();
     static void Shutdown();
 
+    static void Clear();
     static void Clear(float r, float g, float b, float a);
     static void SetClearColor(float r, float g, float b, float a);
 
     static void DrawIndexed(unsigned int count, bool depthTest = true);
+
+    static void LoadRequiredAssets();
 
     static RenderAPICapabilities& GetCapabilities()
     {

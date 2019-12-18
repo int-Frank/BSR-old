@@ -68,6 +68,12 @@ namespace Engine
     return s_instance;
   }
 
+  void Application::PushLayer(Layer* a_pLayer)
+  {
+    uint32_t val = a_pLayer->GetThisID();
+    m_pimpl->layerStack.PushLayer(a_pLayer, a_pLayer->GetThisID());
+  }
+
   Application::Application(Opts const & a_opts)
     : m_pimpl(new PIMPL())
   {
@@ -88,7 +94,7 @@ namespace Engine
 
     InitWindow();
 
-    if (!Renderer::Init())
+    if (!Renderer::Init(m_pimpl->pWindow))
       throw std::runtime_error("Failed to initialise Renderer!");
 
     Framework::ImGui_InitData imguiData;
@@ -144,7 +150,7 @@ namespace Engine
       //------------------------------------------------------------------------------------------------
       // END DEBUG
       //------------------------------------------------------------------------------------------------
-      Dg::RNG_Global rng;
+      /*Dg::RNG_Global rng;
       unsigned val = rng.GetUintRange(1, 100);
 
       RenderState state = RenderState::Create();
@@ -163,8 +169,8 @@ namespace Engine
           POST(msg);
         });
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-
+      std::this_thread::sleep_for(std::chrono::milliseconds(3000));*/
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
       //------------------------------------------------------------------------------------------------
       // END DEBUG
       //------------------------------------------------------------------------------------------------

@@ -22,7 +22,15 @@ namespace Engine
   {
   public:
 
-    ASSIGN_ID
+    static uint32_t GetID()
+    {
+      return 4;
+    }
+
+    uint32_t GetThisID() override
+    {
+      return 4;
+    }
 
     Layer_InputHandler();
     ~Layer_InputHandler();

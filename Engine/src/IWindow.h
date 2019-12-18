@@ -31,6 +31,7 @@ namespace Engine
 
     virtual void Update() = 0;
 
+    virtual void SwapBuffers() = 0;
     virtual void SetVSync(bool) = 0;
     virtual bool IsVSync() const = 0;
 

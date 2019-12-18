@@ -84,6 +84,9 @@ namespace Engine
       {
         None,
 
+        SetClearColor,
+        Clear,
+
         BufferCreate,
         BufferDelete,
         BufferSetData,

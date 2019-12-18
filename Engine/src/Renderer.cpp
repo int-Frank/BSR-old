@@ -6,30 +6,35 @@
 #include "core_Assert.h"
 #include "Framework.h"
 #include "core_Log.h"
+#include "RendererAPI.h"
 
-static void RenderThread()
-{
-  if (Engine::Framework::Instance()->GetGraphicsContext()->Init() != Core::ErrorCode::EC_None)
-  {
-    LOG_ERROR("Unable to set rendering context!");
-    Engine::Renderer::Instance()->RenderThreadInitFailed();
-    return;
-  }
 
-  Engine::Renderer::Instance()->RenderThreadInit();
-
-  while (!Engine::Renderer::Instance()->ShouldExit())
-  {
-    Engine::Renderer::Instance()->FinishRender();
-    Engine::Renderer::Instance()->ExecuteRenderCommands();
-  }
-  if (Engine::Framework::Instance()->GetGraphicsContext()->ShutDown() != Core::ErrorCode::EC_None)
-    LOG_ERROR("Trouble shutting down the rendering context!!");
-  Engine::Renderer::Instance()->RenderThreadShutDown();
-}
 
 namespace Engine
 {
+  static void RenderThread(Ref<IWindow> a_window)
+  {
+    if (Framework::Instance()->GetGraphicsContext()->Init() != Core::ErrorCode::EC_None)
+    {
+      LOG_ERROR("Unable to set rendering context!");
+      Engine::Renderer::Instance()->RenderThreadInitFailed();
+      return;
+    }
+
+    RendererAPI::Init();
+    Renderer::Instance()->RenderThreadFinishInit();
+
+    while (!Renderer::Instance()->ShouldExit())
+    {
+      a_window->SwapBuffers();
+      Renderer::Instance()->FinishRender();
+      Renderer::Instance()->ExecuteRenderCommands();
+    }
+    if (Framework::Instance()->GetGraphicsContext()->ShutDown() != Core::ErrorCode::EC_None)
+      LOG_ERROR("Trouble shutting down the rendering context!!");
+    Renderer::Instance()->RenderThreadShutDown();
+  }
+
   Renderer* Renderer::s_instance = nullptr;
 
   Renderer * Renderer::Instance()
@@ -38,10 +43,10 @@ namespace Engine
     return s_instance;
   }
 
-  bool Renderer::__Init()
+  bool Renderer::__Init(Ref<IWindow> a_window)
   {
     m_mutex[m_tmain_ind].lock();
-    m_renderThread = std::thread(RenderThread);
+    m_renderThread = std::thread(RenderThread, a_window);
     {
       std::mutex mutex_start;
       std::unique_lock<std::mutex> lck(mutex_start);
@@ -53,11 +58,11 @@ namespace Engine
     return m_treturnCode == ReturnCode::Ready;
   }
 
-  bool Renderer::Init()
+  bool Renderer::Init(Ref<IWindow> a_window)
   {
     BSR_ASSERT(s_instance == nullptr, "Renderer instance already initialised!");
     s_instance = new Renderer();
-    return s_instance->__Init();
+    return s_instance->__Init(a_window);
   }
 
   void Renderer::ShutDown()
@@ -82,6 +87,43 @@ namespace Engine
     m_renderThread.join();
   }
 
+  void Renderer::Clear()
+  {
+    Engine::RenderState state = Engine::RenderState::Create();
+    state.Set<Engine::RenderState::Attr::Type>(Engine::RenderState::Type::Command);
+    state.Set<Engine::RenderState::Attr::Command>(Engine::RenderState::Command::Clear);
+
+    RENDER_SUBMIT(state, []()
+      {
+        RendererAPI::Clear();
+      });
+  }
+
+  void Renderer::Clear(float a_r, float a_g, float a_b, float a_a)
+  {
+    Engine::RenderState state = Engine::RenderState::Create();
+    state.Set<Engine::RenderState::Attr::Type>(Engine::RenderState::Type::Command);
+    state.Set<Engine::RenderState::Attr::Command>(Engine::RenderState::Command::Clear);
+
+    RENDER_SUBMIT(state, [r = a_r, g = a_g, b = a_b, a = a_a]()
+      {
+        RendererAPI::Clear(r, g, b, a);
+      });
+  }
+
+  void Renderer::SetClearColor(float a_r, float a_g, float a_b, float a_a)
+  {
+    Engine::RenderState state = Engine::RenderState::Create();
+    state.Set<Engine::RenderState::Attr::Type>(Engine::RenderState::Type::Command);
+    state.Set<Engine::RenderState::Attr::Command>(Engine::RenderState::Command::SetClearColor);
+
+    RENDER_SUBMIT(state, [r = a_r, g = a_g, b = a_b, a = a_a]()
+      {
+        RendererAPI::SetClearColor(r, g, b, a);
+      });
+  }
+
+
   void Renderer::BeginScene()
   {
     m_group.Reset();
@@ -97,7 +139,7 @@ namespace Engine
     return m_commandQueue.Allocate(a_size);
   }
 
-  void Renderer::RenderThreadInit()
+  void Renderer::RenderThreadFinishInit()
   {
     m_mutex[m_trender_ind].lock();
     m_treturnCode = ReturnCode::Ready;

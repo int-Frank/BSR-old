@@ -25,14 +25,15 @@ namespace Engine
 
     void Update();
 
-    void SetVSync(bool);
-    bool IsVSync() const;
+    void SwapBuffers() override;
+    void SetVSync(bool) override;
+    bool IsVSync() const override;
 
-    bool IsInit() const;
+    bool IsInit() const override;
     Core::ErrorCode Init(WindowProps const & props = WindowProps());
-    void Destroy();
+    void Destroy() override;
 
-    void GetDimensions(int & w, int & h);
+    void GetDimensions(int & w, int & h) override;
 
   private:
 
@@ -58,6 +59,11 @@ namespace Engine
   void FW_SDLWindow::Update()
   {
     Framework::Instance()->GetGraphicsContext()->SwapBuffers();
+  }
+
+  void FW_SDLWindow::SwapBuffers()
+  {
+    SDL_GL_SwapWindow(m_pWindow);
   }
 
   void FW_SDLWindow::SetVSync(bool a_val)
