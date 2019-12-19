@@ -3,7 +3,7 @@
 #ifndef EN_LAYER_IMGUI_H
 #define EN_LAYER_IMGUI_H
 
-#include "Message.h"
+#include "EngineMessages.h"
 #include "Layer.h"
 
 namespace Engine

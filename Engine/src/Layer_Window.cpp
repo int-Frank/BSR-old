@@ -3,7 +3,7 @@
 #include "Memory.h"
 
 #include "Layer_Window.h"
-#include "Message.h"
+#include "EngineMessages.h"
 #include "Application.h"
 #include "IWindow.h"
 
@@ -37,6 +37,9 @@ namespace Engine
 
   void Layer_Window::HandleMessage(Message* a_pMsg)
   {
+    if (a_pMsg->GetCategory() != MC_Window)
+      return;
+
     DISPATCH_MESSAGE(Message_Window_Shown);
     DISPATCH_MESSAGE(Message_Window_Hidden);
     DISPATCH_MESSAGE(Message_Window_Exposed);

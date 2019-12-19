@@ -6,7 +6,7 @@
 #include "Framework.h"
 #include "core_Log.h"
 #include "InputCodes.h"
-#include "Message.h"
+#include "EngineMessages.h"
 #include "MessageBus.h"
 
 #include "IEventPoller.h"
@@ -50,6 +50,9 @@ namespace Engine
 
   void Layer_InputHandler::HandleMessage(Message* a_pMsg)
   {
+    if (a_pMsg->GetCategory() != MC_Input)
+      return;
+
     DISPATCH_MESSAGE(Message_Input_Text);
     DISPATCH_MESSAGE(Message_Input_KeyUp);
     DISPATCH_MESSAGE(Message_Input_KeyDown);

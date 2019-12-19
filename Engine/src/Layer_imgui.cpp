@@ -20,6 +20,9 @@ namespace Engine
 
   void Layer_imgui::HandleMessage(Message * a_pMsg)
   {
+    if (a_pMsg->GetCategory() != MC_GUI)
+      return;
+
     DISPATCH_MESSAGE(Message_GUI_MouseMove);
     DISPATCH_MESSAGE(Message_GUI_MouseButtonDown);
     DISPATCH_MESSAGE(Message_GUI_MouseButtonUp);

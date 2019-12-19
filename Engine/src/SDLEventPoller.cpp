@@ -4,7 +4,7 @@
 #include <cstring>
 
 #include "Framework.h"
-#include "Message.h"
+#include "EngineMessages.h"
 #include "InputCodes.h"
 #include "core_Log.h"
 #include "Memory.h"

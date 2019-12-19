@@ -9,7 +9,7 @@
 
 #include "Memory.h"
 #include "MessageBus.h"
-#include "Message.h"
+#include "EngineMessages.h"
 #include "Layer.h"
 #include "InputCodes.h"
 

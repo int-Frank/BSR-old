@@ -3,7 +3,7 @@
 #ifndef EN_LAYER_CONSOLE_H
 #define EN_LAYER_CONSOLE_H
 
-#include "Message.h"
+#include "EngineMessages.h"
 #include "Layer.h"
 
 //Perhaps we can remove this from the Engine. It really belongs in the Game project.

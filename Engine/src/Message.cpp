@@ -5,7 +5,7 @@
 #include <new>
 #include <sstream>
 
-#include "Message.h"
+#include "EngineMessages.h"
 #include "MessageHandler.h"
 #include "DgMap_AVL.h"
 
