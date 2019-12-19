@@ -33,22 +33,23 @@ namespace Engine
     void ReleaseMouse();
     void SetMouseLookRate(float xRate, float yRate);
 
-    void HandleMessage(MessageSub<MT_Input_Text> *) override;
-    void HandleMessage(MessageSub<MT_Input_KeyUp> *) override;
-    void HandleMessage(MessageSub<MT_Input_KeyDown> *) override;
-    void HandleMessage(MessageSub<MT_Input_MouseButtonUp> *) override;
-    void HandleMessage(MessageSub<MT_Input_MouseButtonDown> *) override;
-    void HandleMessage(MessageSub<MT_Input_MouseWheelUp> *) override;
-    void HandleMessage(MessageSub<MT_Input_MouseWheelDown> *) override;
-    void HandleMessage(MessageSub<MT_Input_MouseMove> *) override;
+    void HandleMessage(Message*) override;
+    void HandleMessage(Message_Input_Text*);
+    void HandleMessage(Message_Input_KeyUp *);
+    void HandleMessage(Message_Input_KeyDown *);
+    void HandleMessage(Message_Input_MouseButtonUp *);
+    void HandleMessage(Message_Input_MouseButtonDown *);
+    void HandleMessage(Message_Input_MouseWheelUp *);
+    void HandleMessage(Message_Input_MouseWheelDown *);
+    void HandleMessage(Message_Input_MouseMove *);
 
-    void Bind(InputCode inputCode, MessageType event, Message * binding);
+    void Bind(InputCode inputCode, uint32_t event, Message * binding);
 
   private:
 
     void HandleBinding(uint64_t key, Message const * source);
 
-    uint64_t PackKey(uint32_t inputCode, MessageType MessageType);
+    uint64_t PackKey(uint32_t inputCode, uint32_t MessageType);
 
     Ref<IEventPoller>                   m_eventPoller;
     Ref<IMouseController>               m_mouseController;

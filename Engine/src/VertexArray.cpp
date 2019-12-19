@@ -46,7 +46,7 @@ namespace Engine
     RENDER_SUBMIT(state, [rendererID = m_rendererID, refID = refID]() mutable
       {
         glCreateVertexArrays(1, &rendererID);
-        auto msg = MessageSub<MT_Command>::New([refID = refID, rendererID = rendererID]()
+        auto msg = Message_Command::New([refID = refID, rendererID = rendererID]()
           {
             Ref<VertexArray> ref(refID);
             if (ref.IsNull())

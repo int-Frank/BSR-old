@@ -147,7 +147,7 @@ namespace Engine
         uint32_t rendererID(0);
         glCreateBuffers(1, &rendererID);
         glNamedBufferData(rendererID, size, data, OpenGLUsage(usage));
-        auto msg = MessageSub<MT_Command>::New([refID = refID, rendererID = rendererID]()
+        auto msg = Message_Command::New([refID = refID, rendererID = rendererID]()
           {
             Ref<VertexBuffer> ref(refID);
             if (ref.IsNull())
@@ -177,7 +177,7 @@ namespace Engine
         uint32_t rendererID(0);
         glCreateBuffers(1, &rendererID);
         glNamedBufferData(rendererID, size, nullptr, OpenGLUsage(usage));
-        auto msg = MessageSub<MT_Command>::New([refID = refID, rendererID = rendererID]()
+        auto msg = Message_Command::New([refID = refID, rendererID = rendererID]()
           {
             Ref<VertexBuffer> ref(refID);
             if (ref.IsNull())
@@ -273,7 +273,7 @@ namespace Engine
         uint32_t rendererID(0);
         glCreateBuffers(1, &rendererID);
         glNamedBufferData(rendererID, size, data, GL_STATIC_DRAW);
-        auto msg = MessageSub<MT_Command>::New([refID = refID, rendererID = rendererID]()
+        auto msg = Message_Command::New([refID = refID, rendererID = rendererID]()
           {
             Ref<IndexBuffer> ref(refID);
             if (ref.IsNull())

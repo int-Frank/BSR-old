@@ -24,7 +24,8 @@ namespace Engine
 
     void Update(float);
 
-    void HandleMessage(MessageSub<MT_Command>*) override;
+    void HandleMessage(Message *) override;
+    void HandleMessage(Message_Command*);
 
   private:
 

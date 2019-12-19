@@ -62,7 +62,7 @@ namespace Engine
       auto it = m_layerStack.begin();
       for (; it != m_layerStack.end(); it++)
       {
-        pMsg->Submit(it->second);
+        it->second->HandleMessage(pMsg);
         if (pMsg->Is(Message::Flag::Handled))
           break;
       }

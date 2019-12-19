@@ -22,9 +22,8 @@ namespace Engine
 
   }
 
-#undef ITEM
-#define ITEM(x) void Layer_Console::HandleMessage(MessageSub<MT_##x> * a_pMsg)\
-{if (a_pMsg->Is(Message::Flag::Show)) LOG_TRACE(a_pMsg->ToString());}
-  MESSAGE_LIST
-
+  void Layer_Console::HandleMessage(Message * a_pMsg)
+  {
+    //Don't write to console...
+  }
 }

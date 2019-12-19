@@ -1,11 +1,10 @@
 //@group Messages
 
-#ifndef EN_MESSAGE_H
-#define EN_MESSAGE_H
+#ifndef MESSAGE_H
+#define MESSAGE_H
 
 #include <stdint.h>
 #include <string>
-#include <sstream>
 #include <type_traits>
 
 #include "core_utils.h"
@@ -13,79 +12,59 @@
 
 #define TEXT_INPUT_TEXT_SIZE 32
 
-namespace Engine
-{
-
-#ifndef MORE_MESSAGE_TYPES
-#define MORE_MESSAGE_TYPES
-#endif
-
-  //TODO We can only do this if all messages are defined in this header file.
+//Smart list reduces the amount of code we have to write
 #define ITEM()
 #define MESSAGE_LIST \
-  ITEM(None) \
-  ITEM(GoBack) \
-  ITEM(GUI_MouseMove) \
-  ITEM(GUI_MouseButtonUp) \
-  ITEM(GUI_MouseButtonDown) \
-  ITEM(GUI_KeyUp) \
-  ITEM(GUI_KeyDown) \
-  ITEM(GUI_MouseWheelUp) \
-  ITEM(GUI_MouseWheelDown) \
-  ITEM(GUI_Text) \
-  ITEM(Window_Shown) \
-  ITEM(Window_Hidden) \
-  ITEM(Window_Exposed) \
-  ITEM(Window_Moved) \
-  ITEM(Window_Resized) \
-  ITEM(Window_Size_Changed) \
-  ITEM(Window_Minimized) \
-  ITEM(Window_Maximized) \
-  ITEM(Window_Restored) \
-  ITEM(Window_Enter) \
-  ITEM(Window_Leave) \
-  ITEM(Window_Focus_Gained) \
-  ITEM(Window_Focus_Lost) \
-  ITEM(Window_Close) \
-  ITEM(Window_Take_Focus) \
-  ITEM(Input_Text) \
-  ITEM(Input_KeyUp) \
-  ITEM(Input_KeyDown) \
-  ITEM(Input_MouseButtonUp) \
-  ITEM(Input_MouseButtonDown) \
-  ITEM(Input_MouseWheelUp) \
-  ITEM(Input_MouseWheelDown) \
-  ITEM(Input_MouseMove) \
-  ITEM(Command)\
-  MORE_MESSAGE_TYPES
+  ITEM(None, None) \
+  ITEM(GoBack, None) \
+  ITEM(GUI_MouseMove, GUI) \
+  ITEM(GUI_MouseButtonUp, GUI) \
+  ITEM(GUI_MouseButtonDown, GUI) \
+  ITEM(GUI_KeyUp, GUI) \
+  ITEM(GUI_KeyDown, GUI) \
+  ITEM(GUI_MouseWheelUp, GUI) \
+  ITEM(GUI_MouseWheelDown, GUI) \
+  ITEM(GUI_Text, GUI) \
+  ITEM(Window_Shown, Window) \
+  ITEM(Window_Hidden, Window) \
+  ITEM(Window_Exposed, Window) \
+  ITEM(Window_Moved, Window) \
+  ITEM(Window_Resized, Window) \
+  ITEM(Window_Size_Changed, Window) \
+  ITEM(Window_Minimized, Window) \
+  ITEM(Window_Maximized, Window) \
+  ITEM(Window_Restored, Window) \
+  ITEM(Window_Enter, Window) \
+  ITEM(Window_Leave, Window) \
+  ITEM(Window_Focus_Gained, Window) \
+  ITEM(Window_Focus_Lost, Window) \
+  ITEM(Window_Close, Window) \
+  ITEM(Window_Take_Focus, Window) \
+  ITEM(Input_Text, Input) \
+  ITEM(Input_KeyUp, Input) \
+  ITEM(Input_KeyDown, Input) \
+  ITEM(Input_MouseButtonUp, Input) \
+  ITEM(Input_MouseButtonDown, Input) \
+  ITEM(Input_MouseWheelUp, Input) \
+  ITEM(Input_MouseWheelDown, Input) \
+  ITEM(Input_MouseMove, Input)
 
-#undef ITEM
-
+namespace Engine
+{
   //General Message command
   typedef void(*MessageCommandFn)(void*);
 
-  //Create enum of all message types
-#define ITEM(x) MT_##x,
-  enum MessageType : uint32_t
+  enum MessageCategory : uint32_t
   {
-    MESSAGE_LIST
-    MT_COUNT
+    MC_None    = 0,
+    MC_GUI,
+    MC_Input,
+    MC_Window,
+    MC_CLIENT_BEGIN //Create your own categories beginning at this value
   };
-
-  template<int MESSAGE_TYPE>
-  class MessageSub;
-
-  //Forward declare all Message types
-#undef ITEM
-#define ITEM(MESSAGE_TYPE) template<> class MessageSub<MT_##MESSAGE_TYPE>;
-  MESSAGE_LIST
-
-  class MessageHandler;
 
   class Message
   {
-  protected:
-    uint32_t m_flags;
   public:
 
     enum class Flag: uint32_t
@@ -98,209 +77,136 @@ namespace Engine
     Message(): m_flags(0){}
     bool Is(Flag a_flag) const {return (m_flags & static_cast<uint32_t>(a_flag)) != 0;}
     void SetFlag(Flag a_flag) {m_flags = (m_flags | static_cast<uint32_t>(a_flag));}
-    virtual void Submit(MessageHandler *) = 0;
-    virtual size_t Size() const = 0;
-    virtual TRef<Message> CloneAsTref() const = 0; //Clone at a memory location
-    virtual void Clone(void *) const = 0; //Clone at a memory location
     virtual uint32_t GetID() const = 0;
+    uint32_t GetCategory() const;
+    virtual size_t Size() const = 0;
+    virtual TRef<Message> CloneAsTRef() const = 0; //Clone at a memory location
+    virtual void Clone(void *) const = 0; //Clone at a memory location
     virtual std::string ToString() const = 0;
+
+  protected:
+    uint32_t m_flags;
+  protected:
+    static uint32_t GetNewID(uint32_t a_class);
   };
   static_assert(std::is_trivially_destructible<Message>::value, "Message must be trivially destructible");
 
-#define MESSAGE_CLASS_HEADER(MESSAGE_TYPE) template<>\
-  class MessageSub<MESSAGE_TYPE> : public Message\
+#define MESSAGE_CLASS_HEADER(MESSAGE_TYPE) class Message_##MESSAGE_TYPE : public Message\
   {\
+    static uint32_t s_ID;\
   public:\
-    size_t Size() const override {return sizeof(*this);}\
-    TRef<Message> CloneAsTref() const override\
-    {\
-      TRef<MessageSub<MESSAGE_TYPE>> cpy = TRef<MessageSub<MESSAGE_TYPE>>::MakeCopy(this);\
-      return StaticPointerCast<Message>(cpy);\
-    }\
-    void Clone(void * a_buf) const override {new (a_buf) MessageSub<MESSAGE_TYPE>(*this);}\
-    void Submit(MessageHandler *) override;\
-    uint32_t GetID() const override {return MESSAGE_TYPE;}\
-    static uint32_t s_GetID() {return MESSAGE_TYPE;}\
-    std::string ToString() const override {return #MESSAGE_TYPE;}
-
-#define MESSAGE_CLASS_HEADER_NO_STRING(MESSAGE_TYPE) template<>\
-  class MessageSub<MESSAGE_TYPE> : public Message\
-  {\
-  public:\
-    size_t Size() const override {return sizeof(*this);}\
-    TRef<Message> CloneAsTref() const override\
-    {\
-      TRef<MessageSub<MESSAGE_TYPE>> cpy = TRef<MessageSub<MESSAGE_TYPE>>::MakeCopy(this);\
-      return StaticPointerCast<Message>(cpy);\
-    }\
-    void Clone(void * a_buf) const override {new (a_buf) MessageSub<MESSAGE_TYPE>(*this);}\
-    void Submit(MessageHandler *) override;\
-    uint32_t GetID() const override {return MESSAGE_TYPE;}\
-    static uint32_t s_GetID() {return MESSAGE_TYPE;}
+    static uint32_t GetStaticID();\
+    uint32_t GetID() const override;\
+    size_t Size() const override;\
+    TRef<Message> CloneAsTRef() const override;\
+    void Clone(void * a_buf) const override;\
+    std::string ToString() const override;
 
   //-----------------------------------------------------------------------------------
   // Message Classes
   //-----------------------------------------------------------------------------------
 
-  MESSAGE_CLASS_HEADER(MT_None) };
-  MESSAGE_CLASS_HEADER(MT_GoBack) };
+  MESSAGE_CLASS_HEADER(None) };
+  MESSAGE_CLASS_HEADER(GoBack) };
 
-  MESSAGE_CLASS_HEADER_NO_STRING(MT_GUI_MouseMove)
-    std::string ToString() const 
-    {
-      std::stringstream ss;
-      ss << "MT_GUI_MouseMove [x: " << x << ", y: " << y << "]";
-      return ss.str();
-    }
+  MESSAGE_CLASS_HEADER(GUI_MouseMove)
     int32_t x;
     int32_t y;
   };
 
-  MESSAGE_CLASS_HEADER_NO_STRING(MT_GUI_MouseButtonUp)
-    std::string ToString() const 
-    {
-      std::stringstream ss;
-      ss << "MT_GUI_MouseButtonUp [button: " << button << ", x: " << x << ", y: " << y << "]";
-      return ss.str();
-    }
+  MESSAGE_CLASS_HEADER(GUI_MouseButtonUp)
     uint32_t  button;
     int32_t   x;
     int32_t   y;
   };
 
-  MESSAGE_CLASS_HEADER_NO_STRING(MT_GUI_MouseButtonDown)
-    std::string ToString() const 
-    {
-      std::stringstream ss;
-      ss << "MT_GUI_MouseButtonDown [button: " << button << ", x: " << x << ", y: " << y << "]";
-      return ss.str();
-    }
+  MESSAGE_CLASS_HEADER(GUI_MouseButtonDown)
     uint32_t  button;
     int32_t   x;
     int32_t   y;
   };
 
-  MESSAGE_CLASS_HEADER_NO_STRING(MT_GUI_KeyUp)
-    std::string ToString() const 
-    {
-      std::stringstream ss;
-      ss << "MT_GUI_KeyUp [key: " << keyCode << ", modState: " << modState << "]";
-      return ss.str();
-    }
+  MESSAGE_CLASS_HEADER(GUI_KeyUp)
     uint32_t  keyCode;
     uint16_t  modState;
   };
 
-  MESSAGE_CLASS_HEADER_NO_STRING(MT_GUI_KeyDown)
-    std::string ToString() const 
-    {
-      std::stringstream ss;
-      ss << "MT_GUI_KeyDown [key: " << keyCode << ", modState: " << modState << "]";
-      return ss.str();
-    }
+  MESSAGE_CLASS_HEADER(GUI_KeyDown)
     uint32_t  keyCode;
     uint16_t  modState;
   };
 
-  MESSAGE_CLASS_HEADER(MT_GUI_MouseWheelUp) };
-  MESSAGE_CLASS_HEADER(MT_GUI_MouseWheelDown) };
+  MESSAGE_CLASS_HEADER(GUI_MouseWheelUp) };
+  MESSAGE_CLASS_HEADER(GUI_MouseWheelDown) };
 
-  MESSAGE_CLASS_HEADER_NO_STRING(MT_GUI_Text)
-    std::string ToString() const 
-    {
-      std::stringstream ss;
-      ss << "MT_GUI_Text [text: " << text << "]";
-      return ss.str();
-    }
+  MESSAGE_CLASS_HEADER(GUI_Text)
     char text[TEXT_INPUT_TEXT_SIZE];
   };
 
-  MESSAGE_CLASS_HEADER(MT_Window_Shown) };
-  MESSAGE_CLASS_HEADER(MT_Window_Hidden) };
-  MESSAGE_CLASS_HEADER(MT_Window_Exposed) };
+  MESSAGE_CLASS_HEADER(Window_Shown) };
+  MESSAGE_CLASS_HEADER(Window_Hidden) };
+  MESSAGE_CLASS_HEADER(Window_Exposed) };
 
-  MESSAGE_CLASS_HEADER_NO_STRING(MT_Window_Moved)
-    std::string ToString() const 
-    {
-      std::stringstream ss;
-      ss << "MT_Window_Moved [x: " << x << ", y: " << y << "]";
-      return ss.str();
-    }
+  MESSAGE_CLASS_HEADER(Window_Moved)
     int32_t   x;
     int32_t   y;
   };
 
-  MESSAGE_CLASS_HEADER_NO_STRING(MT_Window_Resized)
-    std::string ToString() const 
-    {
-      std::stringstream ss;
-      ss << "MT_Window_Resized [w: " << w << ", h: " << h << "]";
-      return ss.str();
-    }
+  MESSAGE_CLASS_HEADER(Window_Resized)
     int32_t   w;
     int32_t   h;
   };
 
-  MESSAGE_CLASS_HEADER_NO_STRING(MT_Window_Size_Changed)
-    std::string ToString() const 
-    {
-      std::stringstream ss;
-      ss << "MT_Window_Size_Changed [w: " << w << ", h: " << h << "]";
-      return ss.str();
-    }
+  MESSAGE_CLASS_HEADER(Window_Size_Changed)
     int32_t   w;
     int32_t   h;
   };
 
-  MESSAGE_CLASS_HEADER(MT_Window_Minimized) };
-  MESSAGE_CLASS_HEADER(MT_Window_Maximized) };
-  MESSAGE_CLASS_HEADER(MT_Window_Restored) };
-  MESSAGE_CLASS_HEADER(MT_Window_Enter) };
-  MESSAGE_CLASS_HEADER(MT_Window_Leave) };
-  MESSAGE_CLASS_HEADER(MT_Window_Focus_Gained) };
-  MESSAGE_CLASS_HEADER(MT_Window_Focus_Lost) };
-  MESSAGE_CLASS_HEADER(MT_Window_Close) };
-  MESSAGE_CLASS_HEADER(MT_Window_Take_Focus) };
+  MESSAGE_CLASS_HEADER(Window_Minimized) };
+  MESSAGE_CLASS_HEADER(Window_Maximized) };
+  MESSAGE_CLASS_HEADER(Window_Restored) };
+  MESSAGE_CLASS_HEADER(Window_Enter) };
+  MESSAGE_CLASS_HEADER(Window_Leave) };
+  MESSAGE_CLASS_HEADER(Window_Focus_Gained) };
+  MESSAGE_CLASS_HEADER(Window_Focus_Lost) };
+  MESSAGE_CLASS_HEADER(Window_Close) };
+  MESSAGE_CLASS_HEADER(Window_Take_Focus) };
 
-  MESSAGE_CLASS_HEADER(MT_Input_Text)
+  MESSAGE_CLASS_HEADER(Input_Text)
     char text[TEXT_INPUT_TEXT_SIZE];
   };
 
-  MESSAGE_CLASS_HEADER(MT_Input_KeyUp)
+  MESSAGE_CLASS_HEADER(Input_KeyUp)
     uint32_t  keyCode;
     uint16_t   modState;
   };
 
-  MESSAGE_CLASS_HEADER(MT_Input_KeyDown)
+  MESSAGE_CLASS_HEADER(Input_KeyDown)
     uint32_t  keyCode;
     uint16_t   modState;
   };
 
-  MESSAGE_CLASS_HEADER(MT_Input_MouseButtonUp)
+  MESSAGE_CLASS_HEADER(Input_MouseButtonUp)
     uint32_t  button;
     int32_t    x;
     int32_t    y;
   };
 
-  MESSAGE_CLASS_HEADER(MT_Input_MouseButtonDown)
+  MESSAGE_CLASS_HEADER(Input_MouseButtonDown)
     uint32_t  button;
     int32_t    x;
     int32_t    y;
   };
 
-  MESSAGE_CLASS_HEADER(MT_Input_MouseWheelUp) };
-  MESSAGE_CLASS_HEADER(MT_Input_MouseWheelDown) };
+  MESSAGE_CLASS_HEADER(Input_MouseWheelUp) };
+  MESSAGE_CLASS_HEADER(Input_MouseWheelDown) };
 
-  MESSAGE_CLASS_HEADER(MT_Input_MouseMove)
+  MESSAGE_CLASS_HEADER(Input_MouseMove)
     int32_t x;
     int32_t y;
   };
 
-  template<>
-  class MessageSub<MT_Command> : public Message
-  {
-  public:
-
+  MESSAGE_CLASS_HEADER(Command)
     template<typename FuncT>
     static TRef<Message> New(FuncT&& func)
     {
@@ -323,28 +229,13 @@ namespace Engine
       ptr = AdvancePtr(ptr, sizeof(MessageCommandFn));
       new (ptr) FuncT(std::forward<FuncT>(func));
 
-      TRef<MessageSub<MT_Command>> msg = TRef<MessageSub<MT_Command>>::New(pBuf);
+      TRef<Message_Command> msg = TRef<Message_Command>::New(pBuf);
       return DynamicPointerCast<Message>(msg);
     }
 
-    MessageSub()
-    : ptr(nullptr)
-    {}
+    Message_Command();
+    Message_Command(void* a_ptr);
 
-    MessageSub(void* a_ptr)
-      : ptr(a_ptr)
-    {}
-
-    size_t Size() const override;
-      
-    TRef<Message> CloneAsTref() const override;
-
-    void Clone(void* a_buf) const override;
-    void Submit(MessageHandler*) override;
-
-    uint32_t GetID() const override {return MT_Command;}
-    static uint32_t s_GetID()  {return MT_Command;}
-    std::string ToString() const override {return "MT_Command";}
     void Run();
 
     void* ptr;
@@ -354,7 +245,7 @@ namespace Engine
   // Make sure messages are trivially destructable
   //-----------------------------------------------------------------------------------
 #undef ITEM
-#define ITEM(MESSAGE_TYPE) static_assert(std::is_trivially_destructible<MessageSub<MESSAGE_TYPE>>::value, #MESSAGE_TYPE " must be trivially destructible");\
+#define ITEM(MESSAGE_TYPE) static_assert(std::is_trivially_destructible<Message_##MESSAGE_TYPE>::value, #MESSAGE_TYPE " must be trivially destructible");\
   MESSAGE_LIST
 
   //-----------------------------------------------------------------------------------
@@ -366,8 +257,8 @@ namespace Engine
     typedef void (*MessageTranslatorFn)(Message * dest, Message const * src);
 
     void Clear();
-    bool Exists(MessageType, MessageType);
-    void AddTranslator(MessageType, MessageType, MessageTranslatorFn); //Will override
+    bool Exists(uint32_t, uint32_t);
+    void AddTranslator(uint32_t, uint32_t, MessageTranslatorFn); //Will override
     void Translate(Message * dest, Message const * src);
     void AddDefaultTranslators();
   }

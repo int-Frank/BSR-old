@@ -161,7 +161,7 @@ namespace Engine
           Dg::RNG_Global rng;
           unsigned val2 = rng.GetUintRange(1, 100);
           LOG_DEBUG("Renderer recieved {}, sending back {}", val, val2);
-          TRef<Message> msg = MessageSub<MT_Command>::New([val2 = val2]
+          TRef<Message> msg = Message_Command::New([val2 = val2]
             {
               LOG_DEBUG("Main recieved {}", val2);
             });

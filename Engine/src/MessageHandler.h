@@ -5,6 +5,8 @@
 
 #include "Message.h"
 
+#define DISPATCH_MESSAGE(TYPE) do{if (a_pMsg->GetID() == TYPE::GetStaticID()) {HandleMessage(dynamic_cast<TYPE*>(a_pMsg)); return;}} while (false)
+
 namespace Engine
 {
   class MessageHandler
@@ -13,10 +15,7 @@ namespace Engine
   public:
 
     virtual ~MessageHandler() = default;
-
-#undef ITEM
-#define ITEM(x) virtual void HandleMessage(MessageSub<MT_##x> *) {}
-    MESSAGE_LIST;
+    virtual void HandleMessage(Message *) {}
   };
 }
 

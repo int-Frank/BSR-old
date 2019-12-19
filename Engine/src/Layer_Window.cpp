@@ -35,78 +35,97 @@ namespace Engine
     m_pWindow->Update();
   }
 
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Shown> *)
+  void Layer_Window::HandleMessage(Message* a_pMsg)
+  {
+    DISPATCH_MESSAGE(Message_Window_Shown);
+    DISPATCH_MESSAGE(Message_Window_Hidden);
+    DISPATCH_MESSAGE(Message_Window_Exposed);
+    DISPATCH_MESSAGE(Message_Window_Moved);
+    DISPATCH_MESSAGE(Message_Window_Resized);
+    DISPATCH_MESSAGE(Message_Window_Size_Changed);
+    DISPATCH_MESSAGE(Message_Window_Minimized);
+    DISPATCH_MESSAGE(Message_Window_Maximized);
+    DISPATCH_MESSAGE(Message_Window_Restored);
+    DISPATCH_MESSAGE(Message_Window_Enter);
+    DISPATCH_MESSAGE(Message_Window_Leave);
+    DISPATCH_MESSAGE(Message_Window_Focus_Gained);
+    DISPATCH_MESSAGE(Message_Window_Focus_Lost);
+    DISPATCH_MESSAGE(Message_Window_Close);
+    DISPATCH_MESSAGE(Message_Window_Take_Focus);
+  }
+
+  void Layer_Window::HandleMessage(Message_Window_Shown*)
+  {
+
+  }
+
+  void Layer_Window::HandleMessage(Message_Window_Hidden *)
   {
     
   }
 
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Hidden> *)
+  void Layer_Window::HandleMessage(Message_Window_Exposed *)
   {
     
   }
 
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Exposed> *)
+  void Layer_Window::HandleMessage(Message_Window_Moved *)
   {
     
   }
 
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Moved> *)
+  void Layer_Window::HandleMessage(Message_Window_Resized *)
   {
     
   }
 
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Resized> *)
+  void Layer_Window::HandleMessage(Message_Window_Size_Changed *)
   {
     
   }
 
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Size_Changed> *)
+  void Layer_Window::HandleMessage(Message_Window_Minimized *)
   {
     
   }
 
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Minimized> *)
+  void Layer_Window::HandleMessage(Message_Window_Maximized *)
   {
     
   }
 
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Maximized> *)
+  void Layer_Window::HandleMessage(Message_Window_Restored *)
   {
     
   }
 
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Restored> *)
+  void Layer_Window::HandleMessage(Message_Window_Enter *)
   {
     
   }
 
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Enter> *)
+  void Layer_Window::HandleMessage(Message_Window_Leave *)
   {
     
   }
 
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Leave> *)
+  void Layer_Window::HandleMessage(Message_Window_Focus_Gained *)
   {
     
   }
 
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Focus_Gained> *)
+  void Layer_Window::HandleMessage(Message_Window_Focus_Lost *)
   {
     
   }
 
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Focus_Lost> *)
-  {
-    
-  }
-
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Close> * a_pMsg)
+  void Layer_Window::HandleMessage(Message_Window_Close * a_pMsg)
   {
     Application::Instance()->RequestQuit();
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void Layer_Window::HandleMessage(MessageSub<MT_Window_Take_Focus> *)
+  void Layer_Window::HandleMessage(Message_Window_Take_Focus *)
   {
 
   }

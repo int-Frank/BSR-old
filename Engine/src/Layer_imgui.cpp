@@ -18,26 +18,38 @@ namespace Engine
   {
   }
 
-  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseMove> * a_pMsg)
+  void Layer_imgui::HandleMessage(Message * a_pMsg)
+  {
+    DISPATCH_MESSAGE(Message_GUI_MouseMove);
+    DISPATCH_MESSAGE(Message_GUI_MouseButtonDown);
+    DISPATCH_MESSAGE(Message_GUI_MouseButtonUp);
+    DISPATCH_MESSAGE(Message_GUI_KeyDown);
+    DISPATCH_MESSAGE(Message_GUI_KeyUp);
+    DISPATCH_MESSAGE(Message_GUI_MouseWheelDown);
+    DISPATCH_MESSAGE(Message_GUI_MouseWheelUp);
+    DISPATCH_MESSAGE(Message_GUI_Text);
+  }
+
+  void Layer_imgui::HandleMessage(Message_GUI_MouseMove * a_pMsg)
   {
     //ImGuiIO& io = ImGui::GetIO();
     //io.MousePos = ImVec2((float)a_pMsg->x, (float)a_pMsg->y);
     //a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseButtonDown> * a_pMsg)
+  void Layer_imgui::HandleMessage(Message_GUI_MouseButtonDown * a_pMsg)
   {
     //SetMouseButton(a_pMsg->button, true);
     //a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseButtonUp> * a_pMsg)
+  void Layer_imgui::HandleMessage(Message_GUI_MouseButtonUp * a_pMsg)
   {
     //SetMouseButton(a_pMsg->button, false);
     //a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_KeyDown> * a_pMsg)
+  void Layer_imgui::HandleMessage(Message_GUI_KeyDown * a_pMsg)
   {
     //ImGuiIO& io = ImGui::GetIO();
     //BSR_ASSERT(a_pMsg->keyCode >= 0 && a_pMsg->keyCode < IM_ARRAYSIZE(io.KeysDown));
@@ -49,7 +61,7 @@ namespace Engine
     //a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_KeyUp> * a_pMsg)
+  void Layer_imgui::HandleMessage(Message_GUI_KeyUp * a_pMsg)
   {
     //ImGuiIO& io = ImGui::GetIO();
     //BSR_ASSERT(a_pMsg->keyCode >= 0 && a_pMsg->keyCode < IM_ARRAYSIZE(io.KeysDown));
@@ -61,21 +73,21 @@ namespace Engine
     //a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseWheelUp> * a_pMsg)
+  void Layer_imgui::HandleMessage(Message_GUI_MouseWheelUp * a_pMsg)
   {
     //ImGuiIO& io = ImGui::GetIO();
     //io.MouseWheel += 1;
     //a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_MouseWheelDown> * a_pMsg)
+  void Layer_imgui::HandleMessage(Message_GUI_MouseWheelDown * a_pMsg)
   {
     //ImGuiIO& io = ImGui::GetIO();
     //io.MouseWheel -= 1;
     //a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void Layer_imgui::HandleMessage(MessageSub<MT_GUI_Text> * a_pMsg)
+  void Layer_imgui::HandleMessage(Message_GUI_Text * a_pMsg)
   {
     //ImGuiIO& io = ImGui::GetIO();
     //io.AddInputCharactersUTF8(a_pMsg->text);

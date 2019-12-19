@@ -6,6 +6,7 @@
 #include "Message.h"
 #include "Layer.h"
 
+//Perhaps we can remove this from the Engine. It really belongs in the Game project.
 namespace Engine
 {
   class Layer_Console : public Layer
@@ -16,8 +17,11 @@ namespace Engine
     Layer_Console();
     ~Layer_Console();
 
+    void HandleMessage(Message*) override;
+    void HandleMessage(Message_Command*);
+
 #undef ITEM
-#define ITEM(x) virtual void HandleMessage(MessageSub<MT_##x> *);
+#define ITEM(TYPE, CATEGORY) void HandleMessage(Message_##TYPE *);
     MESSAGE_LIST;
 
     void Update(float);

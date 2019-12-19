@@ -21,15 +21,15 @@ namespace Engine
     , m_yMouseRotRate(1.0f)
   {
     //TODO move these to OnAttach(). Also Undind on OnDetatch()
-    Bind(IC_MOUSE_MOTION, MT_Input_MouseMove, new MessageSub<MT_GUI_MouseMove>());
-    Bind(IC_MOUSE_WHEEL_UP, MT_Input_MouseWheelUp, new MessageSub<MT_GUI_MouseWheelUp>());
-    Bind(IC_MOUSE_WHEEL_DOWN, MT_Input_MouseWheelDown, new MessageSub<MT_GUI_MouseWheelDown>());
-    Bind(IC_MOUSE_BUTTON_LEFT, MT_Input_MouseButtonDown, new MessageSub<MT_GUI_MouseButtonDown>());
-    Bind(IC_MOUSE_BUTTON_LEFT, MT_Input_MouseButtonUp, new MessageSub<MT_GUI_MouseButtonUp>());
-    Bind(IC_MOUSE_BUTTON_RIGHT, MT_Input_MouseButtonDown, new MessageSub<MT_GUI_MouseButtonDown>());
-    Bind(IC_MOUSE_BUTTON_RIGHT, MT_Input_MouseButtonUp, new MessageSub<MT_GUI_MouseButtonUp>());
+    Bind(IC_MOUSE_MOTION, Message_Input_MouseMove::GetStaticID(), new Message_GUI_MouseMove());
+    Bind(IC_MOUSE_WHEEL_UP, Message_Input_MouseWheelUp::GetStaticID(), new Message_GUI_MouseWheelUp());
+    Bind(IC_MOUSE_WHEEL_DOWN, Message_Input_MouseWheelDown::GetStaticID(), new Message_GUI_MouseWheelDown());
+    Bind(IC_MOUSE_BUTTON_LEFT, Message_Input_MouseButtonDown::GetStaticID(), new Message_GUI_MouseButtonDown());
+    Bind(IC_MOUSE_BUTTON_LEFT, Message_Input_MouseButtonUp::GetStaticID(), new Message_GUI_MouseButtonUp());
+    Bind(IC_MOUSE_BUTTON_RIGHT, Message_Input_MouseButtonDown::GetStaticID(), new Message_GUI_MouseButtonDown());
+    Bind(IC_MOUSE_BUTTON_RIGHT, Message_Input_MouseButtonUp::GetStaticID(), new Message_GUI_MouseButtonUp());
 
-    Bind(IC_UNKNOWN, MT_Input_Text, new MessageSub<MT_GUI_Text>());
+    Bind(IC_UNKNOWN, Message_Input_Text::GetStaticID(), new Message_GUI_Text());
   }
 
   Layer_InputHandler::~Layer_InputHandler()
@@ -42,64 +42,76 @@ namespace Engine
     auto it = m_bindings.find(a_key);
     if (it != m_bindings.end())
     {
-      TRef<Message> pMsg = it->second->CloneAsTref();
+      TRef<Message> pMsg = it->second->CloneAsTRef();
       MessageTranslator::Translate(pMsg.Get(), a_pMsg);
       POST(pMsg);
     }
   }
 
-  void Layer_InputHandler::HandleMessage(MessageSub<MT_Input_Text> * a_pMsg)
+  void Layer_InputHandler::HandleMessage(Message* a_pMsg)
   {
-    uint64_t mapKey = PackKey(IC_UNKNOWN, MT_Input_Text);
+    DISPATCH_MESSAGE(Message_Input_Text);
+    DISPATCH_MESSAGE(Message_Input_KeyUp);
+    DISPATCH_MESSAGE(Message_Input_KeyDown);
+    DISPATCH_MESSAGE(Message_Input_MouseButtonUp);
+    DISPATCH_MESSAGE(Message_Input_MouseButtonDown);
+    DISPATCH_MESSAGE(Message_Input_MouseWheelUp);
+    DISPATCH_MESSAGE(Message_Input_MouseWheelDown);
+    DISPATCH_MESSAGE(Message_Input_MouseMove);
+  }
+
+  void Layer_InputHandler::HandleMessage(Message_Input_Text* a_pMsg)
+  {
+    uint64_t mapKey = PackKey(IC_UNKNOWN, Message_Input_Text::GetStaticID());
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_KeyUp> * a_pMsg)
+  void  Layer_InputHandler::HandleMessage(Message_Input_KeyUp * a_pMsg)
   {
-    uint64_t mapKey = PackKey(a_pMsg->keyCode, MT_Input_KeyUp);
+    uint64_t mapKey = PackKey(a_pMsg->keyCode, Message_Input_KeyUp::GetStaticID());
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_KeyDown> * a_pMsg)
+  void  Layer_InputHandler::HandleMessage(Message_Input_KeyDown * a_pMsg)
   {
-    uint64_t mapKey = PackKey(a_pMsg->keyCode, MT_Input_KeyDown);
+    uint64_t mapKey = PackKey(a_pMsg->keyCode, Message_Input_KeyDown::GetStaticID());
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseButtonUp> * a_pMsg)
+  void  Layer_InputHandler::HandleMessage(Message_Input_MouseButtonUp * a_pMsg)
   {
-    uint64_t mapKey = PackKey(a_pMsg->button, MT_Input_MouseButtonUp);
+    uint64_t mapKey = PackKey(a_pMsg->button, Message_Input_MouseButtonUp::GetStaticID());
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseButtonDown> * a_pMsg)
+  void  Layer_InputHandler::HandleMessage(Message_Input_MouseButtonDown * a_pMsg)
   {
-    uint64_t mapKey = PackKey(a_pMsg->button, MT_Input_MouseButtonDown);
+    uint64_t mapKey = PackKey(a_pMsg->button, Message_Input_MouseButtonDown::GetStaticID());
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseWheelUp> * a_pMsg)
+  void  Layer_InputHandler::HandleMessage(Message_Input_MouseWheelUp * a_pMsg)
   {
-    uint64_t mapKey = PackKey(IC_MOUSE_WHEEL_UP, MT_Input_MouseWheelUp);
+    uint64_t mapKey = PackKey(IC_MOUSE_WHEEL_UP, Message_Input_MouseWheelUp::GetStaticID());
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseWheelDown> * a_pMsg)
+  void  Layer_InputHandler::HandleMessage(Message_Input_MouseWheelDown * a_pMsg)
   {
-    uint64_t mapKey = PackKey(IC_MOUSE_WHEEL_DOWN, MT_Input_MouseWheelDown);
+    uint64_t mapKey = PackKey(IC_MOUSE_WHEEL_DOWN, Message_Input_MouseWheelDown::GetStaticID());
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
-  void  Layer_InputHandler::HandleMessage(MessageSub<MT_Input_MouseMove> * a_pMsg)
+  void  Layer_InputHandler::HandleMessage(Message_Input_MouseMove * a_pMsg)
   {
-    uint64_t mapKey = PackKey(IC_MOUSE_MOTION, MT_Input_MouseMove);
+    uint64_t mapKey = PackKey(IC_MOUSE_MOTION, Message_Input_MouseMove::GetStaticID());
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
@@ -120,7 +132,7 @@ namespace Engine
     m_yMouseRotRate = a_yRate;
   }
 
-  uint64_t Layer_InputHandler::PackKey(uint32_t a_inputCode, MessageType a_messageType)
+  uint64_t Layer_InputHandler::PackKey(uint32_t a_inputCode, uint32_t a_messageType)
   {
     return (uint64_t(a_inputCode) << 32) | a_messageType;
   }
@@ -130,7 +142,7 @@ namespace Engine
     m_bindings.clear();
   }
 
-  void Layer_InputHandler::Bind(InputCode a_inputCode, MessageType a_event, Message * a_binding)
+  void Layer_InputHandler::Bind(InputCode a_inputCode, uint32_t a_event, Message * a_binding)
   {
     m_bindings.insert(PackKey(a_inputCode, a_event), Ref<Message>(a_binding));
   }
@@ -140,59 +152,59 @@ namespace Engine
   {
     m_bindings.clear();
 
-    Bind(IC_MOUSE_MOTION, MT_Input_OtherMouseEvent, MT_GUI_MouseMove);
-    Bind(IC_MOUSE_WHEEL_UP, MT_Input_OtherMouseEvent, MT_GUI_MouseWheelUp);
-    Bind(IC_MOUSE_WHEEL_DOWN, MT_Input_OtherMouseEvent, MT_GUI_MouseWheelDown);
-    Bind(IC_MOUSE_BUTTON_LEFT, MT_Input_ButtonDown, MT_GUI_MouseButtonDown);
-    Bind(IC_MOUSE_BUTTON_LEFT, MT_Input_ButtonUp, MT_GUI_MouseButtonUp);
+    Bind(IC_MOUSE_MOTION, Message_Input_OtherMouseEvent, Message_GUI_MouseMove);
+    Bind(IC_MOUSE_WHEEL_UP, Message_Input_OtherMouseEvent, Message_GUI_MouseWheelUp);
+    Bind(IC_MOUSE_WHEEL_DOWN, Message_Input_OtherMouseEvent, Message_GUI_MouseWheelDown);
+    Bind(IC_MOUSE_BUTTON_LEFT, Message_Input_ButtonDown, Message_GUI_MouseButtonDown);
+    Bind(IC_MOUSE_BUTTON_LEFT, Message_Input_ButtonUp, Message_GUI_MouseButtonUp);
 
-    Bind(IC_UNKNOWN, MT_Input_Text, MT_GUI_Text);
+    Bind(IC_UNKNOWN, Message_Input_Text, Message_GUI_Text);
 
-    BindKeyDown(IC_KEY_TAB, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_LEFT, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_RIGHT, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_UP, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_DOWN, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_PAGEUP, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_PAGEDOWN, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_HOME, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_END, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_INSERT, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_DELETE, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_BACKSPACE, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_SPACE, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_ENTER, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_KPENTER, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_A, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_C, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_V, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_X, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_Y, true, MT_GUI_KeyDown);
-    BindKeyDown(IC_KEY_Z, true, MT_GUI_KeyDown);
+    BindKeyDown(IC_KEY_TAB, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_LEFT, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_RIGHT, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_UP, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_DOWN, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_PAGEUP, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_PAGEDOWN, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_HOME, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_END, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_INSERT, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_DELETE, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_BACKSPACE, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_SPACE, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_ENTER, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_KPENTER, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_A, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_C, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_V, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_X, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_Y, true, Message_GUI_KeyDown);
+    BindKeyDown(IC_KEY_Z, true, Message_GUI_KeyDown);
 
-    Bind(IC_KEY_TAB, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_LEFT, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_RIGHT, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_UP, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_DOWN, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_PAGEUP, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_PAGEDOWN, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_HOME, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_END, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_INSERT, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_DELETE, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_BACKSPACE, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_SPACE, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_ENTER, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_KPENTER, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_A, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_C, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_V, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_X, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_Y, MT_Input_KeyUp, MT_GUI_KeyUp);
-    Bind(IC_KEY_Z, MT_Input_KeyUp, MT_GUI_KeyUp);
+    Bind(IC_KEY_TAB, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_LEFT, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_RIGHT, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_UP, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_DOWN, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_PAGEUP, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_PAGEDOWN, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_HOME, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_END, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_INSERT, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_DELETE, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_BACKSPACE, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_SPACE, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_ENTER, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_KPENTER, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_A, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_C, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_V, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_X, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_Y, Message_Input_KeyUp, Message_GUI_KeyUp);
+    Bind(IC_KEY_Z, Message_Input_KeyUp, Message_GUI_KeyUp);
 
-    Bind(IC_KEY_ESC, MT_Input_KeyDown, MT_GoBack);
+    Bind(IC_KEY_ESC, Message_Input_KeyDown, Message_GoBack);
 
     m_mouseController->Release();
   }*/
@@ -205,7 +217,7 @@ namespace Engine
       if (pMsg.Get() == nullptr)
         break;
 
-      pMsg->Submit(this);
+      HandleMessage(&*pMsg);
       if (!pMsg->Is(Message::Flag::Handled))
         POST(pMsg);
     }

@@ -1,5 +1,4 @@
 
-#include "GameMessages.h"
 #include "Engine.h"
 #include "Renderer.h"
 #include "RendererAPI.h"
@@ -44,7 +43,6 @@ public:
   Game(Opts const & a_opts)
     : Application(a_opts)
   {
-    int val = Engine::MessageType::MT_COUNT;
     PushLayer(new GameLayer());
     LOG_TRACE("Game initialised!");
   }
