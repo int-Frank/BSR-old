@@ -6,71 +6,10 @@
 #include "Framework.h"
 #include "core_Log.h"
 #include "RendererAPI.h"
+#include "RenderThread.h"
 
 namespace Engine
 {
-  //-----------------------------------------------------------------------------------------------
-  // Render Thread
-  //-----------------------------------------------------------------------------------------------
-  static void RenderThread(Ref<IWindow> a_window)
-  {
-    if (Framework::Instance()->GetGraphicsContext()->Init() != Core::ErrorCode::EC_None)
-    {
-      LOG_ERROR("Unable to set rendering context!");
-      Engine::Renderer::Instance()->RenderThreadInitFailed();
-      return;
-    }
-
-    RendererAPI::Init();
-    RenderThreadData::Init();
-    Renderer::Instance()->RenderThreadFinishInit();
-
-    while (!Renderer::Instance()->ShouldExit())
-    {
-      LOG_WARN("NEW PASS");
-      for (auto it = RenderThreadData::Instance()->IDMap.cbegin(); 
-          it != RenderThreadData::Instance()->IDMap.cend(); it++)
-      {
-        LOG_DEBUG("RefID: {}, RendererID: {}", it->first, it->second);
-      }
-
-      Renderer::Instance()->ExecuteRenderCommands();
-      a_window->SwapBuffers();
-      Renderer::Instance()->FinishRender();
-    }
-    if (Framework::Instance()->GetGraphicsContext()->ShutDown() != Core::ErrorCode::EC_None)
-      LOG_ERROR("Trouble shutting down the rendering context!!");
-    RenderThreadData::ShutDown();
-    Renderer::Instance()->RenderThreadShutDown();
-  }
-
-  //-----------------------------------------------------------------------------------------------
-  // RenderThreadData
-  //-----------------------------------------------------------------------------------------------
-  RenderThreadData* RenderThreadData::s_instance = nullptr;
-
-  bool RenderThreadData::Init()
-  {
-    BSR_ASSERT(s_instance == nullptr, "RenderThreadData already intialised!");
-    s_instance = new RenderThreadData();
-    return true;
-  }
-
-  void RenderThreadData::ShutDown()
-  {
-    delete s_instance;
-    s_instance = nullptr;
-  }
-
-  RenderThreadData* RenderThreadData::Instance()
-  {
-    return s_instance;
-  }
-
-  //-----------------------------------------------------------------------------------------------
-  // Renderer
-  //-----------------------------------------------------------------------------------------------
-
   Renderer* Renderer::s_instance = nullptr;
 
   Renderer * Renderer::Instance()
@@ -79,26 +18,16 @@ namespace Engine
     return s_instance;
   }
 
-  bool Renderer::__Init(Ref<IWindow> a_window)
+  bool Renderer::__Init()
   {
-    m_mutex[m_tmain_ind].lock();
-    m_renderThread = std::thread(RenderThread, a_window);
-    {
-      std::mutex mutex_start;
-      std::unique_lock<std::mutex> lck(mutex_start);
-      m_cv.wait(lck, [this]
-        {
-          return m_treturnCode != ReturnCode::None;
-        });
-    }
-    return m_treturnCode == ReturnCode::Ready;
+    return true;
   }
 
-  bool Renderer::Init(Ref<IWindow> a_window)
+  bool Renderer::Init()
   {
     BSR_ASSERT(s_instance == nullptr, "Renderer instance already initialised!");
     s_instance = new Renderer();
-    return s_instance->__Init(a_window);
+    return s_instance->__Init();
   }
 
   void Renderer::ShutDown()
@@ -108,19 +37,13 @@ namespace Engine
   }
 
   Renderer::Renderer()
-    : m_treturnCode(ReturnCode::None)
-    , m_tmain_ind(1)
-    , m_trender_ind(0)
-    , m_shouldExit(false)
   {
     
   }
 
   Renderer::~Renderer()
   {
-    m_shouldExit = true;
-    m_mutex[m_tmain_ind].unlock();
-    m_renderThread.join();
+
   }
 
   void Renderer::Clear()
@@ -175,59 +98,14 @@ namespace Engine
     return m_commandQueue.Allocate(a_size);
   }
 
-  void Renderer::RenderThreadFinishInit()
-  {
-    m_mutex[m_trender_ind].lock();
-    m_treturnCode = ReturnCode::Ready;
-    m_cv.notify_all();
-  }
-
-  void Renderer::RenderThreadInitFailed()
-  {
-    m_treturnCode = ReturnCode::Fail;
-    m_cv.notify_all();
-  }
-
-  void Renderer::RenderThreadShutDown()
-  {
-    m_mutex[m_trender_ind].unlock();
-  }
-
-  void Renderer::SyncAndHoldRenderThread()
-  {
-    int other = (m_tmain_ind + 1) % 2;
-    m_mutex[other].lock();
-  }
-
   void Renderer::SwapBuffers()
   {
     m_commandQueue.Swap();
   }
 
-  void Renderer::ReleaseRenderThread()
-  {
-    int other = (m_tmain_ind + 1) % 2;
-    m_mutex[m_tmain_ind].unlock();
-    m_tmain_ind = other;
-  }
-
-  //m_mutex2 locked;
-  void Renderer::FinishRender()
-  {
-    int other = (m_trender_ind + 1) % 2;
-    m_mutex[m_trender_ind].unlock();
-    m_mutex[other].lock(); //Main is doing work while we try to lock
-    m_trender_ind = other;
-  }
-
   void Renderer::ExecuteRenderCommands()
   {
     m_commandQueue.Execute();
-  }
-
-  bool Renderer::ShouldExit() const
-  {
-    return m_shouldExit;
   }
 
   void Renderer::BeginNewGroup()

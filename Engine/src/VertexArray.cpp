@@ -10,6 +10,7 @@
 #include "Resource.h"
 #include "Message.h"
 #include "MessageBus.h"
+#include "RenderThreadData.h"
 
 namespace Engine
 {

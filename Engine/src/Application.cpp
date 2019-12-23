@@ -12,6 +12,7 @@
 #include "MessageBus.h"
 #include "LayerStack.h"
 #include "Framework.h"
+#include "RenderThread.h"
 
 #include "core_ErrorCodes.h"
 #include "Application.h"
@@ -93,7 +94,10 @@ namespace Engine
 
     InitWindow();
 
-    if (!Renderer::Init(m_pimpl->pWindow))
+    if (!Renderer::Init())
+      throw std::runtime_error("Failed to initialise Renderer!");
+
+    if (!RenderThread::Init())
       throw std::runtime_error("Failed to initialise Renderer!");
 
     Framework::ImGui_InitData imguiData;
@@ -111,6 +115,7 @@ namespace Engine
 
   Application::~Application()
   {
+    RenderThread::ShutDown();
     Renderer::ShutDown();
 
     if (Framework::ShutDown() != Core::EC_None)
@@ -124,11 +129,21 @@ namespace Engine
 
   void Application::EndFrame()
   {
-    Renderer::Instance()->SyncAndHoldRenderThread();
+    RenderThread::Instance()->Sync();
+
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::SwapWindow);
+
+    RENDER_SUBMIT(state, []
+      {
+        Framework::Instance()->GetWindow()->SwapBuffers();
+      });
+
     Renderer::Instance()->SwapBuffers();
     MessageBus::Instance()->SwapBuffers();
     Engine::TBUFClear();
-    Renderer::Instance()->ReleaseRenderThread();
+    RenderThread::Instance()->Continue();
   }
 
   void Application::Run()
@@ -179,7 +194,7 @@ namespace Engine
           POST(msg);
         });*/
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      std::this_thread::sleep_for(std::chrono::milliseconds(300));
       //------------------------------------------------------------------------------------------------
       // END DEBUG
       //------------------------------------------------------------------------------------------------
