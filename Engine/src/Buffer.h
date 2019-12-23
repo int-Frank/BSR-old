@@ -10,7 +10,6 @@
 
 #include "core_Assert.h"
 #include "Resource.h"
-#include "RendererAPI.h"
 
 namespace Engine 
 {
@@ -72,11 +71,22 @@ namespace Engine
 
   class VertexBuffer : public Resource
   {
+  private:
+
+    void Init(void* data, uint32_t size, VertexBufferUsage a_usage);
+    void Init(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
+
   public:
 
-    VertexBuffer(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
-    VertexBuffer(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
+    VertexBuffer();
     ~VertexBuffer();
+
+    static Ref<VertexBuffer> Create(void* a_data, 
+                                    uint32_t a_size, 
+                                    VertexBufferUsage a_usage = VertexBufferUsage::Static);
+
+    static Ref<VertexBuffer> Create(uint32_t a_size, 
+                                    VertexBufferUsage a_usage = VertexBufferUsage::Static);
 
     void SetData(void* data, uint32_t size, uint32_t offset = 0);
     void Bind() const;
@@ -85,13 +95,9 @@ namespace Engine
     void SetLayout(BufferLayout const& layout);
 
     uint32_t GetSize() const;
-    RendererID GetRendererID() const;
-
-    void SetRendererID(RendererID);
 
   private:
 
-    RendererID m_rendererID;
     uint32_t m_size;
     VertexBufferUsage m_usage;
     BufferLayout m_layout;
@@ -103,22 +109,27 @@ namespace Engine
 
   class IndexBuffer : public Resource
   {
+  private:
+
+    void Init(void* data, uint32_t size);
+
+  public:
     typedef uint16_t intType;
   public:
-    IndexBuffer(void* data, uint32_t size);
+
+    static Ref<IndexBuffer> Create(void* a_data, uint32_t a_size);
+
+    IndexBuffer();
      ~IndexBuffer();
 
     void SetData(void* data, uint32_t size, uint32_t offset);
     void Bind() const;
 
     uint32_t GetCount() const;
-
     uint32_t GetSize() const;
-    RendererID GetRendererID() const;
-    void SetRendererID(RendererID);
 
   private:
-    RendererID m_rendererID;
+
     uint32_t m_size; //buffer size
   };
 

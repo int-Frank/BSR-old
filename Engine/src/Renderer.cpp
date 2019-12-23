@@ -6,6 +6,7 @@
 #include "Framework.h"
 #include "core_Log.h"
 #include "RendererAPI.h"
+#include "RenderThreadData.h"
 
 namespace Engine
 {
@@ -19,16 +20,25 @@ namespace Engine
     }
 
     RendererAPI::Init();
+    RenderThreadData::Init();
     Renderer::Instance()->RenderThreadFinishInit();
 
     while (!Renderer::Instance()->ShouldExit())
     {
+      LOG_WARN("NEW PASS");
+      for (auto it = RenderThreadData::Instance()->IDMap.cbegin(); 
+          it != RenderThreadData::Instance()->IDMap.cend(); it++)
+      {
+        LOG_DEBUG("RefID: {}, RendererID: {}", it->first, it->second);
+      }
+
+      Renderer::Instance()->ExecuteRenderCommands();
       a_window->SwapBuffers();
       Renderer::Instance()->FinishRender();
-      Renderer::Instance()->ExecuteRenderCommands();
     }
     if (Framework::Instance()->GetGraphicsContext()->ShutDown() != Core::ErrorCode::EC_None)
       LOG_ERROR("Trouble shutting down the rendering context!!");
+    RenderThreadData::ShutDown();
     Renderer::Instance()->RenderThreadShutDown();
   }
 

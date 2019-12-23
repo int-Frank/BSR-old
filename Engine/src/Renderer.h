@@ -24,8 +24,6 @@ namespace Engine
   {
   public:
 
-    typedef int32_t ID;
-
     static bool Init(Ref<IWindow>);
     static void ShutDown();
     static Renderer * Instance();

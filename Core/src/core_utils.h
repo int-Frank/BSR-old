@@ -9,6 +9,7 @@
 #include "DgR2Matrix.h"
 
 #define BIT(x) (1 << x)
+#define SIZEOF32(x) static_cast<uint32_t>(sizeof(x))
 
 typedef unsigned char byte;
 

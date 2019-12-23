@@ -122,8 +122,19 @@ namespace Engine
     LOG_TRACE("Shutdown complete!");
   }
 
+  void Application::EndFrame()
+  {
+    Renderer::Instance()->SyncAndHoldRenderThread();
+    Renderer::Instance()->SwapBuffers();
+    MessageBus::Instance()->SwapBuffers();
+    Engine::TBUFClear();
+    Renderer::Instance()->ReleaseRenderThread();
+  }
+
   void Application::Run()
   {
+    //Start to execute any renderer commands generated on startup
+    EndFrame();
 
     while (!m_pimpl->shouldQuit)
     {
@@ -149,7 +160,7 @@ namespace Engine
       //------------------------------------------------------------------------------------------------
       // END DEBUG
       //------------------------------------------------------------------------------------------------
-      Dg::RNG_Global rng;
+      /*Dg::RNG_Global rng;
       unsigned val = rng.GetUintRange(1, 100);
 
       RenderState state = RenderState::Create();
@@ -166,18 +177,14 @@ namespace Engine
               LOG_DEBUG("Main recieved {}", val2);
             });
           POST(msg);
-        });
+        });*/
 
-      std::this_thread::sleep_for(std::chrono::milliseconds(300));
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
       //------------------------------------------------------------------------------------------------
       // END DEBUG
       //------------------------------------------------------------------------------------------------
     
-      Renderer::Instance()->SyncAndHoldRenderThread();
-      Renderer::Instance()->SwapBuffers();
-      MessageBus::Instance()->SwapBuffers();
-      Engine::TBUFClear();
-      Renderer::Instance()->ReleaseRenderThread();
+      EndFrame();
     }
   }
 

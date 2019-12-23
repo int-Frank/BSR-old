@@ -5,16 +5,18 @@
 
 #include "Memory.h"
 #include "Buffer.h"
-#include "RendererAPI.h"
 #include "Resource.h"
 
-namespace Engine {
-
+namespace Engine 
+{
+  //TODO rename to VAO
   class VertexArray : public Resource
   {
+    VertexArray();
+    void Init();
   public:
 
-    VertexArray();
+    static Ref<VertexArray> Create();
     ~VertexArray();
 
     void Bind() const;
@@ -26,11 +28,7 @@ namespace Engine {
     const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const;
     const Ref<IndexBuffer>& GetIndexBuffer() const;
 
-    static Ref<VertexArray> Create();
-    void SetRendererID(RendererID);
-
   private:
-    RendererID m_rendererID;
     uint32_t m_vertexAttribIndex;
     std::vector<Ref<VertexBuffer>> m_vertexBuffers;
     Ref<IndexBuffer> m_indexBuffer;

@@ -2,7 +2,9 @@
 
 #include "glad/glad.h"
 
+#include "RenderThreadData.h"
 #include "Renderer.h"
+#include "RendererAPI.h"
 #include "VertexArray.h"
 #include "core_Assert.h"
 #include "Memory.h"
@@ -34,30 +36,31 @@ namespace Engine
   }
 
   VertexArray::VertexArray()
-    : m_rendererID(0)
-    , m_vertexAttribIndex(0)
+    : m_vertexAttribIndex(0)
+  {
+
+  }
+
+  void VertexArray::Init()
   {
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::VertexArrayCreate);
 
-    auto refID = GetRefID();
-
-    RENDER_SUBMIT(state, [rendererID = m_rendererID, refID = refID]() mutable
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID()]() mutable
       {
-        glCreateVertexArrays(1, &rendererID);
-        auto msg = Message_Command::New([refID = refID, rendererID = rendererID]()
-          {
-            Ref<VertexArray> ref(refID);
-            if (ref.IsNull())
-            {
-              LOG_WARN("Attempt to update the renderer ID of a VertexBuffer that doesn't exist!");
-              return;
-            }
-            ref->SetRendererID(rendererID);
-          });
-        POST(msg);
+        RendererID id(0);
+        glCreateVertexArrays(1, &id);
+        RenderThreadData::Instance()->IDMap[resID] = id;
       });
+  }
+
+  Ref<VertexArray> VertexArray::Create()
+  {
+    VertexArray * p = new VertexArray();
+    Ref<VertexArray> ref(p);
+    p->Init();
+    return ref;
   }
 
   VertexArray::~VertexArray()
@@ -66,15 +69,17 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::VertexArrayDelete);
 
-    RENDER_SUBMIT(state, [rendererID = m_rendererID]() mutable
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID()]() mutable
       {
-        glDeleteVertexArrays(1, &rendererID);
+        RendererID * pID =  RenderThreadData::Instance()->IDMap.at(resID);
+        if (pID == nullptr)
+        {
+          LOG_WARN("VertexArray::~VertexArray(): RendererID does not exist! RefID: {}", resID);
+          return;
+        }
+        glDeleteVertexArrays(1, pID);
+        RenderThreadData::Instance()->IDMap.erase(resID);
       });
-  }
-
-  void VertexArray::SetRendererID(RendererID a_id)
-  {
-    m_rendererID = a_id;
   }
 
   void VertexArray::Bind() const
@@ -83,9 +88,15 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::VertexArrayBind);
 
-    RENDER_SUBMIT(state, [rendererID = m_rendererID]() mutable
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID()]() mutable
       {
-        glBindVertexArray(rendererID);
+        RendererID* pID =  RenderThreadData::Instance()->IDMap.at(resID);
+        if (pID == nullptr)
+        {
+          LOG_WARN("VertexArray::Bind(): RendererID does not exist! RefID: {}", resID);
+          return;
+        }
+        glBindVertexArray(*pID);
       });
   }
 
@@ -137,6 +148,14 @@ namespace Engine
           }
           else
           {
+            LOG_WARN("ind: {}, comCount: {}, baseType: {}, norm {}, stride: {}, offset: {}",
+              vertexAttribIndex,
+              it->GetComponentCount(),
+              glBaseType,
+              it->normalized ? GL_TRUE : GL_FALSE,
+              vbRef->GetLayout().GetStride(),
+              (const void*)(intptr_t)it->offset);
+
             glVertexAttribPointer(vertexAttribIndex,
                                   it->GetComponentCount(),
                                   glBaseType,

@@ -13,19 +13,38 @@
 
 namespace Engine
 {
-  void TBUFClear();
-  void * TBUFAlloc(size_t);
+  //---------------------------------------------------------------------------------------
+  // Declarations
+  //---------------------------------------------------------------------------------------
 
+  //Allocate on the tempory buffer. The tempory buffer is a chunk of memory we use and then
+  //clear each frame.
+  void* TBUFAlloc(size_t);
+
+  //Clear the tempory buffer
+  void TBUFClear();
+
+  //Advance a void pointer a number of bytes
   void * AdvancePtr(void *, size_t);
 
+  //A wrapper which constructs and stores objects on the tempory buffer. Objects must be
+  //trivially destructable.
   template<typename T>
   class TRef;
+
+  //Similar functionality to std::shared_ptr. Objects are stored in the Resource Manager.
+  template<typename T>
+  class Ref;
 
   template<typename A, typename B>
   TRef<A> StaticPointerCast(TRef<B> const&);
 
   template<typename A, typename B>
   TRef<A> DynamicPointerCast(TRef<B> const&);
+
+  //---------------------------------------------------------------------------------------
+  // Definitions
+  //---------------------------------------------------------------------------------------
 
   //TODO add ability to allocate arrays in the per-frame memory
   //See: https://stackoverflow.com/questions/13061979/shared-ptr-to-an-array-should-it-be-used
@@ -117,18 +136,6 @@ namespace Engine
 
     Ref();
 
-    Ref(T* a_pObj)
-      : m_pObject(a_pObj)
-    {
-      if (m_pObject == nullptr)
-        return;
-
-      m_id.SetType(impl::T_Generated);
-      m_id.SetID(impl::ResourceManager::Instance()->GenerateUnique32());
-      impl::ResourceManager::Instance()->RegisterResource(m_id, new impl::ResourceWrapper<T>(m_pObject));
-      impl::ResourceManager::Instance()->RegisterUser(m_id);
-    }
-
     // default constructor when T is not derived from Resource
     template
       <
@@ -138,6 +145,9 @@ namespace Engine
       constexpr Ref(T* a_pObj)
       : m_pObject(a_pObj)
     {
+      if (m_pObject == nullptr)
+        return;
+
       m_id.SetType(impl::T_Generated);
       m_id.SetID(impl::ResourceManager::Instance()->GenerateUnique32());
       impl::ResourceManager::Instance()->RegisterResource(m_id, new impl::ResourceWrapper<T>(m_pObject));
@@ -154,6 +164,9 @@ namespace Engine
       constexpr Ref(T* a_pObj)
       : m_pObject(a_pObj)
     {
+      if (m_pObject == nullptr)
+        return;
+
       m_id.SetType(impl::T_Generated);
       m_id.SetID(impl::ResourceManager::Instance()->GenerateUnique32());
       impl::ResourceManager::Instance()->RegisterResource(m_id, new impl::ResourceWrapper<T>(m_pObject));
@@ -171,6 +184,9 @@ namespace Engine
 
     Ref(Ref const&);
     Ref& operator=(Ref const&);
+
+    void reset();
+    void reset(T *);
 
     T* operator->() const noexcept;
     T& operator*() const noexcept;

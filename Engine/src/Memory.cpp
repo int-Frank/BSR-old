@@ -30,5 +30,4 @@ namespace Engine
   {
     return static_cast<void*>(static_cast<byte*>(a_ptr) + a_increment);
   }
-
 }

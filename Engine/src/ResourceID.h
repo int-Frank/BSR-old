@@ -9,14 +9,8 @@ namespace Engine
 {
   namespace impl
   {
-    //Flags   : 8 bits
-    //Unused  : 8 bits
-    //Type    : 16 bits
-    //ID      : 32 bits
-    //Type == 0 and ID == 0 are reserved for the null object
     class ResourceID64
     {
-
       enum : uint64_t
       {
         Begin_Type = 32,

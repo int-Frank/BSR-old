@@ -64,38 +64,38 @@ namespace Engine
     std::string ToString() const override;
 
   MESSAGE_CLASS_HEADER(Command)
-  template<typename FuncT>
-  static TRef<Message> New(FuncT&& func)
-  {
-    static_assert(std::is_trivially_destructible<FuncT>::value, "FuncT must be trivially destructible");
-    MessageCommandFn renderCmd = [](void* ptr)
+    template<typename FuncT>
+    static TRef<Message> New(FuncT&& func)
     {
-      auto pFunc = (FuncT*)ptr;
-      (*pFunc)();
-      pFunc->~FuncT();
-    };
+      static_assert(std::is_trivially_destructible<FuncT>::value, "FuncT must be trivially destructible");
+      MessageCommandFn renderCmd = [](void* ptr)
+      {
+        auto pFunc = (FuncT*)ptr;
+        (*pFunc)();
+        pFunc->~FuncT();
+      };
 
-    size_t sze = sizeof(uint64_t) + sizeof(MessageCommandFn) + sizeof(func);
-    void* pBuf = TBUFAlloc(sze);
+      size_t sze = sizeof(uint64_t) + sizeof(MessageCommandFn) + sizeof(func);
+      void* pBuf = TBUFAlloc(sze);
 
-    *static_cast<uint64_t*>(pBuf) = sze;
+      *static_cast<uint64_t*>(pBuf) = sze;
 
-    void* ptr = AdvancePtr(pBuf, sizeof(uint64_t));
-    *static_cast<MessageCommandFn*>(ptr) = renderCmd;
+      void* ptr = AdvancePtr(pBuf, sizeof(uint64_t));
+      *static_cast<MessageCommandFn*>(ptr) = renderCmd;
 
-    ptr = AdvancePtr(ptr, sizeof(MessageCommandFn));
-    new (ptr) FuncT(std::forward<FuncT>(func));
+      ptr = AdvancePtr(ptr, sizeof(MessageCommandFn));
+      new (ptr) FuncT(std::forward<FuncT>(func));
 
-    TRef<Message_Command> msg = TRef<Message_Command>::New(pBuf);
-    return DynamicPointerCast<Message>(msg);
-  }
+      TRef<Message_Command> msg = TRef<Message_Command>::New(pBuf);
+      return DynamicPointerCast<Message>(msg);
+    }
 
-  Message_Command();
-  Message_Command(void* a_ptr);
+    Message_Command();
+    Message_Command(void* a_ptr);
 
-  void Run();
+    void Run();
 
-  void* ptr;
+    void* ptr;
   };
 
   //-----------------------------------------------------------------------------------

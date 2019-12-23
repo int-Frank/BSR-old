@@ -9,6 +9,7 @@
 namespace Engine
 {
   using RendererID = uint32_t;
+#define INVALID_RENDERER_ID 0xFFFFFFFFUL
 
   struct RenderAPICapabilities
   {

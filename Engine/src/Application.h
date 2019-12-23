@@ -51,6 +51,7 @@ namespace Engine
     Application & operator=(Application const &) = delete;
 
     void InitWindow();
+    void EndFrame();
 
   private:
 

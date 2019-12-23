@@ -33,20 +33,14 @@ namespace Engine
 
     //Main thread...
     void * AllocateForCommand(RenderState, RenderCommandFn, uint32_t size);
-
-    //Render thread
-    void Swap();
-    void Execute();
-
-    void * Allocate(uint32_t size);
-
+    void* Allocate(uint32_t size);
     void PushCriterion(Ref<RenderSortCriterion>);
     void ClearCriterion();
 
+    //Render thread
+    void Swap();
     void Sort();
-
-  private:
-
+    void Execute();
 
   private:
 
@@ -70,8 +64,8 @@ namespace Engine
     Buffer              m_commandBuffer[2];
     MemBuffer           m_mem[2];
 
-    Dg::DynamicArray<Ref<RenderSortCriterion>>  m_sortCriterion;
-    PODArray<SubArray>              m_sortableSegs;
+    Dg::DynamicArray<Ref<RenderSortCriterion>> m_sortCriterion;
+    PODArray<SubArray>                         m_sortableSegs;
 
   };
 }
