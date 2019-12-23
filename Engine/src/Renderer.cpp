@@ -6,10 +6,12 @@
 #include "Framework.h"
 #include "core_Log.h"
 #include "RendererAPI.h"
-#include "RenderThreadData.h"
 
 namespace Engine
 {
+  //-----------------------------------------------------------------------------------------------
+  // Render Thread
+  //-----------------------------------------------------------------------------------------------
   static void RenderThread(Ref<IWindow> a_window)
   {
     if (Framework::Instance()->GetGraphicsContext()->Init() != Core::ErrorCode::EC_None)
@@ -41,6 +43,33 @@ namespace Engine
     RenderThreadData::ShutDown();
     Renderer::Instance()->RenderThreadShutDown();
   }
+
+  //-----------------------------------------------------------------------------------------------
+  // RenderThreadData
+  //-----------------------------------------------------------------------------------------------
+  RenderThreadData* RenderThreadData::s_instance = nullptr;
+
+  bool RenderThreadData::Init()
+  {
+    BSR_ASSERT(s_instance == nullptr, "RenderThreadData already intialised!");
+    s_instance = new RenderThreadData();
+    return true;
+  }
+
+  void RenderThreadData::ShutDown()
+  {
+    delete s_instance;
+    s_instance = nullptr;
+  }
+
+  RenderThreadData* RenderThreadData::Instance()
+  {
+    return s_instance;
+  }
+
+  //-----------------------------------------------------------------------------------------------
+  // Renderer
+  //-----------------------------------------------------------------------------------------------
 
   Renderer* Renderer::s_instance = nullptr;
 

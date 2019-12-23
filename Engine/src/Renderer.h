@@ -12,14 +12,33 @@
 #include "Memory.h"
 
 #include "PODArray.h"
+#include "RendererAPI.h"
 #include "RenderState.h"
 #include "Group.h"
 #include "RenderCommandQueue.h"
 #include "MemBuffer.h"
 #include "IWindow.h"
 
+#define RENDER_SUBMIT(...) ::Engine::Renderer::Instance()->Submit(__VA_ARGS__)
+#define RENDER_ALLOCATE(size) ::Engine::Renderer::Instance()->Allocate(size)
+
 namespace Engine
 {
+  class RenderThreadData
+  {
+    static RenderThreadData* s_instance;
+  public:
+
+    static bool Init();
+    static void ShutDown();
+    static RenderThreadData* Instance();
+
+  public:
+
+    Dg::OpenHashMap<uint64_t, RendererID> IDMap;
+    Dg::OpenHashMap<uint64_t, uint32_t>   VAOIndex;
+  };
+
   class Renderer
   {
   public:
@@ -106,8 +125,6 @@ namespace Engine
     int m_tmain_ind;
   };
 
-#define RENDER_SUBMIT(...) ::Engine::Renderer::Instance()->Submit(__VA_ARGS__)
-#define RENDER_ALLOCATE(size) ::Engine::Renderer::Instance()->Allocate(size)
 }
 
 #endif

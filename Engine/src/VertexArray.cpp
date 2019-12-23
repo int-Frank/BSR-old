@@ -2,7 +2,6 @@
 
 #include "glad/glad.h"
 
-#include "RenderThreadData.h"
 #include "Renderer.h"
 #include "RendererAPI.h"
 #include "VertexArray.h"
@@ -36,7 +35,6 @@ namespace Engine
   }
 
   VertexArray::VertexArray()
-    : m_vertexAttribIndex(0)
   {
 
   }
@@ -52,6 +50,7 @@ namespace Engine
         RendererID id(0);
         glCreateVertexArrays(1, &id);
         RenderThreadData::Instance()->IDMap[resID] = id;
+        RenderThreadData::Instance()->VAOIndex[resID] = 0;
       });
   }
 
@@ -125,22 +124,29 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::VertexArrayAddVertexBuffer);
 
-    RENDER_SUBMIT(state, [vbRefID = a_vertexBuffer->GetRefID(), vertexAttribIndex = m_vertexAttribIndex]() mutable
+    RENDER_SUBMIT(state, [vbRefID = a_vertexBuffer->GetRefID(), vaoRefID = GetRefID().GetID()]() mutable
       {
         Ref<VertexBuffer> vbRef(vbRefID);
         if (vbRef.IsNull())
         {
-          LOG_WARN("VertexArray::AddVertexBuffer(): Failed to find the vertex buffer! ");
+          LOG_WARN("VertexArray::AddVertexBuffer(): Failed to find the vertex buffer! RefID : {}", vaoRefID);
+          return;
+        }
+
+        uint32_t * pvertexAttribIndex = RenderThreadData::Instance()->VAOIndex.at(vaoRefID);
+        if (pvertexAttribIndex == nullptr)
+        {
+          LOG_WARN("VertexArray::AddVertexBuffer(): Failed to find vertex index! RefID : {}", vaoRefID);
           return;
         }
 
         for (auto it = vbRef->GetLayout().begin(); it != vbRef->GetLayout().end(); it++)
         {
           GLenum glBaseType = ShaderDataTypeToOpenGLBaseType(it->type);
-          glEnableVertexAttribArray(vertexAttribIndex);
+          glEnableVertexAttribArray(*pvertexAttribIndex);
           if (glBaseType == GL_INT)
           {
-            glVertexAttribIPointer(vertexAttribIndex,
+            glVertexAttribIPointer(*pvertexAttribIndex,
                                    it->GetComponentCount(),
                                    glBaseType,
                                    vbRef->GetLayout().GetStride(),
@@ -148,30 +154,19 @@ namespace Engine
           }
           else
           {
-            LOG_WARN("ind: {}, comCount: {}, baseType: {}, norm {}, stride: {}, offset: {}",
-              vertexAttribIndex,
-              it->GetComponentCount(),
-              glBaseType,
-              it->normalized ? GL_TRUE : GL_FALSE,
-              vbRef->GetLayout().GetStride(),
-              (const void*)(intptr_t)it->offset);
-
-            glVertexAttribPointer(vertexAttribIndex,
+            glVertexAttribPointer(*pvertexAttribIndex,
                                   it->GetComponentCount(),
                                   glBaseType,
                                   it->normalized ? GL_TRUE : GL_FALSE,
                                   vbRef->GetLayout().GetStride(),
                                   (const void*)(intptr_t)it->offset);
           }
-          vertexAttribIndex++;
+          (*pvertexAttribIndex)++;
         }
       });
 
     Renderer::Instance()->EndCurrentGroup();
     m_vertexBuffers.push_back(a_vertexBuffer);
-
-    //We just have to trust the above RENDER_SUBMIT succeeds.
-    m_vertexAttribIndex += a_vertexBuffer->GetLayout().GetElements().size();
   }
 
   void VertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)

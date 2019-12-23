@@ -29,7 +29,7 @@ namespace Engine
     const Ref<IndexBuffer>& GetIndexBuffer() const;
 
   private:
-    uint32_t m_vertexAttribIndex;
+
     std::vector<Ref<VertexBuffer>> m_vertexBuffers;
     Ref<IndexBuffer> m_indexBuffer;
   };

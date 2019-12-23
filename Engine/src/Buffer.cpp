@@ -7,7 +7,6 @@
 #include "Renderer.h"
 #include  "core_Log.h"
 #include "Resource.h"
-#include "RenderThreadData.h"
 
 namespace Engine 
 {

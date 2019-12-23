@@ -38,9 +38,9 @@ public:
 
     m_ib = Engine::IndexBuffer::Create(indices, SIZEOF32(indices));
     LOG_DEBUG("VertexBuffer: Ref ID: {}", m_vb->GetRefID().GetID());
-    //m_va = Engine::VertexArray::Create();
+    m_va = Engine::VertexArray::Create();
 
-    //m_va->AddVertexBuffer(m_vb);
+    m_va->AddVertexBuffer(m_vb);
     //LOG_DEBUG("VertexArray: Renderer ID: {}, Ref ID: {}", m_va->GetRendererID(), m_va->GetRefID().GetID());
   }
 
