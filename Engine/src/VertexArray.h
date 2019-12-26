@@ -9,7 +9,6 @@
 
 namespace Engine 
 {
-  //TODO rename to VAO
   class VertexArray : public Resource
   {
     VertexArray();
@@ -22,16 +21,8 @@ namespace Engine
     void Bind() const;
     void Unbind() const;
 
-    void AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer);
-    void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
-
-    const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const;
-    const Ref<IndexBuffer>& GetIndexBuffer() const;
-
-  private:
-
-    std::vector<Ref<VertexBuffer>> m_vertexBuffers;
-    Ref<IndexBuffer> m_indexBuffer;
+    void AddVertexBuffer(Ref<VertexBuffer> const &);
+    void SetIndexBuffer(Ref<IndexBuffer> const &);
   };
 }
 

@@ -92,13 +92,15 @@ namespace Engine
         BufferDelete,
         BufferSetData,
         BufferBind,
+        BufferSetLayout,
         Buffer_END,
 
         VertexArrayCreate,
         VertexArrayDelete,
         VertexArrayBind,
-        VertexArrayUnBind,
+        VertexArrayUnbind,
         VertexArrayAddVertexBuffer,
+        VertexArraySetIndexBuffer,
         VertexArray_END
 
       };

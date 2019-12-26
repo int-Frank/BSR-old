@@ -6,7 +6,6 @@
 #include <string>
 #include <stdint.h>
 #include "DgDynamicArray.h"
-#include "StaticString.h"
 #include "core_Assert.h"
 
 namespace Engine
@@ -22,20 +21,20 @@ namespace Engine
   {
   public:
 
-    ShaderStruct(StringID);
+    ShaderStruct(std::string const &);
 
     void AddField(ShaderUniformDeclaration*);
     void SetOffset(uint32_t);
-    StringID GetName() const;
+    std::string const & GetName() const;
     uint32_t GetSize() const;
     uint32_t GetOffset() const;
     Dg::DynamicArray<ShaderUniformDeclaration*> const & GetFields() const;
 
   private:
-    StringID m_name;
+    std::string m_name;
     Dg::DynamicArray<ShaderUniformDeclaration*> m_fields;
     uint32_t m_size;
-    uint32_t m_offset;
+    uint32_t m_offset; //offset in the buffer to where the uniform is kept
   };
 
   class ShaderResourceDeclaration
@@ -45,25 +44,25 @@ namespace Engine
     enum class Type : uint32_t
     {
       NONE        = 0, 
-      TEXTURE2D   = Str::sampler2D, 
-      TEXTURECUBE = Str::samplerCube
+      TEXTURE2D, 
+      TEXTURECUBE
     };
 
   public:
-    ShaderResourceDeclaration(Type, StringID, uint32_t count);
+    ShaderResourceDeclaration(Type, std::string const &, uint32_t count);
 
-    StringID GetName() const;
+    std::string const & GetName() const;
     uint32_t GetRegister() const;
     uint32_t GetCount() const;
     Type GetType() const;
 
   public:
 
-    static Type StringToType(StringID);
-    static StringID TypeToString(Type);
+    static Type StringToType(std::string const &);
+    static std::string TypeToString(Type);
 
   private:
-    StringID m_name;
+    std::string m_name;
     uint32_t m_register;
     uint32_t m_count;
     Type m_type;
@@ -77,21 +76,21 @@ namespace Engine
     enum class Type : uint32_t
     {
       NONE     = 0, 
-      FLOAT32  = Str::float32, 
-      VEC2     = Str::vec2, 
-      VEC3     = Str::vec3, 
-      VEC4     = Str::vec4, 
-      MAT3     = Str::mat3, 
-      MAT4     = Str::mat4, 
-      INT32    = Str::int32, 
-      STRUCT   = Str::udStruct
+      FLOAT32, 
+      VEC2, 
+      VEC3, 
+      VEC4, 
+      MAT3, 
+      MAT4, 
+      INT32, 
+      STRUCT
     };
   public:
 
-    ShaderUniformDeclaration(ShaderDomain, Type, StringID name, uint32_t count = 1);
-    ShaderUniformDeclaration(ShaderDomain, ShaderStruct*, StringID name, uint32_t count = 1);
+    ShaderUniformDeclaration(ShaderDomain, Type, std::string name, uint32_t count = 1);
+    ShaderUniformDeclaration(ShaderDomain, ShaderStruct*, std::string name, uint32_t count = 1);
 
-    StringID GetName() const;
+    std::string GetName() const;
     uint32_t GetSize() const;
     uint32_t GetCount() const;
     uint32_t GetOffset() const;
@@ -109,11 +108,11 @@ namespace Engine
   public:
 
     static uint32_t SizeOfUniformType(Type);
-    static Type StringToType(StringID);
-    static StringID TypeToString(Type);
+    static Type StringToType(std::string);
+    static std::string TypeToString(Type);
 
   private:
-    StringID m_name;
+    std::string m_name;
     uint32_t m_size;
     uint32_t m_count;
     uint32_t m_offset;
@@ -130,20 +129,20 @@ namespace Engine
   class ShaderUniformBufferDeclaration
   {
   public:
-    ShaderUniformBufferDeclaration(StringID name, ShaderDomain);
+    ShaderUniformBufferDeclaration(std::string name, ShaderDomain);
 
     void PushUniform(ShaderUniformDeclaration*);
 
-    StringID GetName() const;
+    std::string GetName() const;
     uint32_t GetRegister() const;
     uint32_t GetSize() const;
     ShaderDomain GetDomain() const;
     const ShaderUniformList& GetUniformDeclarations() const;
 
-    ShaderUniformDeclaration* FindUniform(StringID);
+    ShaderUniformDeclaration* FindUniform(std::string);
 
   private:
-    StringID m_name;
+    std::string m_name;
     ShaderUniformList m_uniforms;
     uint32_t m_register;
     uint32_t m_size;

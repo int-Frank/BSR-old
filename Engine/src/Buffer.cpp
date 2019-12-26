@@ -2,15 +2,17 @@
 
 #pragma once
 
-#include <glad/glad.h>
 #include "Buffer.h"
 #include "Renderer.h"
 #include  "core_Log.h"
-#include "Resource.h"
 #include "RenderThreadData.h"
+#include "Serialize.h"
 
 namespace Engine 
 {
+  //------------------------------------------------------------------------------------------------
+  // BufferElement
+  //------------------------------------------------------------------------------------------------
   BufferElement::BufferElement(ShaderDataType a_type, std::string const& a_name, bool a_normalized)
     : name(a_name)
     , type(a_type)
@@ -18,6 +20,14 @@ namespace Engine
     , offset(0)
     , normalized(a_normalized)
   {
+
+  }
+
+  ShaderDataType ConvertToShaderDataType(uint32_t a_val)
+  {
+    if (a_val < static_cast<uint32_t>(ShaderDataType::Bool))
+      return static_cast<ShaderDataType>(a_val);
+    return ShaderDataType::None;
   }
 
   uint32_t ShaderDataTypeSize(ShaderDataType a_type)
@@ -61,6 +71,44 @@ namespace Engine
     BSR_ASSERT(false, "Unknown ShaderDataType!");
     return 0;
   }
+
+  size_t BufferElement::Size() const
+  {
+    return Core::SerializedSize(name)
+      + Core::SerializedSize(type)
+      + Core::SerializedSize(size)
+      + Core::SerializedSize(offset)
+      + Core::SerializedSize(normalized);
+  }
+
+  void* BufferElement::Serialize(void* a_out) const
+  {
+    void * pBuf = a_out;
+    uint32_t type32 = static_cast<uint32_t>(type);
+    pBuf = Core::Serialize(pBuf, &name);
+    pBuf = Core::Serialize(pBuf, &type32);
+    pBuf = Core::Serialize(pBuf, &size);
+    pBuf = Core::Serialize(pBuf, &offset);
+    pBuf = Core::Serialize(pBuf, &normalized);
+    return pBuf;
+  }
+
+  void const* BufferElement::Deserialize(void const * a_buf)
+  {
+    void const * pBuf = a_buf;
+    uint32_t type32(0);
+    pBuf = Core::Deserialize(pBuf, &name);
+    pBuf = Core::Deserialize(pBuf, &type32);
+    type = ConvertToShaderDataType(type32);
+    pBuf = Core::Deserialize(pBuf, &size);
+    pBuf = Core::Deserialize(pBuf, &offset);
+    pBuf = Core::Deserialize(pBuf, &normalized);
+    return pBuf;
+  }
+
+  //------------------------------------------------------------------------------------------------
+  // BufferLayout
+  //------------------------------------------------------------------------------------------------
 
   BufferLayout::BufferLayout()
     : m_stride(0)
@@ -116,32 +164,53 @@ namespace Engine
       m_stride += element.size;
     }
   }
-
-  static GLenum OpenGLUsage(VertexBufferUsage usage)
+  
+  size_t BufferLayout::Size() const
   {
-    switch (usage)
-    {
-      case VertexBufferUsage::Static:    return GL_STATIC_DRAW;
-      case VertexBufferUsage::Dynamic:   return GL_DYNAMIC_DRAW;
-    }
-    BSR_ASSERT(false, "Unknown vertex buffer usage");
-    return 0;
+    size_t sze = sizeof(m_stride);
+    sze += sizeof(uint32_t);
+    for (auto const & item : m_elements)
+      sze += item.Size();
+    return sze;
   }
 
+  void* BufferLayout::Serialize(void* a_out) const
+  {
+    uint32_t nElements = static_cast<uint32_t>(m_elements.size());
+    void* pBuf = a_out;
+    pBuf = Core::Serialize(pBuf, &m_stride);
+    pBuf = Core::Serialize(pBuf, &nElements);
+    for (auto const& item : m_elements)
+      pBuf = item.Serialize(pBuf);
+    return pBuf;
+  }
+
+  void const* BufferLayout::Deserialize(void const* a_buf)
+  {
+    uint32_t nElements = 0;
+    void const * pBuf = a_buf;
+    pBuf = Core::Deserialize(pBuf, &m_stride);
+    pBuf = Core::Deserialize(pBuf, &nElements);
+    for (uint32_t i = 0; i < nElements; i++)
+    {
+      BufferElement ele;
+      pBuf = ele.Deserialize(pBuf);
+      m_elements.push_back(ele);
+    }
+    return pBuf;
+  }
+
+  //------------------------------------------------------------------------------------------------
+  // VertexBuffer
+  //------------------------------------------------------------------------------------------------
+  
   VertexBuffer::VertexBuffer()
-    : m_size(0)
-    , m_usage(VertexBufferUsage::None)
   {
 
   }
 
   void VertexBuffer::Init(void* a_data, uint32_t a_size, VertexBufferUsage a_usage)
   {
-    BSR_ASSERT(m_size == 0, "VertexBuffer already initialised!");
-
-    m_size = a_size;
-    m_usage = a_usage;
-
     uint8_t * data = (uint8_t*)RENDER_ALLOCATE(a_size);
     memcpy(data, a_data, a_size);
 
@@ -149,32 +218,25 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
 
-    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), size = m_size, usage = m_usage, data]()
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), size = a_size, usage = a_usage, data]()
       {
-        RendererID rendererID(0);
-        glCreateBuffers(1, &rendererID);
-        glNamedBufferData(rendererID, size, data, OpenGLUsage(usage));
-        RenderThreadData::Instance()->IDMap[resID] = rendererID;
+        ::Engine::RT_VertexBuffer vb;
+        vb.Init(data, size, usage);
+        ::Engine::RenderThreadData::Instance()->VBOs.insert(resID, vb);
       });
   }
 
   void VertexBuffer::Init(uint32_t a_size, VertexBufferUsage a_usage)
   {
-    BSR_ASSERT(m_size == 0, "VertexBuffer already initialised!");
-
-    m_size = a_size;
-    m_usage = a_usage;
-
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
 
-    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), size = m_size, usage = m_usage]()
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), size = a_size, usage = a_usage]()
       {
-        uint32_t rendererID(0);
-        glCreateBuffers(1, &rendererID);
-        glNamedBufferData(rendererID, size, nullptr, OpenGLUsage(usage));
-        RenderThreadData::Instance()->IDMap[resID] = rendererID;
+        ::Engine::RT_VertexBuffer vb;
+        vb.Init(size, usage);
+        ::Engine::RenderThreadData::Instance()->VBOs.insert(resID, vb);
       });
   }
 
@@ -183,18 +245,18 @@ namespace Engine
                                         uint32_t a_size,
                                         VertexBufferUsage a_usage)
   {
-    VertexBuffer* pVB = new VertexBuffer();
-    Ref<VertexBuffer> ref(pVB);
-    pVB->Init(a_data, a_size, a_usage);
+    VertexBuffer * pVBO = new VertexBuffer();
+    Ref<VertexBuffer> ref(pVBO); // Need to do it this way to give the object a resource ID
+    pVBO->Init(a_data, a_size, a_usage);
     return ref;
   }
 
   Ref<VertexBuffer> VertexBuffer::Create(uint32_t a_size,
                                          VertexBufferUsage a_usage)
   {
-    VertexBuffer* pVB = new VertexBuffer();
-    Ref<VertexBuffer> ref(pVB);
-    pVB->Init(a_size, a_usage);
+    VertexBuffer* pVBO = new VertexBuffer();
+    Ref<VertexBuffer> ref(pVBO); // Need to do it this way to give the object a resource ID
+    pVBO->Init(a_size, a_usage);
     return ref;
   }
 
@@ -206,15 +268,14 @@ namespace Engine
 
     RENDER_SUBMIT(state, [resID = GetRefID().GetID()]() mutable
       {
-        RendererID * pID =  RenderThreadData::Instance()->IDMap.at(resID);
-        if (pID == nullptr)
+        RT_VertexBuffer * pVB =  RenderThreadData::Instance()->VBOs.at(resID);
+        if (pVB == nullptr)
         {
-          LOG_WARN("VertexBuffer::~VertexBuffer(): RendererID does not exist! RefID: {}", resID);
+          LOG_WARN("VertexBuffer::~VertexBuffer: RefID '{}' does not exist!", resID);
           return;
         }
-
-        glDeleteBuffers(1, pID);
-        RenderThreadData::Instance()->IDMap.erase(resID);
+        pVB->Destroy();
+        ::Engine::RenderThreadData::Instance()->VBOs.erase(resID);
       });
   }
 
@@ -229,14 +290,14 @@ namespace Engine
 
     RENDER_SUBMIT(state, [resID = GetRefID().GetID(), offset = a_offset, size = a_size, data]()
       {
-        RendererID* pID =  RenderThreadData::Instance()->IDMap.at(resID);
-        if (pID == nullptr)
+        ::Engine::RT_VertexBuffer * pVBO = ::Engine::RenderThreadData::Instance()->VBOs.at(resID);
+        if (pVBO == nullptr)
         {
-          LOG_WARN("VertexBuffer::SetData(): RendererID does not exist! RefID: {}", resID);
+          LOG_WARN("VertexBuffer::SetData(): RefID '{}' does not exist!", resID);
           return;
         }
 
-        glNamedBufferSubData(*pID, offset, size, data);
+        pVBO->SetData(data, size, offset);
       });
   }
 
@@ -248,44 +309,51 @@ namespace Engine
 
     RENDER_SUBMIT(state, [resID = GetRefID().GetID()]()
       {
-        RendererID* pID =  RenderThreadData::Instance()->IDMap.at(resID);
-        if (pID == nullptr)
+        ::Engine::RT_VertexBuffer * pVBO = ::Engine::RenderThreadData::Instance()->VBOs.at(resID);
+        if (pVBO == nullptr)
         {
-          LOG_WARN("VertexBuffer::Bind(): RendererID does not exist! RefID: {}", resID);
+          LOG_WARN("VertexBuffer::Bind(): RefID '{}' does not exist!", resID);
           return;
         }
 
-        glBindBuffer(GL_ARRAY_BUFFER, *pID);
+        pVBO->Bind();
       });
   }
 
-  BufferLayout const & VertexBuffer::GetLayout() const
+  void VertexBuffer::SetLayout(BufferLayout const& a_layout)
   {
-    return m_layout;
+    void * buffer = RENDER_ALLOCATE(a_layout.Size());
+    a_layout.Serialize(buffer);
+
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BufferSetLayout);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), buffer = buffer]()
+    {
+      ::Engine::RT_VertexBuffer* pVBO = ::Engine::RenderThreadData::Instance()->VBOs.at(resID);
+      if (pVBO == nullptr)
+      {
+        LOG_WARN("VertexBuffer::SetLayout(): RefID '{}' does not exist!", resID);
+        return;
+      }
+      BufferLayout layout;
+      layout.Deserialize(buffer);
+      pVBO->SetLayout(layout);
+    });
   }
 
-  void VertexBuffer::SetLayout(BufferLayout const & a_layout)
-  {
-    m_layout = a_layout;
-  }
-
-  uint32_t VertexBuffer::GetSize() const
-  {
-    return m_size;
-  }
+  //------------------------------------------------------------------------------------------------
+  // IndexBuffer
+  //------------------------------------------------------------------------------------------------
 
   IndexBuffer::IndexBuffer()
-    : m_size(0)
   {
 
   }
 
   void IndexBuffer::Init(void* a_data, uint32_t a_size)
   {
-    BSR_ASSERT(m_size == 0, "Index buffer already initialised!");
-
-    m_size = a_size;
-
     uint8_t* data = (uint8_t*)RENDER_ALLOCATE(a_size);
     memcpy(data, a_data, a_size);
 
@@ -293,20 +361,19 @@ namespace Engine
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
 
-    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), size = m_size, data]()
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), size = a_size, data]()
       {
-        RendererID rendererID(0);
-        glCreateBuffers(1, &rendererID);
-        glNamedBufferData(rendererID, size, data, GL_STATIC_DRAW);
-        RenderThreadData::Instance()->IDMap[resID] = rendererID;
+        ::Engine::RT_IndexBuffer ib;
+        ib.Init(data, size);
+        ::Engine::RenderThreadData::Instance()->IBOs.insert(resID, ib);
       });
   }
 
   Ref<IndexBuffer> IndexBuffer::Create(void* a_data, uint32_t a_size)
   {
-    IndexBuffer* pIB = new IndexBuffer();
-    Ref<IndexBuffer> ref(pIB);
-    pIB->Init(a_data, a_size);
+    IndexBuffer* pIBO = new IndexBuffer();
+    Ref<IndexBuffer> ref(pIBO); // Need to do it this way to give the object a resource ID
+    pIBO->Init(a_data, a_size);
     return ref;
   }
 
@@ -318,15 +385,14 @@ namespace Engine
 
     RENDER_SUBMIT(state, [resID = GetRefID().GetID()]() mutable
       {
-        RendererID * pID =  RenderThreadData::Instance()->IDMap.at(resID);
-        if (pID == nullptr)
+        RT_IndexBuffer * pIB =  RenderThreadData::Instance()->IBOs.at(resID);
+        if (pIB == nullptr)
         {
-          LOG_WARN("IndexBuffer::~IndexBuffer(): RendererID does not exist! RefID: {}", resID);
+          LOG_WARN("IndexBuffer::~IndexBuffer: RefID '{}' does not exist!", resID);
           return;
         }
-
-        glDeleteBuffers(1, pID);
-        RenderThreadData::Instance()->IDMap.erase(resID);
+        pIB->Destroy();
+        ::Engine::RenderThreadData::Instance()->IBOs.erase(resID);
       });
   }
 
@@ -341,14 +407,14 @@ namespace Engine
 
     RENDER_SUBMIT(state, [resID = GetRefID().GetID(), offset = a_offset, size = a_size, data]()
       {
-        RendererID* pID =  RenderThreadData::Instance()->IDMap.at(resID);
-        if (pID == nullptr)
+        ::Engine::RT_IndexBuffer * pIBO = ::Engine::RenderThreadData::Instance()->IBOs.at(resID);
+        if (pIBO == nullptr)
         {
-          LOG_WARN("IndexBuffer::SetData(): RendererID does not exist! RefID: {}", resID);
+          LOG_WARN("IndexBuffer::SetData(): RefID '{}' does not exist!", resID);
           return;
         }
 
-        glNamedBufferSubData(*pID, offset, size, data);
+        pIBO->SetData(data, size, offset);
       });
   }
 
@@ -360,24 +426,14 @@ namespace Engine
 
     RENDER_SUBMIT(state, [resID = GetRefID().GetID()]()
       {
-        RendererID* pID =  RenderThreadData::Instance()->IDMap.at(resID);
-        if (pID == nullptr)
+        ::Engine::RT_IndexBuffer * pIBO = ::Engine::RenderThreadData::Instance()->IBOs.at(resID);
+        if (pIBO == nullptr)
         {
-          LOG_WARN("IndexBuffer::Bind(): RendererID does not exist! RefID: {}", resID);
+          LOG_WARN("IndexBuffer::Bind(): RefID '{}' does not exist!", resID);
           return;
         }
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *pID);
+        pIBO->Bind();
       });
-  }
-
-  uint32_t IndexBuffer::GetCount() const
-  {
-    return m_size / sizeof(intType);
-  }
-
-  uint32_t IndexBuffer::GetSize() const
-  {
-    return m_size;
   }
 }

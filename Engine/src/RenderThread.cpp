@@ -1,4 +1,4 @@
-//@group Renderer
+//@group Renderer/RenderThread
 
 #include "core_Assert.h"
 #include "RenderThread.h"
@@ -16,7 +16,6 @@ namespace Engine
   //-----------------------------------------------------------------------------------------------
   static void RenderThreadWorker()
   {
-    //TODO all of these can be queued with RENDER_SUBMIT
     if (Framework::Instance()->GetGraphicsContext()->Init() != Core::ErrorCode::EC_None)
     {
       LOG_ERROR("Unable to set rendering context!");
@@ -31,13 +30,12 @@ namespace Engine
     while (!RenderThread::Instance()->ShouldExit())
     {
       LOG_WARN("NEW PASS");
-      for (auto it = RenderThreadData::Instance()->IDMap.cbegin();
-          it != RenderThreadData::Instance()->IDMap.cend(); it++)
+      for (auto it = RenderThreadData::Instance()->VBOs.cbegin();
+          it != RenderThreadData::Instance()->VBOs.cend(); it++)
       {
-        LOG_DEBUG("RefID: {}, RendererID: {}", it->first, it->second);
+        LOG_DEBUG("RefID: {}, RendererID: {}", it->first, it->second.GetRendererID());
       }
 
-      //Only these are needed. Use RENDER_SUBMIT for the rest
       Renderer::Instance()->ExecuteRenderCommands();
       RenderThread::Instance()->RenderThreadFrameFinished();
     }

@@ -7,6 +7,10 @@
 
 namespace Engine
 {
+  //Internal use only. 
+  typedef uint64_t RefID;
+#define INVALID_REFID 0xFFFF'FFFF'FFFF'FFFFULL
+
   namespace impl
   {
     class ResourceID64

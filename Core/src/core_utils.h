@@ -2,6 +2,7 @@
 #define CORE_H
 
 #include <stdint.h>
+#include <string>
 
 #include "DgR2Vector.h"
 #include "DgR3Vector.h"
@@ -34,5 +35,12 @@ typedef Dg::R3::Matrix<float>           mat4;
 #define NEW_COUNTER TEMP
 #define INIT_COUNTER(val) namespace CONCAT(IMPL_COUNTER_, NEW_COUNTER) {int const COUNTER_BASE = __COUNTER__ - val + 1;}
 #define COUNTER (__COUNTER__ - CONCAT(IMPL_COUNTER_, NEW_COUNTER)::COUNTER_BASE)
+
+namespace Core
+{
+  //Advance a void pointer a number of bytes
+  void* AdvancePtr(void*, size_t);
+  void const * AdvancePtr(void const *, size_t);
+}
 
 #endif

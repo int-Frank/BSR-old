@@ -7,7 +7,7 @@ namespace Engine
   //---------------------------------------------------------------------------------------------------
   // ShanderStruct
   //---------------------------------------------------------------------------------------------------
-  ShaderStruct::ShaderStruct(StringID a_name)
+  ShaderStruct::ShaderStruct(std::string const & a_name)
     : m_name(a_name)
     , m_size(0)
     , m_offset(0)
@@ -33,7 +33,7 @@ namespace Engine
     m_offset = a_offset;
   }
 
-  StringID ShaderStruct::GetName() const
+  std::string const & ShaderStruct::GetName() const
   {
     return m_name;
   }
@@ -57,7 +57,7 @@ namespace Engine
   // ShaderResourceDeclaration
   //---------------------------------------------------------------------------------------------------
   ShaderResourceDeclaration::ShaderResourceDeclaration(Type a_type, 
-                                                       StringID a_name, 
+                                                       std::string const & a_name, 
                                                        uint32_t a_count)
     : m_type(a_type)
     , m_name(a_name)
@@ -67,7 +67,7 @@ namespace Engine
 
   }
   
-  StringID ShaderResourceDeclaration::GetName() const
+  std::string const & ShaderResourceDeclaration::GetName() const
   {
     return m_name;
   }
@@ -87,27 +87,26 @@ namespace Engine
     return m_type;
   }
 
-  ShaderResourceDeclaration::Type ShaderResourceDeclaration::StringToType(StringID a_str)
+  ShaderResourceDeclaration::Type ShaderResourceDeclaration::StringToType(std::string const & a_str)
   {
-    switch (a_str)
-    {
-      case Str::sampler2D:
-      case Str::samplerCube:
-        return static_cast<Type>(a_str);
-    }
+    if (a_str == "sampler2D")
+      return Type::TEXTURE2D;
+    if (a_str == "samplerCube")
+      return Type::TEXTURECUBE;
 
     return Type::NONE;
   }
 
-  StringID ShaderResourceDeclaration::TypeToString(Type a_type)
+  std::string ShaderResourceDeclaration::TypeToString(Type a_type)
   {
     switch (a_type)
     {
       case Type::TEXTURE2D:
+        return "sampler2D";
       case Type::TEXTURECUBE:
-        return static_cast<StringID>(a_type);
+        return "samplerCube";
     }
-    return Str::invalidType;
+    return "None";
   }
 
   //---------------------------------------------------------------------------------------------------
@@ -115,7 +114,7 @@ namespace Engine
   //---------------------------------------------------------------------------------------------------
   ShaderUniformDeclaration::ShaderUniformDeclaration(ShaderDomain a_domain, 
                                                      Type a_type, 
-                                                     StringID a_name, 
+                                                     std::string a_name, 
                                                      uint32_t a_count)
     : m_domain(a_domain)
     , m_type(a_type)
@@ -130,7 +129,7 @@ namespace Engine
   
   ShaderUniformDeclaration::ShaderUniformDeclaration(ShaderDomain a_domain, 
                                                      ShaderStruct* a_pStruct, 
-                                                     StringID a_name, 
+                                                     std::string a_name, 
                                                      uint32_t a_count)
     : m_domain(a_domain)
     , m_type(Type::STRUCT)
@@ -143,7 +142,7 @@ namespace Engine
     m_size = m_pStruct->GetSize() * m_count;
   }
 
-  StringID ShaderUniformDeclaration::GetName() const
+  std::string ShaderUniformDeclaration::GetName() const
   {
     return m_name;
   }
@@ -217,9 +216,10 @@ namespace Engine
     return 0;
   }
 
-  ShaderUniformDeclaration::Type ShaderUniformDeclaration::StringToType(StringID a_type)
+  ShaderUniformDeclaration::Type ShaderUniformDeclaration::StringToType(std::string a_type)
   {
-    switch (static_cast<Type>(a_type))
+    //TODO ...
+    /*switch (static_cast<Type>(a_type))
     {
       case ShaderUniformDeclaration::Type::INT32:
       case ShaderUniformDeclaration::Type::FLOAT32:
@@ -229,14 +229,15 @@ namespace Engine
       case ShaderUniformDeclaration::Type::MAT3:
       case ShaderUniformDeclaration::Type::MAT4:
         return static_cast<Type>(a_type);
-    }
+    }*/
 
     return Type::NONE;
   }
 
-  StringID ShaderUniformDeclaration::TypeToString(Type a_type)
+  std::string ShaderUniformDeclaration::TypeToString(Type a_type)
   {
-    switch (a_type)
+    //TODO ...
+    /*switch (a_type)
     {
       case ShaderUniformDeclaration::Type::INT32:
       case ShaderUniformDeclaration::Type::FLOAT32:
@@ -245,15 +246,16 @@ namespace Engine
       case ShaderUniformDeclaration::Type::VEC4:
       case ShaderUniformDeclaration::Type::MAT3:
       case ShaderUniformDeclaration::Type::MAT4:
-        return static_cast<StringID>(a_type);
+        return static_cast<std::string>(a_type);
     }
-    return Str::invalidType;
+    return Str::invalidType;*/
+    return "None";
   }
 
   //---------------------------------------------------------------------------------------------------
   // ShaderUniformBufferDeclaration
   //---------------------------------------------------------------------------------------------------
-  ShaderUniformBufferDeclaration::ShaderUniformBufferDeclaration(StringID a_name, 
+  ShaderUniformBufferDeclaration::ShaderUniformBufferDeclaration(std::string a_name, 
                                                                  ShaderDomain a_domain)
     : m_domain(a_domain)
     , m_name(a_name)
@@ -276,7 +278,7 @@ namespace Engine
     m_uniforms.push_back(a_pUniform);
   }
 
-  StringID ShaderUniformBufferDeclaration::GetName() const
+  std::string ShaderUniformBufferDeclaration::GetName() const
   {
     return m_name;
   }
@@ -301,7 +303,7 @@ namespace Engine
     return m_uniforms;
   }
 
-  ShaderUniformDeclaration* ShaderUniformBufferDeclaration::FindUniform(StringID a_name)
+  ShaderUniformDeclaration* ShaderUniformBufferDeclaration::FindUniform(std::string a_name)
   {
     for (ShaderUniformDeclaration* uniform : m_uniforms)
     {

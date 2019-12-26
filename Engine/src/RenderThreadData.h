@@ -1,8 +1,13 @@
+//@group Renderer/RenderThread
+
 #ifndef RENDERTHREADDATA_H
 #define RENDERTHREADDATA_H
 
 #include "DgOpenHashMap.h"
 #include "RendererAPI.h"
+#include "RT_Buffer.h"
+#include "RT_VertexArray.h"
+#include "ResourceID.h"
 
 namespace Engine
 {
@@ -17,8 +22,9 @@ namespace Engine
 
   public:
 
-    Dg::OpenHashMap<uint64_t, RendererID> IDMap;
-    Dg::OpenHashMap<uint64_t, uint32_t>   VAOIndex;
+    Dg::OpenHashMap<RefID, ::Engine::RT_VertexBuffer> VBOs;
+    Dg::OpenHashMap<RefID, ::Engine::RT_IndexBuffer> IBOs;
+    Dg::OpenHashMap<RefID, ::Engine::RT_VertexArray> VAOs;
   };
 }
 

@@ -28,6 +28,7 @@ public:
 
   Index Allocate(size_t);
   void * GetAddress(Index);
+  void Write(byte *, size_t, Index);
   void clear();
   size_t size() const;
 

@@ -1,4 +1,6 @@
 
+#include <chrono>
+
 #include "Engine.h"
 #include "Renderer.h"
 #include "RendererAPI.h"
@@ -51,6 +53,7 @@ public:
 
   void Update(float a_dt) override
   {
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
     //LOG_DEBUG("VertexArray: Renderer ID: {}, Ref ID: {}", m_va->GetRendererID(), m_va->GetRefID().GetID());
   }
 

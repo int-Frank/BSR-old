@@ -1,3 +1,5 @@
+//@group Renderer/RenderThread
+
 #include "RenderThreadData.h"
 #include "core_Assert.h"
 

@@ -13,10 +13,12 @@
 
 namespace Engine 
 {
-  enum class ShaderDataType
+  enum class ShaderDataType : uint32_t
   {
     None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Bool
   };
+
+  ShaderDataType ConvertToShaderDataType(uint32_t);
 
   uint32_t ShaderDataTypeSize(ShaderDataType a_type);
 
@@ -30,6 +32,10 @@ namespace Engine
 
     BufferElement() = default;
 
+    size_t Size() const;
+    void* Serialize(void*) const;
+    void const* Deserialize(void const*);
+
     BufferElement(ShaderDataType, std::string const & name, bool normalized = false);
     uint32_t GetComponentCount() const;
   };
@@ -39,7 +45,7 @@ namespace Engine
   public:
     BufferLayout();
 
-    BufferLayout(const std::initializer_list<BufferElement>& elements);
+    BufferLayout(std::initializer_list<BufferElement> const & elements);
 
     uint32_t GetStride() const;
     std::vector<BufferElement> const & GetElements() const;
@@ -48,6 +54,10 @@ namespace Engine
     std::vector<BufferElement>::iterator end();
     std::vector<BufferElement>::const_iterator begin() const;
     std::vector<BufferElement>::const_iterator end() const;
+
+    size_t Size() const;
+    void* Serialize(void*) const;
+    void const* Deserialize(void const*);
 
   private:
 
@@ -71,14 +81,16 @@ namespace Engine
 
   class VertexBuffer : public Resource
   {
-  private:
+    void Init(void* data, uint32_t size, VertexBufferUsage a_usage = VertexBufferUsage::Dynamic);
+    void Init(uint32_t size, VertexBufferUsage a_usage = VertexBufferUsage::Dynamic);
 
-    void Init(void* data, uint32_t size, VertexBufferUsage a_usage);
-    void Init(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
+    VertexBuffer();
+
+    VertexBuffer(VertexBuffer const&) = delete;
+    VertexBuffer & operator=(VertexBuffer const&) = delete;
 
   public:
 
-    VertexBuffer();
     ~VertexBuffer();
 
     static Ref<VertexBuffer> Create(void* a_data, 
@@ -91,16 +103,7 @@ namespace Engine
     void SetData(void* data, uint32_t size, uint32_t offset = 0);
     void Bind() const;
 
-    BufferLayout const& GetLayout() const;
-    void SetLayout(BufferLayout const& layout);
-
-    uint32_t GetSize() const;
-
-  private:
-
-    uint32_t m_size;
-    VertexBufferUsage m_usage;
-    BufferLayout m_layout;
+    void SetLayout(BufferLayout const &);
   };
 
   //------------------------------------------------------------------------------------------------
@@ -109,28 +112,17 @@ namespace Engine
 
   class IndexBuffer : public Resource
   {
-  private:
-
     void Init(void* data, uint32_t size);
-
+    IndexBuffer();
   public:
     typedef uint16_t intType;
-  public:
 
     static Ref<IndexBuffer> Create(void* a_data, uint32_t a_size);
 
-    IndexBuffer();
      ~IndexBuffer();
 
     void SetData(void* data, uint32_t size, uint32_t offset);
     void Bind() const;
-
-    uint32_t GetCount() const;
-    uint32_t GetSize() const;
-
-  private:
-
-    uint32_t m_size; //buffer size
   };
 
 }

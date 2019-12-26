@@ -25,9 +25,4 @@ namespace Engine
     std::lock_guard<std::mutex> lock(impl::TRef::mutex);
     return impl::TRef::buf.Allocate(a_size);
   }
-
-  void* AdvancePtr(void * a_ptr, size_t a_increment)
-  {
-    return static_cast<void*>(static_cast<byte*>(a_ptr) + a_increment);
-  }
 }

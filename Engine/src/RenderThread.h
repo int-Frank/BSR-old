@@ -1,4 +1,4 @@
-//@group Renderer
+//@group Renderer/RenderThread
 #ifndef RENDERTHREAD_H
 #define RENDERTHREAD_H
 

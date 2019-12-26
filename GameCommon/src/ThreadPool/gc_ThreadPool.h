@@ -39,7 +39,7 @@ namespace GC
   private:
 
     std::mutex                m_jobQueueMutex;
-    std::queue<Job *>         m_jobQueue;
+    std::queue<Job *>         m_jobQueue; //TODO Use Dg::List
     std::condition_variable   m_cv;
     std::vector<std::thread>  m_workerThreads;
     std::atomic<bool>         m_quit;

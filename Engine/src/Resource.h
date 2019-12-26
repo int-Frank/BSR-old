@@ -9,6 +9,7 @@
 
 namespace Engine
 {
+  //Client-side. This is what the game can use.
   typedef uint32_t ResourceID;
 
   void DestroyResource(ResourceID a_id);
@@ -47,16 +48,6 @@ namespace Engine
     {
       m_resourceID = a_id;
     }
-
-    /*void RegisterMe() const
-    {
-      impl::ResourceManager::Instance()->RegisterUser(m_resourceID);
-    }
-
-    void DeregisterMe() const
-    {
-      impl::ResourceManager::Instance()->DeregisterUser(m_resourceID);
-    }*/
 
   private:
     impl::ResourceID64 m_resourceID;

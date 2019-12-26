@@ -1,10 +1,10 @@
 //@group Core
 
 //Debug
-#include <cstdlib>
-#include <chrono>
-#include "DgRNG_Global.h"
-#include "Renderer.h"
+//#include <cstdlib>
+//#include <chrono>
+//#include "DgRNG_Global.h"
+//#include "Renderer.h"
 //End debug
 
 #include <exception>
@@ -172,33 +172,6 @@ namespace Engine
         it->second->Render();
       }
 
-      //------------------------------------------------------------------------------------------------
-      // END DEBUG
-      //------------------------------------------------------------------------------------------------
-      /*Dg::RNG_Global rng;
-      unsigned val = rng.GetUintRange(1, 100);
-
-      RenderState state = RenderState::Create();
-      state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
-      state.Set<RenderState::Attr::Command>(RenderState::Command::None);
-      LOG_DEBUG("Main sending {}", val);
-      RENDER_SUBMIT(state, [val = val]()
-        {
-          Dg::RNG_Global rng;
-          unsigned val2 = rng.GetUintRange(1, 100);
-          LOG_DEBUG("Renderer recieved {}, sending back {}", val, val2);
-          TRef<Message> msg = Message_Command::New([val2 = val2]
-            {
-              LOG_DEBUG("Main recieved {}", val2);
-            });
-          POST(msg);
-        });*/
-
-      std::this_thread::sleep_for(std::chrono::milliseconds(300));
-      //------------------------------------------------------------------------------------------------
-      // END DEBUG
-      //------------------------------------------------------------------------------------------------
-    
       EndFrame();
     }
   }

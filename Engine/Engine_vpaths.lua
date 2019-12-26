@@ -13,6 +13,7 @@ vpaths
   {
     "D:/dev/projects/BSR/Engine/src/Buffer.cpp",
     "D:/dev/projects/BSR/Engine/src/Buffer.h",
+    "D:/dev/projects/BSR/Engine/src/Material.cpp",
     "D:/dev/projects/BSR/Engine/src/Material.h",
     "D:/dev/projects/BSR/Engine/src/OpenGLContext.cpp",
     "D:/dev/projects/BSR/Engine/src/OpenGLContext.h",
@@ -31,6 +32,15 @@ vpaths
     "D:/dev/projects/BSR/Engine/src/Texture.h",
     "D:/dev/projects/BSR/Engine/src/VertexArray.cpp",
     "D:/dev/projects/BSR/Engine/src/VertexArray.h"
+  },
+  ["Messages"] =
+  {
+    "D:/dev/projects/BSR/Engine/src/EngineMessages.h",
+    "D:/dev/projects/BSR/Engine/src/Message.cpp",
+    "D:/dev/projects/BSR/Engine/src/Message.h",
+    "D:/dev/projects/BSR/Engine/src/MessageBus.cpp",
+    "D:/dev/projects/BSR/Engine/src/MessageBus.h",
+    "D:/dev/projects/BSR/Engine/src/MessageHandler.h"
   },
   ["Framework"] =
   {
@@ -54,10 +64,11 @@ vpaths
   },
   ["Layers"] =
   {
-    "D:/dev/projects/BSR/Engine/src/Layer.cpp",
     "D:/dev/projects/BSR/Engine/src/Layer.h",
     "D:/dev/projects/BSR/Engine/src/LayerStack.cpp",
     "D:/dev/projects/BSR/Engine/src/LayerStack.h",
+    "D:/dev/projects/BSR/Engine/src/Layer_Application.cpp",
+    "D:/dev/projects/BSR/Engine/src/Layer_Application.h",
     "D:/dev/projects/BSR/Engine/src/Layer_Console.cpp",
     "D:/dev/projects/BSR/Engine/src/Layer_Console.h",
     "D:/dev/projects/BSR/Engine/src/Layer_imgui.cpp",
@@ -77,12 +88,17 @@ vpaths
     "D:/dev/projects/BSR/Engine/src/ResourceManager.cpp",
     "D:/dev/projects/BSR/Engine/src/ResourceManager.h"
   },
-  ["Messages"] =
+  ["Renderer/RenderThread"] =
   {
-    "D:/dev/projects/BSR/Engine/src/Message.cpp",
-    "D:/dev/projects/BSR/Engine/src/Message.h",
-    "D:/dev/projects/BSR/Engine/src/MessageBus.cpp",
-    "D:/dev/projects/BSR/Engine/src/MessageBus.h",
-    "D:/dev/projects/BSR/Engine/src/MessageHandler.h"
+    "D:/dev/projects/BSR/Engine/src/RenderThread.cpp",
+    "D:/dev/projects/BSR/Engine/src/RenderThread.h",
+    "D:/dev/projects/BSR/Engine/src/RenderThreadData.cpp",
+    "D:/dev/projects/BSR/Engine/src/RenderThreadData.h",
+    "D:/dev/projects/BSR/Engine/src/RT_Buffer.cpp",
+    "D:/dev/projects/BSR/Engine/src/RT_Buffer.h"
+  },
+  ["NO_GROUP"] =
+  {
+    "D:/dev/projects/BSR/Engine/src/UpdateRecord.h"
   }
 }

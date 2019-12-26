@@ -24,8 +24,9 @@ namespace Engine
   //Clear the tempory buffer
   void TBUFClear();
 
+  //Moved to core_utils
   //Advance a void pointer a number of bytes
-  void * AdvancePtr(void *, size_t);
+  //void * AdvancePtr(void *, size_t);
 
   //A wrapper which constructs and stores objects on the tempory buffer. Objects must be
   //trivially destructable.
