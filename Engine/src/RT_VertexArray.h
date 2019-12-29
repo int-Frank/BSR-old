@@ -32,8 +32,8 @@ namespace Engine
   private:
 
     RendererID m_rendererID;
-    Dg::DynamicArray<RefID> m_vertexBuffers;
-    RefID m_indexBuffer;
+    Dg::DynamicArray<RefID> m_vertexBuffers; //TODO is this even needed?
+    RefID m_indexBuffer; //TODO is this even needed?
     uint32_t m_vertexAttribIndex;
   };
 }

@@ -5,6 +5,7 @@
 //
 //#include <string>
 //#include "MemBuffer.h"
+//#include "Memory.h"
 //#include "core_utils.h"
 //#include "ShaderUniform.h"
 //
@@ -12,35 +13,32 @@
 //{
 //  class Shader
 //  {
+//
+//    Shader();
 //  public:
-//    using ShaderReloadedCallback = std::function<void()>;
+//    //using ShaderReloadedCallback = std::function<void()>;
 //
-//    Shader() = default;
-//    Shader(const std::string& filepath);
 //    static Ref<Shader> CreateFromString(const std::string& source);
+//    static Ref<Shader> CreateFromFilePath(const std::string& source);
 //
-//    void Reload(); 
-//    void AddShaderReloadedCallback(const ShaderReloadedCallback& callback);
+//    //void Reload(); 
+//    //void AddShaderReloadedCallback(const ShaderReloadedCallback& callback);
 //
 //    void Bind();
 //
-//    void SetVSMaterialUniformBuffer(Dg::MemoryStream buffer);
-//    void SetPSMaterialUniformBuffer(Dg::MemoryStream buffer);
+//    void SetVSMaterialUniformBuffer(MemBufferDynamic const & buffer);
+//    void SetPSMaterialUniformBuffer(MemBufferDynamic const& buffer);
 //
-//    void SetFloat(std::string const & name, float);
-//    void SetMat4(std::string const& name, const mat4& value);
-//    void SetMat4FromRenderThread(StringID name, const mat4& value);
+//    //void SetFloat(std::string const & name, float);
+//    //void SetMat4(std::string const& name, const mat4& value);
+//    //void SetMat4FromRenderThread(std::string const& name, const mat4& value);
 //
-//    const std::string& GetName() const
-//    {
-//      return m_Name;
-//    }
+//    const std::string& GetName() const;
 //  private:
 //
 //    void Load(const std::string& source);
 //
 //    std::string ReadShaderFromFile(const std::string& filepath) const;
-//    std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
 //    void Parse();
 //    void ParseUniform(const std::string& statement, ShaderDomain domain);
 //    void ParseUniformStruct(const std::string& block, ShaderDomain domain);
@@ -53,9 +51,9 @@
 //    void CompileAndUploadShader();
 //    static GLenum ShaderTypeFromString(const std::string& type);
 //
-//    void ResolveAndSetUniforms(ShaderUniformBufferDeclaration * decl, Dg::MemoryStream buffer);
-//    void ResolveAndSetUniform(ShaderUniformDeclaration * uniform, Dg::MemoryStream buffer);
-//    void ResolveAndSetUniformArray(ShaderUniformDeclaration* uniform, Dg::MemoryStream buffer);
+//    void ResolveAndSetUniforms(ShaderUniformDeclarationBuffer * decl, MemBufferDynamic buffer);
+//    void ResolveAndSetUniform(ShaderUniformDeclaration * uniform, MemBufferDynamic buffer);
+//    void ResolveAndSetUniformArray(ShaderUniformDeclaration* uniform, MemBufferDynamic buffer);
 //    void ResolveAndSetUniformField(ShaderUniformDeclaration const & field, byte* data, int32_t offset);
 //
 //    void UploadUniformInt(uint32_t location, int32_t value);
@@ -80,26 +78,26 @@
 //
 //    void UploadUniformMat4(const std::string& name, mat4 const& value);
 //
-//    ShaderUniformBufferList const & GetVSRendererUniforms() const;
-//    ShaderUniformBufferList const & GetPSRendererUniforms() const;
-//    ShaderUniformBufferDeclaration const & GetVSMaterialUniformBuffer() const;
-//    ShaderUniformBufferDeclaration const & GetPSMaterialUniformBuffer() const;
+//    //ShaderUniformBufferList const & GetVSRendererUniforms() const;
+//    //ShaderUniformBufferList const & GetPSRendererUniforms() const;
+//    ShaderUniformDeclarationBuffer const & GetVSMaterialUniformBuffer() const;
+//    ShaderUniformDeclarationBuffer const & GetPSMaterialUniformBuffer() const;
 //    ShaderResourceList const & GetResources() const;
 //  private:
-//    RendererID m_RendererID = 0; //TODO Put in RenderThreadData
-//    bool m_Loaded = false;
+//    //RendererID m_RendererID = 0; //TODO Put in RenderThreadData
+//    bool m_loaded;// = false;
 //
-//    std::string m_Name, m_AssetPath;
+//    std::string m_name;//, m_AssetPath;
 //    //std::unordered_map<GLenum, std::string> m_ShaderSource;
 //
-//    std::vector<ShaderReloadedCallback> m_ShaderReloadedCallbacks;
+//    //std::vector<ShaderReloadedCallback> m_ShaderReloadedCallbacks;
 //
-//    ShaderUniformBufferList m_VSRendererUniformBuffers;
-//    ShaderUniformBufferList m_PSRendererUniformBuffers;
-//    ShaderUniformBufferDeclaration * m_VSMaterialUniformBuffer;
-//    ShaderUniformBufferDeclaration * m_PSMaterialUniformBuffer;
-//    ShaderResourceList m_Resources;
-//    ShaderStructList m_Structs;
+//    //ShaderUniformBufferList m_VSRendererUniformBuffers;
+//    //ShaderUniformBufferList m_PSRendererUniformBuffers;
+//    ShaderUniformDeclarationBuffer * m_VSMaterialUniformBuffer;
+//    ShaderUniformDeclarationBuffer * m_PSMaterialUniformBuffer;
+//    ShaderResourceList m_resources;
+//    ShaderStructList m_structs;
 //  };
 //
 //}

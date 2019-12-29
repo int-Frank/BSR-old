@@ -101,8 +101,12 @@ namespace Engine
         VertexArrayUnbind,
         VertexArrayAddVertexBuffer,
         VertexArraySetIndexBuffer,
-        VertexArray_END
+        VertexArray_END,
 
+        IndexedBufferBind,
+
+        BindingPointCreate,
+        BindingPointDelete,
       };
     };
 

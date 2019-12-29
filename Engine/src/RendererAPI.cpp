@@ -48,6 +48,18 @@ namespace Engine
     glGetIntegerv(GL_MAX_SAMPLES, &caps.maxSamples);
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &caps.maxAnisotropy);
 
+    glGetIntegerv(GL_MAX_VERTEX_UNIFORM_BLOCKS, &caps.maxVertexUniformBlocks);
+    glGetIntegerv(GL_MAX_GEOMETRY_UNIFORM_BLOCKS, &caps.maxGeometryUniformBlocks);
+    glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_BLOCKS, &caps.maxFragmentUniformBlocks);
+    glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &caps.maxUniformBlockSize);
+    glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &caps.maxUniformBufferBindings);
+
+    glGetIntegerv(GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS, &caps.maxVertexShaderStorageBlocks);
+    glGetIntegerv(GL_MAX_GEOMETRY_SHADER_STORAGE_BLOCKS, &caps.maxGeometryShaderStorageBlocks);
+    glGetIntegerv(GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS, &caps.maxFragmentShaderStorageBlocks);
+    glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &caps.maxShaderStorageBlockSize);
+    glGetIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, &caps.maxShaderStorageBufferBindings);
+    
     GLenum error = glGetError();
     while (error != GL_NO_ERROR)
     {

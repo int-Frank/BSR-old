@@ -7,14 +7,12 @@
 #include <stdint.h>
 #include "DgDynamicArray.h"
 #include "core_Assert.h"
+#include "Memory.h"
+#include "Resource.h"
+#include "ShaderUtils.h"
 
 namespace Engine
 {
-  enum class ShaderDomain
-  {
-    None = 0, Vertex = 0, Pixel = 1
-  };
-
   class ShaderUniformDeclaration;
 
   class ShaderStruct
@@ -40,54 +38,31 @@ namespace Engine
   class ShaderResourceDeclaration
   {
   public:
-
-    enum class Type : uint32_t
-    {
-      NONE        = 0, 
-      TEXTURE2D, 
-      TEXTURECUBE
-    };
-
-  public:
-    ShaderResourceDeclaration(Type, std::string const &, uint32_t count);
+    ShaderResourceDeclaration(ShaderResourceType, std::string const &, uint32_t count);
 
     std::string const & GetName() const;
     uint32_t GetRegister() const;
     uint32_t GetCount() const;
-    Type GetType() const;
+    ShaderResourceType GetType() const;
 
-  public:
-
-    static Type StringToType(std::string const &);
-    static std::string TypeToString(Type);
+    void SetRegister(uint32_t);
 
   private:
     std::string m_name;
     uint32_t m_register;
     uint32_t m_count;
-    Type m_type;
+    ShaderResourceType m_type;
   };
 
   class ShaderUniformDeclaration
   {
     friend class ShaderStruct;
-    friend class ShaderUniformBufferDeclaration;
+    friend class ShaderUniformDeclarationBuffer;
   public:
-    enum class Type : uint32_t
-    {
-      NONE     = 0, 
-      FLOAT32, 
-      VEC2, 
-      VEC3, 
-      VEC4, 
-      MAT3, 
-      MAT4, 
-      INT32, 
-      STRUCT
-    };
+    
   public:
 
-    ShaderUniformDeclaration(ShaderDomain, Type, std::string name, uint32_t count = 1);
+    ShaderUniformDeclaration(ShaderDomain, ShaderDataType, std::string name, uint32_t count = 1);
     ShaderUniformDeclaration(ShaderDomain, ShaderStruct*, std::string name, uint32_t count = 1);
 
     std::string GetName() const;
@@ -97,19 +72,16 @@ namespace Engine
     uint32_t GetAbsoluteOffset() const;
     ShaderDomain GetDomain() const;
     int32_t GetLocation() const;
-    Type GetType() const;
+    ShaderDataType GetType() const;
     bool IsArray() const;
     const ShaderStruct& GetShaderUniformStruct() const;
+    ShaderStruct * GetShaderUniformStructPtr() const;
+
+    void SetLocation(int32_t);
 
   protected:
 
     void SetOffset(uint32_t offset);
-
-  public:
-
-    static uint32_t SizeOfUniformType(Type);
-    static Type StringToType(std::string);
-    static std::string TypeToString(Type);
 
   private:
     std::string m_name;
@@ -118,18 +90,18 @@ namespace Engine
     uint32_t m_offset;
     ShaderDomain m_domain;
 
-    Type m_type;
+    ShaderDataType m_type;
 
     ShaderStruct* m_pStruct;
-    mutable int32_t m_location;
+    mutable int32_t m_location; //The OpenGL location
   };
 
   typedef Dg::DynamicArray<ShaderUniformDeclaration*> ShaderUniformList;
 
-  class ShaderUniformBufferDeclaration
+  class ShaderUniformDeclarationBuffer
   {
   public:
-    ShaderUniformBufferDeclaration(std::string name, ShaderDomain);
+    ShaderUniformDeclarationBuffer(std::string name, ShaderDomain);
 
     void PushUniform(ShaderUniformDeclaration*);
 
@@ -149,9 +121,20 @@ namespace Engine
     ShaderDomain m_domain;
   };
 
-  typedef Dg::DynamicArray<ShaderUniformBufferDeclaration*> ShaderUniformBufferList;
+  typedef Dg::DynamicArray<ShaderUniformDeclarationBuffer*> ShaderUniformBufferList;
   typedef Dg::DynamicArray<ShaderResourceDeclaration*> ShaderResourceList;
   typedef Dg::DynamicArray<ShaderStruct*> ShaderStructList;
+
+  class BindingPoint : public Resource
+  {
+    void Init(StorageBlockType, ShaderDomain);
+    BindingPoint();
+  public:
+
+    static Ref<BindingPoint> Create(StorageBlockType, ShaderDomain);
+
+    ~BindingPoint();
+  };
 }
 
 #endif

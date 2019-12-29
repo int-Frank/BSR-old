@@ -1,6 +1,9 @@
 //@group Renderer
 
 #include "ShaderUniform.h"
+#include "Renderer.h"
+#include "RT_BindingPoint.h"
+#include "RenderThreadData.h"
 
 namespace Engine
 {
@@ -56,7 +59,7 @@ namespace Engine
   //---------------------------------------------------------------------------------------------------
   // ShaderResourceDeclaration
   //---------------------------------------------------------------------------------------------------
-  ShaderResourceDeclaration::ShaderResourceDeclaration(Type a_type, 
+  ShaderResourceDeclaration::ShaderResourceDeclaration(ShaderResourceType a_type,
                                                        std::string const & a_name, 
                                                        uint32_t a_count)
     : m_type(a_type)
@@ -82,38 +85,16 @@ namespace Engine
     return m_count;
   }
 
-  ShaderResourceDeclaration::Type ShaderResourceDeclaration::GetType() const
+  ShaderResourceType ShaderResourceDeclaration::GetType() const
   {
     return m_type;
-  }
-
-  ShaderResourceDeclaration::Type ShaderResourceDeclaration::StringToType(std::string const & a_str)
-  {
-    if (a_str == "sampler2D")
-      return Type::TEXTURE2D;
-    if (a_str == "samplerCube")
-      return Type::TEXTURECUBE;
-
-    return Type::NONE;
-  }
-
-  std::string ShaderResourceDeclaration::TypeToString(Type a_type)
-  {
-    switch (a_type)
-    {
-      case Type::TEXTURE2D:
-        return "sampler2D";
-      case Type::TEXTURECUBE:
-        return "samplerCube";
-    }
-    return "None";
   }
 
   //---------------------------------------------------------------------------------------------------
   // ShaderUniformDeclaration
   //---------------------------------------------------------------------------------------------------
   ShaderUniformDeclaration::ShaderUniformDeclaration(ShaderDomain a_domain, 
-                                                     Type a_type, 
+                                                     ShaderDataType a_type, 
                                                      std::string a_name, 
                                                      uint32_t a_count)
     : m_domain(a_domain)
@@ -124,7 +105,7 @@ namespace Engine
     , m_pStruct(nullptr)
     , m_offset(0)
   {
-    m_size = SizeOfUniformType(m_type) * m_count;
+    m_size = SizeOfShaderDataType(m_type) * m_count;
   }
   
   ShaderUniformDeclaration::ShaderUniformDeclaration(ShaderDomain a_domain, 
@@ -132,7 +113,7 @@ namespace Engine
                                                      std::string a_name, 
                                                      uint32_t a_count)
     : m_domain(a_domain)
-    , m_type(Type::STRUCT)
+    , m_type(ShaderDataType::STRUCT)
     , m_name(a_name)
     , m_count(a_count)
     , m_location(-1)
@@ -177,7 +158,7 @@ namespace Engine
     return m_location;
   }
 
-  ShaderUniformDeclaration::Type ShaderUniformDeclaration::GetType() const
+  ShaderDataType ShaderUniformDeclaration::GetType() const
   {
     return m_type;
   }
@@ -193,69 +174,23 @@ namespace Engine
     return *m_pStruct;
   }
 
+  ShaderStruct * ShaderUniformDeclaration::GetShaderUniformStructPtr() const
+  {
+    return m_pStruct;
+  }
+
   void ShaderUniformDeclaration::SetOffset(uint32_t offset)
   {
-    if (m_type == ShaderUniformDeclaration::Type::STRUCT)
+    if (m_type == ShaderDataType::STRUCT)
       m_pStruct->SetOffset(offset);
 
     m_offset = offset;
   }
 
-  uint32_t ShaderUniformDeclaration::SizeOfUniformType(Type a_type)
-  {
-    switch (a_type)
-    {
-      case ShaderUniformDeclaration::Type::INT32:      return 4;
-      case ShaderUniformDeclaration::Type::FLOAT32:    return 4;
-      case ShaderUniformDeclaration::Type::VEC2:       return 4 * 2;
-      case ShaderUniformDeclaration::Type::VEC3:       return 4 * 3;
-      case ShaderUniformDeclaration::Type::VEC4:       return 4 * 4;
-      case ShaderUniformDeclaration::Type::MAT3:       return 4 * 3 * 3;
-      case ShaderUniformDeclaration::Type::MAT4:       return 4 * 4 * 4;
-    }
-    return 0;
-  }
-
-  ShaderUniformDeclaration::Type ShaderUniformDeclaration::StringToType(std::string a_type)
-  {
-    //TODO ...
-    /*switch (static_cast<Type>(a_type))
-    {
-      case ShaderUniformDeclaration::Type::INT32:
-      case ShaderUniformDeclaration::Type::FLOAT32:
-      case ShaderUniformDeclaration::Type::VEC2:
-      case ShaderUniformDeclaration::Type::VEC3:
-      case ShaderUniformDeclaration::Type::VEC4:
-      case ShaderUniformDeclaration::Type::MAT3:
-      case ShaderUniformDeclaration::Type::MAT4:
-        return static_cast<Type>(a_type);
-    }*/
-
-    return Type::NONE;
-  }
-
-  std::string ShaderUniformDeclaration::TypeToString(Type a_type)
-  {
-    //TODO ...
-    /*switch (a_type)
-    {
-      case ShaderUniformDeclaration::Type::INT32:
-      case ShaderUniformDeclaration::Type::FLOAT32:
-      case ShaderUniformDeclaration::Type::VEC2:
-      case ShaderUniformDeclaration::Type::VEC3:
-      case ShaderUniformDeclaration::Type::VEC4:
-      case ShaderUniformDeclaration::Type::MAT3:
-      case ShaderUniformDeclaration::Type::MAT4:
-        return static_cast<std::string>(a_type);
-    }
-    return Str::invalidType;*/
-    return "None";
-  }
-
   //---------------------------------------------------------------------------------------------------
-  // ShaderUniformBufferDeclaration
+  // ShaderUniformDeclarationBuffer
   //---------------------------------------------------------------------------------------------------
-  ShaderUniformBufferDeclaration::ShaderUniformBufferDeclaration(std::string a_name, 
+  ShaderUniformDeclarationBuffer::ShaderUniformDeclarationBuffer(std::string a_name, 
                                                                  ShaderDomain a_domain)
     : m_domain(a_domain)
     , m_name(a_name)
@@ -265,7 +200,7 @@ namespace Engine
 
   }
 
-  void ShaderUniformBufferDeclaration::PushUniform(ShaderUniformDeclaration* a_pUniform)
+  void ShaderUniformDeclarationBuffer::PushUniform(ShaderUniformDeclaration* a_pUniform)
   {
     uint32_t offset = 0;
     if (m_uniforms.size() > 0)
@@ -278,32 +213,32 @@ namespace Engine
     m_uniforms.push_back(a_pUniform);
   }
 
-  std::string ShaderUniformBufferDeclaration::GetName() const
+  std::string ShaderUniformDeclarationBuffer::GetName() const
   {
     return m_name;
   }
 
-  uint32_t ShaderUniformBufferDeclaration::GetRegister() const
+  uint32_t ShaderUniformDeclarationBuffer::GetRegister() const
   {
     return m_register;
   }
 
-  uint32_t ShaderUniformBufferDeclaration::GetSize() const
+  uint32_t ShaderUniformDeclarationBuffer::GetSize() const
   {
     return m_size;
   }
 
-  ShaderDomain ShaderUniformBufferDeclaration::GetDomain() const
+  ShaderDomain ShaderUniformDeclarationBuffer::GetDomain() const
   {
     return m_domain;
   }
 
-  const ShaderUniformList& ShaderUniformBufferDeclaration::GetUniformDeclarations() const
+  const ShaderUniformList& ShaderUniformDeclarationBuffer::GetUniformDeclarations() const
   {
     return m_uniforms;
   }
 
-  ShaderUniformDeclaration* ShaderUniformBufferDeclaration::FindUniform(std::string a_name)
+  ShaderUniformDeclaration* ShaderUniformDeclarationBuffer::FindUniform(std::string a_name)
   {
     for (ShaderUniformDeclaration* uniform : m_uniforms)
     {
@@ -311,5 +246,51 @@ namespace Engine
         return uniform;
     }
     return nullptr;
+  }
+
+  //---------------------------------------------------------------------------------------------------
+  // Binding point
+  //---------------------------------------------------------------------------------------------------
+  Ref<BindingPoint> BindingPoint::Create(StorageBlockType a_type, ShaderDomain a_domain)
+  {
+    BindingPoint * pBP = new BindingPoint();
+    Ref<BindingPoint> ref(pBP);
+    pBP->Init(a_type, a_domain);
+    return ref;
+  }
+
+  void BindingPoint::Init(StorageBlockType a_type, ShaderDomain a_domain)
+  {
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BindingPointCreate);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), sbtype = a_type, domain = a_domain]()
+    {
+      ::Engine::RT_BindingPoint bp;
+      if (!bp.Capture(sbtype, domain))
+        LOG_WARN("BindingPoint::Init(): Failed to capture binding index!");
+      ::Engine::RenderThreadData::Instance()->bindingPoints.insert(resID, bp);
+    });
+  }
+
+  BindingPoint::~BindingPoint()
+  {
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BindingPointDelete);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID()]()
+    {
+      ::Engine::RT_BindingPoint * pbp = ::Engine::RenderThreadData::Instance()->bindingPoints.at(resID);
+      if (pbp == nullptr)
+      {
+        LOG_WARN("BindingPoint::~BindingPoint(): RefID '{}' does not exist!", resID);
+        return;
+      }
+
+      pbp->Release();
+      ::Engine::RenderThreadData::Instance()->bindingPoints.erase(resID);
+    });
   }
 }

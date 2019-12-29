@@ -5,36 +5,100 @@
 
 #include "Buffer.h"
 #include "RendererAPI.h"
+#include "RT_BindingPoint.h"
 
 namespace Engine
 {
-  class RT_VertexBuffer
+  class RT_BindingPoint;
+
+  enum class BufferType : uint32_t
   {
+    None = 0,
+    Vertex,
+    Index,
+    Uniform,
+    ShaderStorage
+  };
+
+  //------------------------------------------------------------------------------------------------
+  // BufferBase
+  //------------------------------------------------------------------------------------------------
+
+  class RT_BufferBase
+  {
+    virtual BufferType GetType() const = 0;
+
   public:
 
-    RT_VertexBuffer();
-    ~RT_VertexBuffer();
+    RT_BufferBase();
+    virtual ~RT_BufferBase();
 
     void SetData(void* data, uint32_t size, uint32_t offset = 0);
     void Bind() const;
 
-    void Init(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
-    void Init(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
+    void Init(void* data, uint32_t size, BufferUsage usage = BufferUsage::Dynamic);
+    void Init(uint32_t size, BufferUsage usage = BufferUsage::Dynamic);
     void Destroy();
 
     BufferLayout const& GetLayout() const;
-    void SetLayout(BufferLayout const& layout);
+    void SetLayout(BufferLayout const&);
     uint32_t GetSize() const;
     RendererID GetRendererID() const;
 
-  private:
+  protected:
     RendererID m_rendererID;
+  private:
     uint32_t m_size;
-    VertexBufferUsage m_usage;
+    BufferUsage m_usage;
     BufferLayout m_layout;
   };
 
+  //------------------------------------------------------------------------------------------------
+  // Vertex
+  //------------------------------------------------------------------------------------------------
 
+  class RT_VertexBuffer : public RT_BufferBase
+  {
+    BufferType GetType() const;
+  };
+
+  //------------------------------------------------------------------------------------------------
+  // Indexed Buffer
+  //------------------------------------------------------------------------------------------------
+
+  class RT_IndexedBuffer : public RT_BufferBase
+  {
+    virtual BufferType GetType() const = 0;
+    virtual bool CanBind(RT_BindingPoint const&) const = 0;
+  public:
+    virtual ~RT_IndexedBuffer() {}
+    void BindToPoint(RT_BindingPoint const&);
+  private:
+  };
+
+  //------------------------------------------------------------------------------------------------
+  // Uniform Buffer
+  //------------------------------------------------------------------------------------------------
+
+  class RT_UniformBuffer : public RT_IndexedBuffer
+  {
+    BufferType GetType() const;
+    bool CanBind(RT_BindingPoint const&) const;
+  };
+
+  //------------------------------------------------------------------------------------------------
+  // Shader Storage Buffer
+  //------------------------------------------------------------------------------------------------
+
+  class RT_ShaderStorageBuffer : public RT_IndexedBuffer
+  {
+    BufferType GetType() const;
+    bool CanBind(RT_BindingPoint const&) const;
+  };
+
+  //------------------------------------------------------------------------------------------------
+  // IndexBuffer
+  //------------------------------------------------------------------------------------------------
   class RT_IndexBuffer
   {
   public:
@@ -57,6 +121,7 @@ namespace Engine
     RendererID m_rendererID;
     uint32_t m_size;
   };
+
 }
 
 #endif

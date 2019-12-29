@@ -4,31 +4,53 @@
 #include "core_Assert.h"
 #include "RT_Buffer.h"
 #include "RendererAPI.h"
+#include "RT_BindingPoint.h"
 
 namespace Engine
 {
-  static GLenum OpenGLUsage(VertexBufferUsage a_usage)
+  //------------------------------------------------------------------------------------------------
+  // Helper functions
+  //------------------------------------------------------------------------------------------------
+
+  static GLenum OpenGLUsage(BufferUsage a_usage)
   {
     switch (a_usage)
     {
-      case VertexBufferUsage::Static:    return GL_STATIC_DRAW;
-      case VertexBufferUsage::Dynamic:   return GL_DYNAMIC_DRAW;
+      case BufferUsage::Static:    return GL_STATIC_DRAW;
+      case BufferUsage::Dynamic:   return GL_DYNAMIC_DRAW;
     }
     BSR_ASSERT(false, "Unknown vertex buffer usage");
     return 0;
   }
 
-  RT_VertexBuffer::RT_VertexBuffer()
+  static GLenum OpenGLBufferType(BufferType a_type)
+  {
+    switch (a_type)
+    {
+      case BufferType::Vertex:        return GL_ARRAY_BUFFER;
+      case BufferType::Index:         return GL_ELEMENT_ARRAY_BUFFER;
+      case BufferType::Uniform:       return GL_UNIFORM_BUFFER;
+      case BufferType::ShaderStorage: return GL_SHADER_STORAGE_BUFFER;
+    }
+    BSR_ASSERT(false, "Unknown buffer type");
+    return 0;
+  }
+
+  //------------------------------------------------------------------------------------------------
+  // BufferBase
+  //------------------------------------------------------------------------------------------------
+
+  RT_BufferBase::RT_BufferBase()
     : m_size(0)
-    , m_usage(VertexBufferUsage::None)
+    , m_usage(BufferUsage::None)
     , m_rendererID(0)
   {
 
   }
 
-  void RT_VertexBuffer::Init(void* a_data,
+  void RT_BufferBase::Init(void* a_data,
                              uint32_t a_size,
-                             VertexBufferUsage a_usage)
+                             BufferUsage a_usage)
   {
     m_size = a_size;
     m_usage = a_usage;
@@ -37,7 +59,7 @@ namespace Engine
     glNamedBufferData(m_rendererID, m_size, a_data, OpenGLUsage(m_usage));
   }
 
-  void RT_VertexBuffer::Init(uint32_t a_size, VertexBufferUsage a_usage)
+  void RT_BufferBase::Init(uint32_t a_size, BufferUsage a_usage)
   {
     m_size = a_size;
     m_usage = a_usage;
@@ -46,45 +68,94 @@ namespace Engine
     glNamedBufferData(m_rendererID, m_size, nullptr, OpenGLUsage(m_usage));
   }
 
-  RT_VertexBuffer::~RT_VertexBuffer()
+  RT_BufferBase::~RT_BufferBase()
   {
 
   }
 
-  void RT_VertexBuffer::Destroy()
+  void RT_BufferBase::Destroy()
   {
     glDeleteBuffers(1, &m_rendererID);
     m_rendererID = 0;
   }
 
-  void RT_VertexBuffer::SetData(void* a_data, uint32_t a_size, uint32_t a_offset)
+  void RT_BufferBase::SetData(void* a_data, uint32_t a_size, uint32_t a_offset)
   {
     glNamedBufferSubData(m_rendererID, a_offset, a_size, a_data);
   }
 
-  void RT_VertexBuffer::Bind() const
+  void RT_BufferBase::Bind() const
   {
-    glBindBuffer(GL_ARRAY_BUFFER, m_rendererID);
+    glBindBuffer(OpenGLBufferType(GetType()), m_rendererID);
   }
 
-  BufferLayout const& RT_VertexBuffer::GetLayout() const
+  BufferLayout const& RT_BufferBase::GetLayout() const
   {
     return m_layout;
   }
 
-  void RT_VertexBuffer::SetLayout(BufferLayout const& a_layout)
+  void RT_BufferBase::SetLayout(BufferLayout const& a_layout)
   {
     m_layout = a_layout;
   }
 
-  uint32_t RT_VertexBuffer::GetSize() const
+  uint32_t RT_BufferBase::GetSize() const
   {
     return m_size;
   }
 
-  RendererID RT_VertexBuffer::GetRendererID() const
+  RendererID RT_BufferBase::GetRendererID() const
   {
     return m_rendererID;
+  }
+
+  //------------------------------------------------------------------------------------------------
+  // Vertex Buffer
+  //------------------------------------------------------------------------------------------------
+
+  BufferType RT_VertexBuffer::GetType() const
+  {
+    return BufferType::Vertex;
+  }
+
+  //------------------------------------------------------------------------------------------------
+  // Bindable Buffer
+  //------------------------------------------------------------------------------------------------
+  
+  void RT_IndexedBuffer::BindToPoint(RT_BindingPoint const & a_bp)
+  {
+    BSR_ASSERT(!CanBind(a_bp), "Incorrect buffer type / binding point matchup!");
+
+    //TODO do we need to bind the buffer first?
+    glBindBufferBase(OpenGLBufferType(GetType()), a_bp.GetID().Address(), m_rendererID);
+  }
+
+  //------------------------------------------------------------------------------------------------
+  // Uniform Buffer
+  //------------------------------------------------------------------------------------------------
+  
+  BufferType RT_UniformBuffer::GetType() const
+  {
+    return BufferType::Uniform;
+  }
+
+  bool RT_UniformBuffer::CanBind(RT_BindingPoint const& a_bp) const
+  {
+    return a_bp.GetID().Type() == StorageBlockType::SBT_Uniform;
+  }
+
+  //------------------------------------------------------------------------------------------------
+  // Shader storage Buffer
+  //------------------------------------------------------------------------------------------------
+
+  BufferType RT_ShaderStorageBuffer::GetType() const
+  {
+    return BufferType::ShaderStorage;
+  }
+
+  bool RT_ShaderStorageBuffer::CanBind(RT_BindingPoint const& a_bp) const
+  {
+    return a_bp.GetID().Type() == StorageBlockType::SBT_ShaderStorage;
   }
 
   //------------------------------------------------------------------------------------------------

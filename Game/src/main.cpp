@@ -6,6 +6,7 @@
 #include "RendererAPI.h"
 #include "Buffer.h"
 #include "VertexArray.h"
+#include "RT_GLProgram.h"
 
 #include "imgui.h"
 
@@ -35,15 +36,16 @@ public:
     m_vb = Engine::VertexBuffer::Create(verts, SIZEOF32(verts));
     m_vb->SetLayout(
       {
-        { Engine::ShaderDataType::Float3, "a_Position" }
+        { Engine::ShaderDataType::VEC3, "a_Position" }
       });
 
     m_ib = Engine::IndexBuffer::Create(indices, SIZEOF32(indices));
-    LOG_DEBUG("VertexBuffer: Ref ID: {}", m_vb->GetRefID().GetID());
+    //LOG_DEBUG("VertexBuffer: Ref ID: {}", m_vb->GetRefID().GetID());
     m_va = Engine::VertexArray::Create();
 
     m_va->AddVertexBuffer(m_vb);
-    //LOG_DEBUG("VertexArray: Renderer ID: {}, Ref ID: {}", m_va->GetRendererID(), m_va->GetRefID().GetID());
+
+    
   }
 
   void OnDetach() override

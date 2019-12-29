@@ -1,12 +1,5 @@
 //@group Core
 
-//Debug
-//#include <cstdlib>
-//#include <chrono>
-//#include "DgRNG_Global.h"
-//#include "Renderer.h"
-//End debug
-
 #include <exception>
 
 #include "MessageBus.h"

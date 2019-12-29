@@ -19,6 +19,18 @@ namespace Engine
 
     int maxSamples;
     float maxAnisotropy;
+
+    int maxVertexUniformBlocks;
+    int maxFragmentUniformBlocks;
+    int maxGeometryUniformBlocks;
+    int maxUniformBlockSize;
+    int maxUniformBufferBindings;
+
+    int maxVertexShaderStorageBlocks;
+    int maxFragmentShaderStorageBlocks;
+    int maxGeometryShaderStorageBlocks;
+    int maxShaderStorageBlockSize;
+    int maxShaderStorageBufferBindings;
   };
 
   class RendererAPI

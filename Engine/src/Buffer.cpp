@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include  "core_Log.h"
 #include "RenderThreadData.h"
+#include "ShaderUtils.h"
 #include "Serialize.h"
 
 namespace Engine 
@@ -16,60 +17,16 @@ namespace Engine
   BufferElement::BufferElement(ShaderDataType a_type, std::string const& a_name, bool a_normalized)
     : name(a_name)
     , type(a_type)
-    , size(ShaderDataTypeSize(type))
+    , size(SizeOfShaderDataType(type))
     , offset(0)
     , normalized(a_normalized)
   {
 
   }
 
-  ShaderDataType ConvertToShaderDataType(uint32_t a_val)
-  {
-    if (a_val < static_cast<uint32_t>(ShaderDataType::Bool))
-      return static_cast<ShaderDataType>(a_val);
-    return ShaderDataType::None;
-  }
-
-  uint32_t ShaderDataTypeSize(ShaderDataType a_type)
-  {
-    switch (a_type)
-    {
-      case ShaderDataType::Float:    return 4;
-      case ShaderDataType::Float2:   return 4 * 2;
-      case ShaderDataType::Float3:   return 4 * 3;
-      case ShaderDataType::Float4:   return 4 * 4;
-      case ShaderDataType::Mat3:     return 4 * 3 * 3;
-      case ShaderDataType::Mat4:     return 4 * 4 * 4;
-      case ShaderDataType::Int:      return 4;
-      case ShaderDataType::Int2:     return 4 * 2;
-      case ShaderDataType::Int3:     return 4 * 3;
-      case ShaderDataType::Int4:     return 4 * 4;
-      case ShaderDataType::Bool:     return 1;
-    }
-
-    BSR_ASSERT(false, "Unknown ShaderDataType!");
-    return 0;
-  }
-
   uint32_t BufferElement::GetComponentCount() const
   {
-    switch (type)
-    {
-      case ShaderDataType::Float:   return 1;
-      case ShaderDataType::Float2:  return 2;
-      case ShaderDataType::Float3:  return 3;
-      case ShaderDataType::Float4:  return 4;
-      case ShaderDataType::Mat3:    return 3 * 3;
-      case ShaderDataType::Mat4:    return 4 * 4;
-      case ShaderDataType::Int:     return 1;
-      case ShaderDataType::Int2:    return 2;
-      case ShaderDataType::Int3:    return 3;
-      case ShaderDataType::Int4:    return 4;
-      case ShaderDataType::Bool:    return 1;
-    }
-
-    BSR_ASSERT(false, "Unknown ShaderDataType!");
-    return 0;
+    return ::Engine::GetComponentCount(type);
   }
 
   size_t BufferElement::Size() const
@@ -99,7 +56,7 @@ namespace Engine
     uint32_t type32(0);
     pBuf = Core::Deserialize(pBuf, &name);
     pBuf = Core::Deserialize(pBuf, &type32);
-    type = ConvertToShaderDataType(type32);
+    type = uint_ToShaderDataType(type32);
     pBuf = Core::Deserialize(pBuf, &size);
     pBuf = Core::Deserialize(pBuf, &offset);
     pBuf = Core::Deserialize(pBuf, &normalized);
@@ -209,7 +166,7 @@ namespace Engine
 
   }
 
-  void VertexBuffer::Init(void* a_data, uint32_t a_size, VertexBufferUsage a_usage)
+  void VertexBuffer::Init(void* a_data, uint32_t a_size, BufferUsage a_usage)
   {
     uint8_t * data = (uint8_t*)RENDER_ALLOCATE(a_size);
     memcpy(data, a_data, a_size);
@@ -226,7 +183,7 @@ namespace Engine
       });
   }
 
-  void VertexBuffer::Init(uint32_t a_size, VertexBufferUsage a_usage)
+  void VertexBuffer::Init(uint32_t a_size, BufferUsage a_usage)
   {
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
@@ -239,27 +196,7 @@ namespace Engine
         ::Engine::RenderThreadData::Instance()->VBOs.insert(resID, vb);
       });
   }
-
-
-  Ref<VertexBuffer> VertexBuffer::Create(void* a_data,
-                                        uint32_t a_size,
-                                        VertexBufferUsage a_usage)
-  {
-    VertexBuffer * pVBO = new VertexBuffer();
-    Ref<VertexBuffer> ref(pVBO); // Need to do it this way to give the object a resource ID
-    pVBO->Init(a_data, a_size, a_usage);
-    return ref;
-  }
-
-  Ref<VertexBuffer> VertexBuffer::Create(uint32_t a_size,
-                                         VertexBufferUsage a_usage)
-  {
-    VertexBuffer* pVBO = new VertexBuffer();
-    Ref<VertexBuffer> ref(pVBO); // Need to do it this way to give the object a resource ID
-    pVBO->Init(a_size, a_usage);
-    return ref;
-  }
-
+  
   VertexBuffer::~VertexBuffer()
   {
     RenderState state = RenderState::Create();
@@ -268,13 +205,13 @@ namespace Engine
 
     RENDER_SUBMIT(state, [resID = GetRefID().GetID()]() mutable
       {
-        RT_VertexBuffer * pVB =  RenderThreadData::Instance()->VBOs.at(resID);
-        if (pVB == nullptr)
+        RT_VertexBuffer * pVBO =  RenderThreadData::Instance()->VBOs.at(resID);
+        if (pVBO == nullptr)
         {
           LOG_WARN("VertexBuffer::~VertexBuffer: RefID '{}' does not exist!", resID);
           return;
         }
-        pVB->Destroy();
+        pVBO->Destroy();
         ::Engine::RenderThreadData::Instance()->VBOs.erase(resID);
       });
   }
@@ -322,7 +259,7 @@ namespace Engine
 
   void VertexBuffer::SetLayout(BufferLayout const& a_layout)
   {
-    void * buffer = RENDER_ALLOCATE(a_layout.Size());
+    void * buffer = RENDER_ALLOCATE(static_cast<uint32_t>(a_layout.Size()));
     a_layout.Serialize(buffer);
 
     RenderState state = RenderState::Create();
@@ -340,6 +277,360 @@ namespace Engine
       BufferLayout layout;
       layout.Deserialize(buffer);
       pVBO->SetLayout(layout);
+    });
+  }
+
+  Ref<VertexBuffer> VertexBuffer::Create(void* a_data,
+                                         uint32_t a_size,
+                                         BufferUsage a_usage)
+  {
+    VertexBuffer* pVBO = new VertexBuffer();
+    Ref<VertexBuffer> ref(pVBO); // Need to do it this way to give the object a resource ID
+    pVBO->Init(a_data, a_size, a_usage);
+    return ref;
+  }
+
+  Ref<VertexBuffer> VertexBuffer::Create(uint32_t a_size,
+                                  BufferUsage a_usage)
+  {
+    VertexBuffer* pVBO = new VertexBuffer();
+    Ref<VertexBuffer> ref(pVBO); // Need to do it this way to give the object a resource ID
+    pVBO->Init(a_size, a_usage);
+    return ref;
+  }
+
+  //------------------------------------------------------------------------------------------------
+  // UniformBuffer
+  //------------------------------------------------------------------------------------------------
+
+  UniformBuffer::UniformBuffer()
+  {
+
+  }
+
+  void UniformBuffer::Init(void* a_data, uint32_t a_size, BufferUsage a_usage)
+  {
+    uint8_t* data = (uint8_t*)RENDER_ALLOCATE(a_size);
+    memcpy(data, a_data, a_size);
+
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), size = a_size, usage = a_usage, data]()
+    {
+      ::Engine::RT_UniformBuffer ub;
+      ub.Init(data, size, usage);
+      ::Engine::RenderThreadData::Instance()->UBOs.insert(resID, ub);
+    });
+  }
+
+  void UniformBuffer::Init(uint32_t a_size, BufferUsage a_usage)
+  {
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), size = a_size, usage = a_usage]()
+    {
+      ::Engine::RT_UniformBuffer ub;
+      ub.Init(size, usage);
+      ::Engine::RenderThreadData::Instance()->UBOs.insert(resID, ub);
+    });
+  }
+
+  UniformBuffer::~UniformBuffer()
+  {
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BufferDelete);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID()]() mutable
+    {
+      RT_UniformBuffer* pUBO =  RenderThreadData::Instance()->UBOs.at(resID);
+      if (pUBO == nullptr)
+      {
+        LOG_WARN("UniformBuffer::~UniformBuffer: RefID '{}' does not exist!", resID);
+        return;
+      }
+      pUBO->Destroy();
+      ::Engine::RenderThreadData::Instance()->UBOs.erase(resID);
+    });
+  }
+
+  void UniformBuffer::SetData(void* a_data, uint32_t a_size, uint32_t a_offset)
+  {
+    uint8_t* data = (uint8_t*)RENDER_ALLOCATE(a_size);
+    memcpy(data, a_data, a_size);
+
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BufferSetData);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), offset = a_offset, size = a_size, data]()
+    {
+      ::Engine::RT_UniformBuffer* pUBO = ::Engine::RenderThreadData::Instance()->UBOs.at(resID);
+      if (pUBO == nullptr)
+      {
+        LOG_WARN("UniformBuffer::SetData(): RefID '{}' does not exist!", resID);
+        return;
+      }
+
+      pUBO->SetData(data, size, offset);
+    });
+  }
+
+  void UniformBuffer::Bind() const
+  {
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BufferBind);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID()]()
+    {
+      ::Engine::RT_UniformBuffer* pUBO = ::Engine::RenderThreadData::Instance()->UBOs.at(resID);
+      if (pUBO == nullptr)
+      {
+        LOG_WARN("UniformBuffer::Bind(): RefID '{}' does not exist!", resID);
+        return;
+      }
+
+      pUBO->Bind();
+    });
+  }
+
+  void UniformBuffer::SetLayout(BufferLayout const& a_layout)
+  {
+    void* buffer = RENDER_ALLOCATE(static_cast<uint32_t>(a_layout.Size()));
+    a_layout.Serialize(buffer);
+
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BufferSetLayout);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), buffer = buffer]()
+    {
+      ::Engine::RT_UniformBuffer* pUBO = ::Engine::RenderThreadData::Instance()->UBOs.at(resID);
+      if (pUBO == nullptr)
+      {
+        LOG_WARN("UniformBuffer::SetLayout(): RefID '{}' does not exist!", resID);
+        return;
+      }
+      BufferLayout layout;
+      layout.Deserialize(buffer);
+      pUBO->SetLayout(layout);
+    });
+  }
+
+  Ref<UniformBuffer> UniformBuffer::Create(void* a_data,
+                                           uint32_t a_size,
+                                           BufferUsage a_usage)
+  {
+    UniformBuffer* pUBO = new UniformBuffer();
+    Ref<UniformBuffer> ref(pUBO); // Need to do it this way to give the object a resource ID
+    pUBO->Init(a_data, a_size, a_usage);
+    return ref;
+  }
+
+  Ref<UniformBuffer> UniformBuffer::Create(uint32_t a_size,
+                                           BufferUsage a_usage)
+  {
+    UniformBuffer* pUBO = new UniformBuffer();
+    Ref<UniformBuffer> ref(pUBO); // Need to do it this way to give the object a resource ID
+    pUBO->Init(a_size, a_usage);
+    return ref;
+  }
+
+  void UniformBuffer::Bind(Ref<BindingPoint> const& a_bp)
+  {
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::IndexedBufferBind);
+
+    RENDER_SUBMIT(state, [uboID = GetRefID().GetID(), bpID = a_bp->GetRefID().GetID()]()
+    {
+      ::Engine::RT_UniformBuffer* pUBO = ::Engine::RenderThreadData::Instance()->UBOs.at(uboID);
+      if (pUBO == nullptr)
+      {
+        LOG_WARN("UniformBuffer::SetLayout(): UBO RefID '{}' does not exist!", uboID);
+        return;
+      }
+
+      ::Engine::RT_BindingPoint* pBP = ::Engine::RenderThreadData::Instance()->bindingPoints.at(bpID);
+      if (pUBO == nullptr)
+      {
+        LOG_WARN("UniformBuffer::SetLayout(): BP RefID '{}' does not exist!", bpID);
+        return;
+      }
+      
+      pUBO->BindToPoint(*pBP);
+    });
+  }
+  
+  //------------------------------------------------------------------------------------------------
+  // ShaderStorageBuffer
+  //------------------------------------------------------------------------------------------------
+  ShaderStorageBuffer::ShaderStorageBuffer()
+  {
+
+  }
+
+  void ShaderStorageBuffer::Init(void* a_data, uint32_t a_size, BufferUsage a_usage)
+  {
+    uint8_t* data = (uint8_t*)RENDER_ALLOCATE(a_size);
+    memcpy(data, a_data, a_size);
+
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), size = a_size, usage = a_usage, data]()
+    {
+      ::Engine::RT_ShaderStorageBuffer ssb;
+      ssb.Init(data, size, usage);
+      ::Engine::RenderThreadData::Instance()->SSBOs.insert(resID, ssb);
+    });
+  }
+
+  void ShaderStorageBuffer::Init(uint32_t a_size, BufferUsage a_usage)
+  {
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BufferCreate);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), size = a_size, usage = a_usage]()
+    {
+      ::Engine::RT_ShaderStorageBuffer ssb;
+      ssb.Init(size, usage);
+      ::Engine::RenderThreadData::Instance()->SSBOs.insert(resID, ssb);
+    });
+  }
+
+  ShaderStorageBuffer::~ShaderStorageBuffer()
+  {
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BufferDelete);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID()]() mutable
+    {
+      RT_ShaderStorageBuffer* pSSBO =  RenderThreadData::Instance()->SSBOs.at(resID);
+      if (pSSBO == nullptr)
+      {
+        LOG_WARN("ShaderStorageBuffer::~ShaderStorageBuffer: RefID '{}' does not exist!", resID);
+        return;
+      }
+      pSSBO->Destroy();
+      ::Engine::RenderThreadData::Instance()->SSBOs.erase(resID);
+    });
+  }
+
+  void ShaderStorageBuffer::SetData(void* a_data, uint32_t a_size, uint32_t a_offset)
+  {
+    uint8_t* data = (uint8_t*)RENDER_ALLOCATE(a_size);
+    memcpy(data, a_data, a_size);
+
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BufferSetData);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), offset = a_offset, size = a_size, data]()
+    {
+      ::Engine::RT_ShaderStorageBuffer* pSSBO = ::Engine::RenderThreadData::Instance()->SSBOs.at(resID);
+      if (pSSBO == nullptr)
+      {
+        LOG_WARN("ShaderStorageBuffer::SetData(): RefID '{}' does not exist!", resID);
+        return;
+      }
+
+      pSSBO->SetData(data, size, offset);
+    });
+  }
+
+  void ShaderStorageBuffer::Bind() const
+  {
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BufferBind);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID()]()
+    {
+      ::Engine::RT_ShaderStorageBuffer* pSSBO = ::Engine::RenderThreadData::Instance()->SSBOs.at(resID);
+      if (pSSBO == nullptr)
+      {
+        LOG_WARN("ShaderStorageBuffer::Bind(): RefID '{}' does not exist!", resID);
+        return;
+      }
+
+      pSSBO->Bind();
+    });
+  }
+
+  void ShaderStorageBuffer::SetLayout(BufferLayout const& a_layout)
+  {
+    void* buffer = RENDER_ALLOCATE(static_cast<uint32_t>(a_layout.Size()));
+    a_layout.Serialize(buffer);
+
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::BufferSetLayout);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), buffer = buffer]()
+    {
+      ::Engine::RT_ShaderStorageBuffer* pSSBO = ::Engine::RenderThreadData::Instance()->SSBOs.at(resID);
+      if (pSSBO == nullptr)
+      {
+        LOG_WARN("ShaderStorageBuffer::SetLayout(): RefID '{}' does not exist!", resID);
+        return;
+      }
+      BufferLayout layout;
+      layout.Deserialize(buffer);
+      pSSBO->SetLayout(layout);
+    });
+  }
+
+  Ref<ShaderStorageBuffer> ShaderStorageBuffer::Create(void* a_data,
+                                           uint32_t a_size,
+                                           BufferUsage a_usage)
+  {
+    ShaderStorageBuffer* pSSBO = new ShaderStorageBuffer();
+    Ref<ShaderStorageBuffer> ref(pSSBO); // Need to do it this way to give the object a resource ID
+    pSSBO->Init(a_data, a_size, a_usage);
+    return ref;
+  }
+
+  Ref<ShaderStorageBuffer> ShaderStorageBuffer::Create(uint32_t a_size,
+                                           BufferUsage a_usage)
+  {
+    ShaderStorageBuffer* pSSBO = new ShaderStorageBuffer();
+    Ref<ShaderStorageBuffer> ref(pSSBO); // Need to do it this way to give the object a resource ID
+    pSSBO->Init(a_size, a_usage);
+    return ref;
+  }
+
+  void ShaderStorageBuffer::Bind(Ref<BindingPoint> const& a_bp)
+  {
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::IndexedBufferBind);
+
+    RENDER_SUBMIT(state, [uboID = GetRefID().GetID(), bpID = a_bp->GetRefID().GetID()]()
+    {
+      ::Engine::RT_ShaderStorageBuffer* pSSBO = ::Engine::RenderThreadData::Instance()->SSBOs.at(uboID);
+      if (pSSBO == nullptr)
+      {
+        LOG_WARN("ShaderStorageBuffer::SetLayout(): SSBO RefID '{}' does not exist!", uboID);
+        return;
+      }
+
+      ::Engine::RT_BindingPoint* pBP = ::Engine::RenderThreadData::Instance()->bindingPoints.at(bpID);
+      if (pSSBO == nullptr)
+      {
+        LOG_WARN("ShaderStorageBuffer::SetLayout(): BP RefID '{}' does not exist!", bpID);
+        return;
+      }
+      
+      pSSBO->BindToPoint(*pBP);
     });
   }
 

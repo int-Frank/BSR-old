@@ -5,6 +5,7 @@
 #include "Framework.h"
 #include "RendererAPI.h"
 #include "RenderThreadData.h"
+#include "RT_BindingPoint.h"
 #include "Renderer.h"
 
 #define OTHER(index) ((index + 1) % 2)
@@ -24,18 +25,12 @@ namespace Engine
     }
 
     RendererAPI::Init();
+    RT_BindingPoint::Init();
     RenderThreadData::Init();
     RenderThread::Instance()->RenderThreadInitFinished();
 
     while (!RenderThread::Instance()->ShouldExit())
     {
-      LOG_WARN("NEW PASS");
-      for (auto it = RenderThreadData::Instance()->VBOs.cbegin();
-          it != RenderThreadData::Instance()->VBOs.cend(); it++)
-      {
-        LOG_DEBUG("RefID: {}, RendererID: {}", it->first, it->second.GetRendererID());
-      }
-
       Renderer::Instance()->ExecuteRenderCommands();
       RenderThread::Instance()->RenderThreadFrameFinished();
     }
