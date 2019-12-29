@@ -5,6 +5,8 @@
 #include "RT_BindingPoint.h"
 #include "RenderThreadData.h"
 
+#include "core_Log.h"
+
 namespace Engine
 {
   //---------------------------------------------------------------------------------------------------
@@ -18,6 +20,16 @@ namespace Engine
 
   }
   
+  void ShaderStruct::Log(int a_indent)
+  {
+    std::string indent(a_indent * 2, ' ');
+    LOG_DEBUG("{}STRUCT - name: {}, size: {}, offset: {}", indent.c_str(), m_name.c_str(), m_size, m_offset);
+    LOG_DEBUG("{}[", indent.c_str());
+    for (auto field : m_fields)
+      field->Log(a_indent + 1);
+    LOG_DEBUG("{}]", indent.c_str());
+  }
+
   void ShaderStruct::AddField(ShaderUniformDeclaration* a_pField)
   {
     m_size += a_pField->GetSize();
@@ -69,7 +81,13 @@ namespace Engine
   {
 
   }
-  
+  void ShaderResourceDeclaration::Log(int a_indent)
+  {
+    std::string indent(a_indent * 2, ' ');
+    LOG_DEBUG("{}RESOURCE - name: {}, count: {}, reg: {}, type: {}", 
+      indent.c_str(), m_name.c_str(), m_count, m_register, ShaderResourceTypeToString(m_type).c_str());
+  }
+
   std::string const & ShaderResourceDeclaration::GetName() const
   {
     return m_name;
@@ -121,6 +139,18 @@ namespace Engine
     , m_offset(0)
   {
     m_size = m_pStruct->GetSize() * m_count;
+  }
+
+  void ShaderUniformDeclaration::Log(int a_indent)
+  {
+    std::string indent(a_indent * 2, ' ');
+    LOG_DEBUG("{}UNIFORM - name: {}, size: {}, count: {}, offset: {}, domain: {}, type: {}",
+      indent.c_str(), m_name.c_str(), m_size, m_count, m_offset, m_domain, ShaderDataTypeToString(m_type).c_str());
+    if (m_pStruct)
+    {
+      m_pStruct->Log(a_indent + 1);
+      LOG_DEBUG("{}END UNIFORM - name: {}", indent.c_str(), m_name.c_str());
+    }
   }
 
   std::string ShaderUniformDeclaration::GetName() const
@@ -200,6 +230,16 @@ namespace Engine
 
   }
 
+  void ShaderUniformDeclarationBuffer::Log(int a_indent)
+  {
+    std::string indent(a_indent * 2, ' ');
+    LOG_DEBUG("{}UNIFORM DECL BUFFER - name: {}, register: {}, size: {}, domain: {}",
+      indent.c_str(), m_name.c_str(), m_register, m_size, m_domain);
+    for (auto ptr : m_uniforms)
+      ptr->Log(a_indent + 1);
+    LOG_DEBUG("{}END UNIFORM DECL BUFFER - name: {}", indent.c_str(), m_name.c_str());
+  }
+
   void ShaderUniformDeclarationBuffer::PushUniform(ShaderUniformDeclaration* a_pUniform)
   {
     uint32_t offset = 0;
@@ -251,6 +291,11 @@ namespace Engine
   //---------------------------------------------------------------------------------------------------
   // Binding point
   //---------------------------------------------------------------------------------------------------
+  BindingPoint::BindingPoint()
+  {
+  
+  }
+
   Ref<BindingPoint> BindingPoint::Create(StorageBlockType a_type, ShaderDomain a_domain)
   {
     BindingPoint * pBP = new BindingPoint();

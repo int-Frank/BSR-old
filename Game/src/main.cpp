@@ -45,6 +45,8 @@ public:
 
     m_va->AddVertexBuffer(m_vb);
 
+    Engine::RT_GLProgram prog;
+    prog.InitFromFilePath("D:/dev/projects/BSR/Game/src/test_shader.glsl");
     
   }
 
@@ -55,7 +57,7 @@ public:
 
   void Update(float a_dt) override
   {
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
     //LOG_DEBUG("VertexArray: Renderer ID: {}, Ref ID: {}", m_va->GetRendererID(), m_va->GetRefID().GetID());
   }
 
@@ -81,6 +83,7 @@ public:
   {
     PushLayer(new GameLayer());
     LOG_TRACE("Game initialised!");
+    RequestQuit();
   }
 
   ~Game()

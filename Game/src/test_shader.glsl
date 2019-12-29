@@ -98,6 +98,8 @@ struct MyStruct_out2
   MyStruct_out1 out1;
 };
 
+uniform MyStruct_out2 struct_of_structs;
+
 //shader storage block
 layout(std430) buffer MyShaderStorageBlock
 {

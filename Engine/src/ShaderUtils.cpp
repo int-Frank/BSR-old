@@ -15,11 +15,11 @@ namespace Engine
     "uvec2", "uvec3", "uvec4",
     "vec2", "vec3", "vec4",
     "dvec2", "dvec3", "dvec4",
-    "mat2", "mat3", "mat4",
+    "mat2", "mat2x2", "mat3", "mat3x3", "mat4", "mat4x4",
     "mat2x3", "mat2x4",
     "mat3x2", "mat3x4",
     "mat4x2", "mat4x3",
-    "dmat2", "dmat3", "dmat4",
+    "dmat2", "dmat2x2", "dmat3", "dmat3x3", "dmat4", "dmat4x4",
     "dmat2x3", "dmat2x4",
     "dmat3x2", "dmat3x4",
     "dmat4x2", "dmat4x3",
@@ -52,10 +52,12 @@ namespace Engine
       case ShaderDataType::UVEC3:
         return 12;
       case ShaderDataType::DVEC2:
+      case ShaderDataType::VEC4:
       case ShaderDataType::BVEC4:
       case ShaderDataType::IVEC4:
       case ShaderDataType::UVEC4:
       case ShaderDataType::MAT2:
+      case ShaderDataType::MAT2x2:
         return 16;
       case ShaderDataType::DVEC3:
       case ShaderDataType::MAT2x3:
@@ -65,8 +67,10 @@ namespace Engine
       case ShaderDataType::MAT2x4:
       case ShaderDataType::MAT4x2:
       case ShaderDataType::DMAT2:
+      case ShaderDataType::DMAT2x2:
         return 32;
       case ShaderDataType::MAT3:
+      case ShaderDataType::MAT3x3:
         return 36;
       case ShaderDataType::MAT3x4:
       case ShaderDataType::MAT4x3:
@@ -74,33 +78,35 @@ namespace Engine
       case ShaderDataType::DMAT3x2:
         return 48;
       case ShaderDataType::MAT4:
+      case ShaderDataType::MAT4x4:
       case ShaderDataType::DMAT2x4:
       case ShaderDataType::DMAT4x2:
         return 64;
       case ShaderDataType::DMAT3:
+      case ShaderDataType::DMAT3x3:
         return 72;
       case ShaderDataType::DMAT3x4:
       case ShaderDataType::DMAT4x3:
         return 96;
       case ShaderDataType::DMAT4:
+      case ShaderDataType::DMAT4x4:
         return 128;
     }
     BSR_ASSERT(false, "Unrecognised type!");
     return 0;
   }
 
-  ShaderDataType StringToType(std::string const & a_type)
+  ShaderDataType StringToShaderDataType(std::string const & a_type)
   {
     for (uint32_t i = 1; i < static_cast<uint32_t>(ShaderDataType::STRUCT); i++)
     {
       if (a_type == std::string(ShaderDataType_strings[i]))
         return static_cast<ShaderDataType>(i);
     }
-    BSR_ASSERT(false, "Unrecognised type!");
     return ShaderDataType::NONE;
   }
 
-  std::string TypeToString(ShaderDataType a_type)
+  std::string ShaderDataTypeToString(ShaderDataType a_type)
   {
     return ShaderDataType_strings[static_cast<uint32_t>(a_type)];
   }
@@ -165,6 +171,8 @@ namespace Engine
       case ShaderDataType::DVEC4:
       case ShaderDataType::MAT2:
       case ShaderDataType::DMAT2:
+      case ShaderDataType::MAT2x2:
+      case ShaderDataType::DMAT2x2:
         return 4;
       case ShaderDataType::MAT2x3:
       case ShaderDataType::MAT3x2:
@@ -178,6 +186,8 @@ namespace Engine
         return 8;
       case ShaderDataType::MAT3:
       case ShaderDataType::DMAT3:
+      case ShaderDataType::MAT3x3:
+      case ShaderDataType::DMAT3x3:
         return 9;
       case ShaderDataType::MAT3x4:
       case ShaderDataType::MAT4x3:
@@ -186,6 +196,8 @@ namespace Engine
         return 12;
       case ShaderDataType::MAT4:
       case ShaderDataType::DMAT4:
+      case ShaderDataType::MAT4x4:
+      case ShaderDataType::DMAT4x4:
         return 16;
     }
     BSR_ASSERT(false, "Unrecognised type!");

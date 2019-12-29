@@ -21,6 +21,9 @@ namespace Engine
 
     ShaderStruct(std::string const &);
 
+    //DEBUG
+    void Log(int a_indent = 0);
+
     void AddField(ShaderUniformDeclaration*);
     void SetOffset(uint32_t);
     std::string const & GetName() const;
@@ -45,6 +48,9 @@ namespace Engine
     uint32_t GetCount() const;
     ShaderResourceType GetType() const;
 
+    //DEBUG
+    void Log(int a_indent = 0);
+
     void SetRegister(uint32_t);
 
   private:
@@ -59,8 +65,9 @@ namespace Engine
     friend class ShaderStruct;
     friend class ShaderUniformDeclarationBuffer;
   public:
-    
-  public:
+
+    //DEBUG
+    void Log(int a_indent = 0);
 
     ShaderUniformDeclaration(ShaderDomain, ShaderDataType, std::string name, uint32_t count = 1);
     ShaderUniformDeclaration(ShaderDomain, ShaderStruct*, std::string name, uint32_t count = 1);
@@ -110,6 +117,9 @@ namespace Engine
     uint32_t GetSize() const;
     ShaderDomain GetDomain() const;
     const ShaderUniformList& GetUniformDeclarations() const;
+
+    //DEBUG
+    void Log(int a_indent = 0);
 
     ShaderUniformDeclaration* FindUniform(std::string);
 

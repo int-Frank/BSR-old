@@ -1,5 +1,7 @@
 //@group Renderer
 
+#include <fstream>
+
 #include "glad/glad.h"
 
 #include "RT_GLProgram.h"
@@ -162,6 +164,7 @@ namespace Engine
 
   RT_GLProgram::RT_GLProgram()
     : m_rendererID(0)
+    , m_uniformBuffers{nullptr, nullptr, nullptr}
     , m_loaded(false)
   {
 
@@ -211,9 +214,27 @@ namespace Engine
     glUseProgram(0);
   }
 
-  bool RT_GLProgram::InitFromString(std::string const & a_source)
+  bool RT_GLProgram::InitFromString(std::string const& a_source)
   {
     return Load(a_source);
+  }
+
+  bool RT_GLProgram::InitFromFilePath(std::string const& a_filepath)
+  {
+    std::string content;
+    std::ifstream ifs(a_filepath);
+    if (ifs)
+    {
+      content.assign((std::istreambuf_iterator<char>(ifs)),
+                     (std::istreambuf_iterator<char>()));
+    }
+    else
+    {
+      LOG_WARN("Could not read shader file {0}", a_filepath.c_str());
+      return false;
+    }
+
+    return InitFromString(content);
   }
 
   bool RT_GLProgram::Load(std::string const& a_source)
@@ -222,11 +243,19 @@ namespace Engine
     SplitSource(a_source);
     Parse();
 
-    if (!CompileAndUploadShader())
-      return false;
+    if (m_uniformBuffers[0])
+      m_uniformBuffers[0]->Log();
+    if (m_uniformBuffers[1])
+      m_uniformBuffers[1]->Log();
 
-    ResolveUniforms();
-    ValidateUniforms();
+    for (auto ptr : m_structs)
+      ptr->Log();
+
+    //if (!CompileAndUploadShader())
+    //  return false;
+
+    //ResolveUniforms();
+    //ValidateUniforms();
 
     m_loaded = true;
     return m_loaded;
@@ -304,21 +333,17 @@ namespace Engine
       ShaderDataType dataType = StringToShaderDataType(type);
       if (dataType == ShaderDataType::NONE) //might be a previously defined struct
       {
-        bool found = false;
-        for (auto ptr : m_structs)
+        ShaderStruct * pStruct = FindStruct(type);
+        if (pStruct)
+          field = new ShaderUniformDeclaration(a_domain, pStruct, name, count);
+        else
         {
-          if (name == ptr->GetName())
-          {
-            field = new ShaderUniformDeclaration(a_domain, ptr, name, count);
-            break;
-          }
-        }
-        if (field == nullptr)
           LOG_WARN("Unrecognised field '{}' in struct '{}' while parsing glsl struct.", type.c_str(), name.c_str());
-        continue;
+          continue;
+        }
       }
       else
-        ShaderUniformDeclaration* field = new ShaderUniformDeclaration(a_domain, StringToShaderDataType(type), name, count);
+        field = new ShaderUniformDeclaration(a_domain, StringToShaderDataType(type), name, count);
       uniformStruct->AddField(field);
     }
     m_structs.push_back(uniformStruct);
@@ -361,16 +386,31 @@ namespace Engine
       if (t == ShaderDataType::NONE)
       {
         ShaderStruct* s = FindStruct(typeString);
-        BSR_ASSERT(s, "Uniform is an unrecognised type!");
+        if (!s)
+        {
+          LOG_WARN("Struct '{}' not found. Could be a uniform or SS block.", typeString.c_str());
+          return;
+        }
+        //BSR_ASSERT(s, "Uniform is an unrecognised type!");
         declaration = new ShaderUniformDeclaration(a_domain, s, name, count);
       }
       else
         declaration = new ShaderUniformDeclaration(a_domain, t, name, count);
 
-      if (!m_uniformBuffers[a_domain])
+      if (m_uniformBuffers[a_domain] == nullptr)
         m_uniformBuffers[a_domain] = new ShaderUniformDeclarationBuffer("", a_domain);
       m_uniformBuffers[a_domain]->PushUniform(declaration);      
     }
+  }
+
+  ShaderStruct * RT_GLProgram::FindStruct(std::string const& a_name)
+  {
+    for (ShaderStruct * ptr : m_structs)
+    {
+      if (a_name == ptr->GetName())
+        return ptr;
+    }
+    return nullptr;
   }
 
   bool RT_GLProgram::CompileAndUploadShader()
@@ -451,7 +491,7 @@ namespace Engine
 
   void RT_GLProgram::ResolveUniforms()
   {
-    glUseProgram(m_rendererID);
+    /*glUseProgram(m_rendererID);
 
     for (int i = 0; i < SD_COUNT; i++)
     {
@@ -502,7 +542,7 @@ namespace Engine
         UploadUniformIntArray(resource->GetName(), samplers, count);
         delete[] samplers;
       }
-    }
+    }*/
   }
 
   void RT_GLProgram::ValidateUniforms()
