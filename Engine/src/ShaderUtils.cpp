@@ -41,7 +41,7 @@ namespace Engine
 
   static ShaderDataTypeData const SDT_data[] = 
   {
-   //      Type           |         Class            |      Base type             |      string      |cc | matrix column type  |    matrix row type      |ubs |uba |uss                  |usa      
+    //     Type           |         Class            |      Base type             |      string      |cc | matrix column type  |    matrix row type      |ubs |uba |uss                  |usa      
     {ShaderDataType::NONE,    ShaderDataClass::None,    ShaderDataBaseType::None,     "Invalid Type", 0,  ShaderDataType::NONE,   ShaderDataType::NONE,   0,   0,   0,                    0},
     {ShaderDataType::BOOL,    ShaderDataClass::Scalar,  ShaderDataBaseType::Bool,     "bool",         1,  ShaderDataType::NONE,   ShaderDataType::NONE,   S1,  V4,  S1,                   V4},
     {ShaderDataType::INT,     ShaderDataClass::Scalar,  ShaderDataBaseType::Int,      "int",          1,  ShaderDataType::NONE,   ShaderDataType::NONE,   S1,  V4,  S1,                   V4},
