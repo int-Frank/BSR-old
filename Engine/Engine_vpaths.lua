@@ -29,6 +29,8 @@ vpaths
     "D:/dev/projects/BSR/Engine/src/Shader.h",
     "D:/dev/projects/BSR/Engine/src/ShaderUniform.cpp",
     "D:/dev/projects/BSR/Engine/src/ShaderUniform.h",
+    "D:/dev/projects/BSR/Engine/src/ShaderUtils.cpp",
+    "D:/dev/projects/BSR/Engine/src/ShaderUtils.h",
     "D:/dev/projects/BSR/Engine/src/Texture.h",
     "D:/dev/projects/BSR/Engine/src/VertexArray.cpp",
     "D:/dev/projects/BSR/Engine/src/VertexArray.h"
@@ -94,11 +96,13 @@ vpaths
     "D:/dev/projects/BSR/Engine/src/RenderThread.h",
     "D:/dev/projects/BSR/Engine/src/RenderThreadData.cpp",
     "D:/dev/projects/BSR/Engine/src/RenderThreadData.h",
+    "D:/dev/projects/BSR/Engine/src/RT_BindingPoint.cpp",
+    "D:/dev/projects/BSR/Engine/src/RT_BindingPoint.h",
     "D:/dev/projects/BSR/Engine/src/RT_Buffer.cpp",
-    "D:/dev/projects/BSR/Engine/src/RT_Buffer.h"
-  },
-  ["NO_GROUP"] =
-  {
-    "D:/dev/projects/BSR/Engine/src/UpdateRecord.h"
+    "D:/dev/projects/BSR/Engine/src/RT_Buffer.h",
+    "D:/dev/projects/BSR/Engine/src/RT_RendererProgram.cpp",
+    "D:/dev/projects/BSR/Engine/src/RT_RendererProgram.h",
+    "D:/dev/projects/BSR/Engine/src/RT_VertexArray.cpp",
+    "D:/dev/projects/BSR/Engine/src/RT_VertexArray.h"
   }
 }

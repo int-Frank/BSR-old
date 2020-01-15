@@ -1,3 +1,5 @@
+//@group Renderer/RenderThread
+
 #ifndef RT_BINDINGPOINT_H
 #define RT_BINDINGPOINT_H
 
@@ -54,7 +56,7 @@ namespace Engine
       uint16_t count;
     };
 
-    static Domain s_addresses[SBT_COUNT][ShaderDomain::SD_COUNT];
+    static Domain s_addresses[SBT32(COUNT)][SD32(COUNT)];
 
   private:
     BindingPointID  m_bindingIndex;

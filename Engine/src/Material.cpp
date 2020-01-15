@@ -1,4 +1,4 @@
-////@group Renderer
+//@group Renderer
 //
 //#include "Material.h"
 //#include "Message.h"

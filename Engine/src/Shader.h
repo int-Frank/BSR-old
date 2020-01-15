@@ -1,4 +1,4 @@
-////@group Renderer
+//@group Renderer
 //
 //#ifndef EN_SHADER_H
 //#define EN_SHADER_H

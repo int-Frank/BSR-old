@@ -1,7 +1,18 @@
+
+#include <cstring>
+#include <stdint.h>
+
 #include "Serialize.h"
 
 namespace Core
 {
+  template<>
+  void* Serialize<byte>(void* a_dest, byte const* a_ptr, size_t a_count)
+  {
+    memcpy(a_dest, a_ptr, a_count);
+    return AdvancePtr(a_dest, a_count);
+  }
+
   template<>
   uint32_t SerializedSize<std::string>(std::string const& a_str)
   {

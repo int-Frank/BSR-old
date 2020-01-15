@@ -7,7 +7,7 @@
 #include "RendererAPI.h"
 #include "RT_Buffer.h"
 #include "RT_VertexArray.h"
-#include "RT_GLProgram.h"
+#include "RT_RendererProgram.h"
 #include "RT_BindingPoint.h"
 #include "ResourceID.h"
 

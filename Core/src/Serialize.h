@@ -1,8 +1,6 @@
 #ifndef SERIALIZE_H
 #define SERIALIZE_H
 
-#include <cstring>
-#include <stdint.h>
 #include <string>
 #include <type_traits>
 #include <new>
@@ -27,6 +25,9 @@ namespace Core
 
     return pOut;
   }
+
+  template<>
+  void* Serialize<byte>(void* dest, byte const* ptr, size_t count);
 
   template<typename T>
   void const* Deserialize(void const * a_src, T * a_out, size_t a_count = 1)

@@ -1,7 +1,7 @@
 //@group Renderer
 
-#ifndef SHANDERUNIFORM_H
-#define SHANDERUNIFORM_H
+#ifndef SHADERUNIFORM_H
+#define SHADERUNIFORM_H
 
 #include <string>
 #include <stdint.h>
@@ -10,6 +10,8 @@
 #include "Memory.h"
 #include "Resource.h"
 #include "ShaderUtils.h"
+
+#define BIT(x) (1 << x)
 
 namespace Engine
 {
@@ -36,6 +38,46 @@ namespace Engine
     Dg::DynamicArray<ShaderUniformDeclaration*> m_fields;
     uint32_t m_size;
     uint32_t m_offset; //offset in the buffer to where the uniform is kept
+  };
+
+  //A data type of STRUCT will just be padding. This can be used 
+  //to pad out the front and back of a struct.
+  class std140ItemDeclaration
+  {
+  public:
+
+    std140ItemDeclaration(ShaderDataType, uint32_t count, MatrixLayout layout = MatrixLayout::ColumnMajor);
+    void * CopyToBuffer(void * buffer, void const * data) const;
+
+    void SetBaseAlignment(uint32_t offset);
+    void SetFrontPadding(uint32_t padding);
+
+    ShaderDataType Type() const;
+
+    uint32_t Stride() const;
+    uint32_t Count() const;
+    uint32_t FrontPadding() const;
+
+  private:
+
+    ShaderDataType  const m_type;  //Cannot be struct
+    uint32_t        const m_count;
+    MatrixLayout    const m_matLayout;
+
+    uint32_t              m_frontPadding;
+  };
+
+  //Matrices will be column-major
+  class std140UniformBlock
+  {
+  public:
+
+    void Push(std140ItemDeclaration const&);
+    void * OutputNext(void *);
+
+    uint32_t Size();
+
+  private:
   };
 
   class ShaderResourceDeclaration

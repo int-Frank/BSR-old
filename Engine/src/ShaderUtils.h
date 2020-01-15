@@ -5,10 +5,15 @@
 #include <string>
 #include <stdint.h>
 
+#define SD32(x) static_cast<uint32_t>(ShaderDomain::x)
+#define SDT32(x) static_cast<uint32_t>(ShaderDataType::x)
+#define SRT32(x) static_cast<uint32_t>(ShaderResourceType::x)
+#define SBT32(x) static_cast<uint32_t>(StorageBlockType::x)
+
 namespace Engine
 {
   //------------------------------------------------------------------------------------
-  // enums...
+  // Generic ...
   //------------------------------------------------------------------------------------
   enum class ShaderDataType : uint32_t
   {
@@ -37,6 +42,31 @@ namespace Engine
     STRUCT
   };
 
+  enum class ShaderDataClass : uint32_t
+  {
+    None,
+    Scalar,
+    Vector,
+    Matrix,
+    Struct
+  };
+
+  enum class MatrixLayout : uint32_t
+  {
+    RowMajor,
+    ColumnMajor
+  };
+
+  enum class ShaderDataBaseType : uint32_t
+  {
+    None,
+    Bool,
+    Int,
+    UInt,
+    Float,
+    Double
+  };
+
   enum class ShaderResourceType : uint32_t
   {
     NONE        = 0,
@@ -44,34 +74,54 @@ namespace Engine
     TEXTURECUBE
   };
 
-  enum ShaderDomain : int
+  enum class ShaderDomain : uint32_t
   {
-    SD_INVALID    = -1,
-    SD_Vertex     = 0,
-    SD_Fragment   = 1,
-    SD_Geometry   = 2,
-    SD_COUNT
+    INVALID    = 0xFFFFFFFF,
+    Vertex     = 0,
+    Fragment   = 1,
+    Geometry   = 2,
+    COUNT
   };
 
-  enum StorageBlockType
+  enum class StorageBlockType : uint32_t
   {
-    SBT_Uniform,
-    SBT_ShaderStorage,
-    SBT_COUNT
+    Uniform,
+    ShaderStorage,
+    COUNT
   };
 
-  //------------------------------------------------------------------------------------
-  // Helper functions
-  //------------------------------------------------------------------------------------
 
-  uint32_t SizeOfShaderDataType(ShaderDataType);
   ShaderDataType StringToShaderDataType(std::string const&);
   std::string ShaderDataTypeToString(ShaderDataType);
   ShaderDataType uint_ToShaderDataType(uint32_t);
   uint32_t GetComponentCount(ShaderDataType);
+  uint32_t SizeOfShaderDataType(ShaderDataType);
+
+  ShaderDataType GetRowVectorFromMatrix(ShaderDataType);
+  ShaderDataType GetColumnVectorFromMatrix(ShaderDataType);
+
+  uint32_t std140BaseAlignmentSingle(ShaderDataType);
+  uint32_t std140BaseAlignmentArray(ShaderDataType);
+  uint32_t std140StrideSingle(ShaderDataType, MatrixLayout layout = MatrixLayout::ColumnMajor);
+  uint32_t std140StrideArray(ShaderDataType, MatrixLayout layout = MatrixLayout::ColumnMajor);
+
+  ShaderDataClass GetShaderDataClass(ShaderDataType);
+  ShaderDataBaseType GetShaderDataBaseType(ShaderDataType);
+
+  uint32_t SizeOfShaderDataBaseType(ShaderDataBaseType);
 
   ShaderResourceType StringToShaderResourceType(std::string const&);
   std::string ShaderResourceTypeToString(ShaderResourceType);
+
+  //------------------------------------------------------------------------------------
+  // OpenGL specific
+  //------------------------------------------------------------------------------------
+
+  typedef unsigned int GLenum;
+
+  GLenum ShaderDataTypeToOpenGLType(ShaderDataType);
+  GLenum ShaderDataBaseTypeToOpenGLType(ShaderDataBaseType);
+
 }
 
 #endif

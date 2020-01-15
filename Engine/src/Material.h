@@ -1,4 +1,4 @@
-////@group Renderer
+//@group Renderer
 //
 //#ifndef MATERIAL_H
 //#define MATERIAL_H

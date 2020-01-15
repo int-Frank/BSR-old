@@ -39,7 +39,7 @@ namespace Engine
 
   public:
     static void Init();
-    static void Shutdown();
+    static void ShutDown();
 
     static void Clear();
     static void Clear(float r, float g, float b, float a);

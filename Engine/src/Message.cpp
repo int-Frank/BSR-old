@@ -223,7 +223,6 @@ namespace Engine
     return sze;
   }
 
-  //TODO This needs to be a deep copy on the TBUF memory heap
   TRef<Message> Message_Command::CloneAsTRef() const
   {
     TRef<Message_Command> cpy = TRef<Message_Command>::MakeCopy(this);

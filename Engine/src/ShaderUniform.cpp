@@ -6,11 +6,16 @@
 #include "RenderThreadData.h"
 
 #include "core_Log.h"
+#include "DgMath.h"
+#include "core_utils.h"
+#include "Serialize.h"
+
+#define ALIGN Dg::ForwardAlign<uint32_t>
 
 namespace Engine
 {
   //---------------------------------------------------------------------------------------------------
-  // ShanderStruct
+  // ShaderStruct
   //---------------------------------------------------------------------------------------------------
   ShaderStruct::ShaderStruct(std::string const & a_name)
     : m_name(a_name)
@@ -69,6 +74,133 @@ namespace Engine
   }
 
   //---------------------------------------------------------------------------------------------------
+  // std140ItemDeclaration
+  //---------------------------------------------------------------------------------------------------
+
+  std140ItemDeclaration::std140ItemDeclaration(ShaderDataType a_type,
+                                               uint32_t a_count,
+                                               MatrixLayout a_layout)
+    : m_type(a_type)
+    , m_count(a_count)
+    , m_matLayout(a_layout)
+    , m_frontPadding(0)
+  {
+    BSR_ASSERT(a_type != ShaderDataType::NONE, "");
+  }
+
+  void * std140ItemDeclaration::CopyToBuffer(void * a_buffer, void const * a_data) const
+  {
+    BSR_ASSERT(m_type != ShaderDataType::NONE, "");
+
+    if (m_count == 0)
+      return a_buffer;
+
+    //align first
+    void * buf = Core::AdvancePtr(a_buffer, m_frontPadding);
+
+    //copy data
+    if (m_type == ShaderDataType::STRUCT)
+      return buf; //It's just padding
+
+    uint32_t dataSize = 0;
+    uint32_t padding = 0;
+    uint32_t count = 0;
+
+    ShaderDataBaseType baseType = GetShaderDataBaseType(m_type);
+    uint32_t baseTypeSize = SizeOfShaderDataBaseType(baseType);
+
+    if (GetShaderDataClass(m_type) == ShaderDataClass::Matrix)
+    {
+      ShaderDataType rowType = GetRowVectorFromMatrix(m_type);
+      ShaderDataType columnType = GetColumnVectorFromMatrix(m_type);
+      uint32_t nRowElements = GetComponentCount(rowType);
+      uint32_t nColumnElements = GetComponentCount(columnType);
+
+      if (m_matLayout == MatrixLayout::RowMajor)
+      {
+        count = m_count * nColumnElements; 
+        dataSize = nRowElements * baseTypeSize;
+        uint32_t stride = std140StrideArray(rowType);
+        padding = stride - dataSize;
+      }
+      else
+      {
+        count = m_count * nRowElements;
+        dataSize = nColumnElements * baseTypeSize;
+        uint32_t stride = std140StrideArray(columnType);
+        padding = stride - dataSize;
+      }
+    }
+    else
+    {
+      uint32_t nElements = GetComponentCount(m_type);
+      dataSize = nElements * baseTypeSize;
+      uint32_t stride(0);
+      if (m_count == 1)
+        stride = std140StrideSingle(m_type);
+      else
+        stride = std140StrideArray(m_type);
+      padding = stride - dataSize;
+    }
+
+    byte const * pSrc = static_cast<byte const *>(a_data);
+    for (uint32_t c = 0; c < count; c++)
+    {
+      buf = Core::Serialize<byte>(buf, pSrc, dataSize);
+      void* buf = Core::AdvancePtr(buf, padding);
+    }
+
+    return buf;
+  }
+
+  uint32_t std140ItemDeclaration::Count() const
+  {
+    return m_count;
+  }
+
+  ShaderDataType std140ItemDeclaration::Type() const
+  {
+    return m_type;
+  }
+
+  void std140ItemDeclaration::SetBaseAlignment(uint32_t a_beginOffset)
+  {
+    BSR_ASSERT(m_type != ShaderDataType::STRUCT, "Cannot set the base alignment of a struct! Use 'SetPadding()' instead");
+
+    uint32_t alignment(0);
+    if (m_count == 1)
+      alignment = std140BaseAlignmentSingle(m_type);
+    else
+      alignment = std140BaseAlignmentSingle(m_type);
+    uint32_t offset = ALIGN(a_beginOffset, alignment);
+    m_frontPadding = offset - a_beginOffset;
+  }
+
+  void std140ItemDeclaration::SetFrontPadding(uint32_t a_padding)
+  {
+    BSR_ASSERT(m_type == ShaderDataType::STRUCT, "Can only set padding of a STRUCT type!");
+    m_frontPadding = a_padding;
+  }
+
+  uint32_t std140ItemDeclaration::Stride() const
+  {
+    if (m_count == 1)
+      return std140StrideSingle(m_type);
+    return std140StrideArray(m_type);
+  }
+
+  uint32_t std140ItemDeclaration::FrontPadding() const
+  {
+    return m_frontPadding;
+  }
+
+  //---------------------------------------------------------------------------------------------------
+  // std140BlockDeclaration
+  //---------------------------------------------------------------------------------------------------
+
+
+
+  //---------------------------------------------------------------------------------------------------
   // ShaderResourceDeclaration
   //---------------------------------------------------------------------------------------------------
   ShaderResourceDeclaration::ShaderResourceDeclaration(ShaderResourceType a_type,
@@ -123,7 +255,10 @@ namespace Engine
     , m_pStruct(nullptr)
     , m_offset(0)
   {
-    m_size = SizeOfShaderDataType(m_type) * m_count;
+    ShaderDataBaseType baseType = GetShaderDataBaseType(m_type);
+    uint32_t baseTypeSize = SizeOfShaderDataBaseType(baseType);
+    uint32_t nElements = GetComponentCount(m_type);
+    m_size = baseTypeSize * nElements * a_count;
   }
   
   ShaderUniformDeclaration::ShaderUniformDeclaration(ShaderDomain a_domain, 
@@ -145,7 +280,7 @@ namespace Engine
   {
     std::string indent(a_indent * 2, ' ');
     LOG_DEBUG("{}UNIFORM - name: {}, size: {}, count: {}, offset: {}, domain: {}, type: {}",
-      indent.c_str(), m_name.c_str(), m_size, m_count, m_offset, m_domain, ShaderDataTypeToString(m_type).c_str());
+      indent.c_str(), m_name.c_str(), m_size, m_count, m_offset, static_cast<uint32_t>(m_domain), ShaderDataTypeToString(m_type).c_str());
     if (m_pStruct)
     {
       m_pStruct->Log(a_indent + 1);
@@ -234,7 +369,7 @@ namespace Engine
   {
     std::string indent(a_indent * 2, ' ');
     LOG_DEBUG("{}UNIFORM DECL BUFFER - name: {}, register: {}, size: {}, domain: {}",
-      indent.c_str(), m_name.c_str(), m_register, m_size, m_domain);
+      indent.c_str(), m_name.c_str(), m_register, m_size, static_cast<uint32_t>(m_domain));
     for (auto ptr : m_uniforms)
       ptr->Log(a_indent + 1);
     LOG_DEBUG("{}END UNIFORM DECL BUFFER - name: {}", indent.c_str(), m_name.c_str());

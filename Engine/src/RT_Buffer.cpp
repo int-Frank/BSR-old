@@ -141,7 +141,7 @@ namespace Engine
 
   bool RT_UniformBuffer::CanBind(RT_BindingPoint const& a_bp) const
   {
-    return a_bp.GetID().Type() == StorageBlockType::SBT_Uniform;
+    return a_bp.GetID().Type() == StorageBlockType::Uniform;
   }
 
   //------------------------------------------------------------------------------------------------
@@ -155,7 +155,7 @@ namespace Engine
 
   bool RT_ShaderStorageBuffer::CanBind(RT_BindingPoint const& a_bp) const
   {
-    return a_bp.GetID().Type() == StorageBlockType::SBT_ShaderStorage;
+    return a_bp.GetID().Type() == StorageBlockType::ShaderStorage;
   }
 
   //------------------------------------------------------------------------------------------------

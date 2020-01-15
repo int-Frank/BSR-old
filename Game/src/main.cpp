@@ -6,7 +6,7 @@
 #include "RendererAPI.h"
 #include "Buffer.h"
 #include "VertexArray.h"
-#include "RT_GLProgram.h"
+#include "RT_RendererProgram.h"
 
 #include "imgui.h"
 
@@ -45,7 +45,7 @@ public:
 
     m_va->AddVertexBuffer(m_vb);
 
-    Engine::RT_GLProgram prog;
+    Engine::RT_RendererProgram prog;
     prog.InitFromFilePath("D:/dev/projects/BSR/Game/src/test_shader.glsl");
     
   }

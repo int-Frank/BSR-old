@@ -34,9 +34,13 @@ namespace Engine
       Renderer::Instance()->ExecuteRenderCommands();
       RenderThread::Instance()->RenderThreadFrameFinished();
     }
+
+    RenderThreadData::ShutDown();
+    RendererAPI::ShutDown();
+
     if (Framework::Instance()->GetGraphicsContext()->ShutDown() != Core::ErrorCode::EC_None)
       LOG_ERROR("Trouble shutting down the rendering context!!");
-    RenderThreadData::ShutDown();
+
     RenderThread::Instance()->RenderThreadShutDownFinished();
   }
 

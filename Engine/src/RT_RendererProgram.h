@@ -1,5 +1,7 @@
-#ifndef RT_GLPROGRAM_H
-#define RT_GLPROGRAM_H
+//@group Renderer/RenderThread
+
+#ifndef RT_RENDERERPROGRAM_H
+#define RT_RENDERERPROGRAM_H
 
 #include <string>
 #include <stdint.h>
@@ -13,12 +15,12 @@ namespace Engine
 {
   class RT_BindingPoint;
 
-  class RT_GLProgram
+  class RT_RendererProgram
   {
   public:
 
-    RT_GLProgram();
-    ~RT_GLProgram();
+    RT_RendererProgram();
+    ~RT_RendererProgram();
 
     bool InitFromString(std::string const &);
     bool InitFromFilePath(std::string const &);
@@ -92,8 +94,8 @@ namespace Engine
     bool m_loaded;
 
     std::string m_name;
-    std::string m_shaderSource[SD_COUNT];
-    ShaderUniformDeclarationBuffer * m_uniformBuffers[SD_COUNT];
+    std::string m_shaderSource[static_cast<uint32_t>(ShaderDomain::COUNT)];
+    ShaderUniformDeclarationBuffer * m_uniformBuffers[static_cast<uint32_t>(ShaderDomain::COUNT)];
     ShaderResourceList m_resources;
     ShaderStructList m_structs;
 

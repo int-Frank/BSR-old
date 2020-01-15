@@ -1,10 +1,10 @@
-//@group Renderer
+//@group Renderer/RenderThread
 
 #include <fstream>
 
 #include "glad/glad.h"
 
-#include "RT_GLProgram.h"
+#include "RT_RendererProgram.h"
 #include "core_ErrorCodes.h"
 #include "core_Log.h"
 #include "core_Assert.h"
@@ -119,50 +119,50 @@ namespace Engine
   {
     switch (a_index)
     {
-      case static_cast<uint32_t>(SD_Vertex):
+      case static_cast<uint32_t>(ShaderDomain::Vertex):
         return GL_VERTEX_SHADER;
-      case static_cast<uint32_t>(SD_Fragment):
+      case static_cast<uint32_t>(ShaderDomain::Fragment):
         return GL_FRAGMENT_SHADER;
-      case static_cast<uint32_t>(SD_Geometry):
+      case static_cast<uint32_t>(ShaderDomain::Geometry):
         return GL_GEOMETRY_SHADER;
     }
     BSR_ASSERT(false, "Shader index not recognised!");
     return 0xFFFFFFFF;
   }
 
-  static int GetShaderIndex(uint32_t a_shaderType)
+  static uint32_t GetShaderIndex(uint32_t a_shaderType)
   {
     switch (a_shaderType)
     {
       case GL_VERTEX_SHADER:
-        return static_cast<uint32_t>(SD_Vertex);
+        return static_cast<uint32_t>(ShaderDomain::Vertex);
       case GL_FRAGMENT_SHADER:
-        return static_cast<uint32_t>(SD_Fragment);
+        return static_cast<uint32_t>(ShaderDomain::Fragment);
       case GL_GEOMETRY_SHADER:
-        return static_cast<uint32_t>(SD_Geometry);
+        return static_cast<uint32_t>(ShaderDomain::Geometry);
     }
     BSR_ASSERT(false, "Shader type not recognised!");
-    return SD_INVALID;
+    return static_cast<uint32_t>(ShaderDomain::INVALID);
   }
 
-  static int GetShaderIndex(std::string const& a_shaderType)
+  static uint32_t GetShaderIndex(std::string const& a_shaderType)
   {
     if (a_shaderType == "vertex")
-      return SD_Vertex;
+      return static_cast<uint32_t>(ShaderDomain::Vertex);
     if (a_shaderType == "fragment")
-      return SD_Fragment;
+      return static_cast<uint32_t>(ShaderDomain::Fragment);
     if (a_shaderType == "geometry")
-      return SD_Geometry;
+      return static_cast<uint32_t>(ShaderDomain::Geometry);
 
     BSR_ASSERT(false, "Shader type not recognised!");
-    return SD_INVALID;
+    return static_cast<uint32_t>(ShaderDomain::INVALID);
   }
 
   //--------------------------------------------------------------------------------------------------
-  // RT_GLProgram
+  // RT_RendererProgram
   //--------------------------------------------------------------------------------------------------
 
-  RT_GLProgram::RT_GLProgram()
+  RT_RendererProgram::RT_RendererProgram()
     : m_rendererID(0)
     , m_uniformBuffers{nullptr, nullptr, nullptr}
     , m_loaded(false)
@@ -170,19 +170,19 @@ namespace Engine
 
   }
 
-  RT_GLProgram::~RT_GLProgram()
+  RT_RendererProgram::~RT_RendererProgram()
   {
     
   }
 
-  void RT_GLProgram::Destroy()
+  void RT_RendererProgram::Destroy()
   {
     if (m_loaded)
     {
       glDeleteProgram(m_rendererID);
       m_rendererID = 0;
 
-      for (int i = 0; i < SD_COUNT; i++)
+      for (int i = 0; i < SD32(COUNT); i++)
       {
         delete m_uniformBuffers[i];
         m_uniformBuffers[i] = nullptr;
@@ -203,23 +203,23 @@ namespace Engine
     }
   }
 
-  void RT_GLProgram::Bind() const
+  void RT_RendererProgram::Bind() const
   {
     if (m_loaded)
       glUseProgram(m_rendererID);
   }
 
-  void RT_GLProgram::Unbind() const
+  void RT_RendererProgram::Unbind() const
   {
     glUseProgram(0);
   }
 
-  bool RT_GLProgram::InitFromString(std::string const& a_source)
+  bool RT_RendererProgram::InitFromString(std::string const& a_source)
   {
     return Load(a_source);
   }
 
-  bool RT_GLProgram::InitFromFilePath(std::string const& a_filepath)
+  bool RT_RendererProgram::InitFromFilePath(std::string const& a_filepath)
   {
     std::string content;
     std::ifstream ifs(a_filepath);
@@ -237,7 +237,7 @@ namespace Engine
     return InitFromString(content);
   }
 
-  bool RT_GLProgram::Load(std::string const& a_source)
+  bool RT_RendererProgram::Load(std::string const& a_source)
   {
     Destroy();
     SplitSource(a_source);
@@ -261,7 +261,7 @@ namespace Engine
     return m_loaded;
   }
 
-  void RT_GLProgram::SplitSource(std::string const & a_source)
+  void RT_RendererProgram::SplitSource(std::string const & a_source)
   {
     const char* typeToken = "//@type";
     size_t typeTokenLength = strlen(typeToken);
@@ -272,8 +272,8 @@ namespace Engine
       BSR_ASSERT(eol != std::string::npos, "Syntax error");
       size_t begin = pos + typeTokenLength + 1;
       std::string type = a_source.substr(begin, eol - begin);
-      int shaderIndex = GetShaderIndex(type);
-      BSR_ASSERT(shaderIndex != SD_INVALID, "Invalid shader type specified");
+      uint32_t shaderIndex = GetShaderIndex(type);
+      BSR_ASSERT(shaderIndex != static_cast<uint32_t>(ShaderDomain::INVALID), "Invalid shader type specified");
 
       size_t nextLinePos = a_source.find_first_not_of("\r\n", eol);
       pos = a_source.find(typeToken, nextLinePos);
@@ -281,9 +281,9 @@ namespace Engine
     }
   }
 
-  void RT_GLProgram::Parse()
+  void RT_RendererProgram::Parse()
   {
-    for (int i = 0; i < SD_COUNT; i++)
+    for (int i = 0; i < SD32(COUNT); i++)
     {
       char const* token;
       char const* str = m_shaderSource[i].c_str();
@@ -297,7 +297,7 @@ namespace Engine
     }
   }
 
-  void RT_GLProgram::ParseStruct(std::string const & a_block, ShaderDomain a_domain)
+  void RT_RendererProgram::ParseStruct(std::string const & a_block, ShaderDomain a_domain)
   {
     std::vector<std::string> tokens = Tokenize(a_block);
 
@@ -315,6 +315,9 @@ namespace Engine
       std::string name = tokens[index++];
 
       // Strip ; from name if present
+      //TODO if the next character is a '{' we have a uniform block
+      //     In fact we need to look for:
+      //          layout (std140) uniform Block {
       if (const char* s = strstr(name.c_str(), ";"))
         name = std::string(name.c_str(), s - name.c_str());
 
@@ -349,7 +352,7 @@ namespace Engine
     m_structs.push_back(uniformStruct);
   }
 
-  void RT_GLProgram::ParseUniform(std::string const & a_statement, ShaderDomain a_domain)
+  void RT_RendererProgram::ParseUniform(std::string const & a_statement, ShaderDomain a_domain)
   {
     std::vector<std::string> tokens = Tokenize(a_statement);
     uint32_t index = 0;
@@ -385,25 +388,36 @@ namespace Engine
 
       if (t == ShaderDataType::NONE)
       {
-        ShaderStruct* s = FindStruct(typeString);
-        if (!s)
+        do 
         {
-          LOG_WARN("Struct '{}' not found. Could be a uniform or SS block.", typeString.c_str());
-          return;
-        }
-        //BSR_ASSERT(s, "Uniform is an unrecognised type!");
-        declaration = new ShaderUniformDeclaration(a_domain, s, name, count);
+          ShaderStruct* pStruct = FindStruct(typeString);
+          if (pStruct)
+          {
+            declaration = new ShaderUniformDeclaration(a_domain, pStruct, name, count);
+            break;
+          }
+
+          //TODO uniform block...
+
+          continue;
+        } while (false);
       }
       else
         declaration = new ShaderUniformDeclaration(a_domain, t, name, count);
 
-      if (m_uniformBuffers[a_domain] == nullptr)
-        m_uniformBuffers[a_domain] = new ShaderUniformDeclarationBuffer("", a_domain);
-      m_uniformBuffers[a_domain]->PushUniform(declaration);      
+      //TODO remove this. We found a uniform block but not implemented yet
+      if (!declaration)
+        return;
+
+      uint32_t ind = static_cast<uint32_t>(a_domain);
+
+      if (m_uniformBuffers[ind] == nullptr)
+        m_uniformBuffers[ind] = new ShaderUniformDeclarationBuffer("", a_domain);
+      m_uniformBuffers[ind]->PushUniform(declaration);
     }
   }
 
-  ShaderStruct * RT_GLProgram::FindStruct(std::string const& a_name)
+  ShaderStruct * RT_RendererProgram::FindStruct(std::string const& a_name)
   {
     for (ShaderStruct * ptr : m_structs)
     {
@@ -413,13 +427,13 @@ namespace Engine
     return nullptr;
   }
 
-  bool RT_GLProgram::CompileAndUploadShader()
+  bool RT_RendererProgram::CompileAndUploadShader()
   {
     bool result = true;
     Dg::DynamicArray<GLuint> shaderRendererIDs;
 
     GLuint program = glCreateProgram();
-    for (int i = 0; i < SD_COUNT; i++)
+    for (int i = 0; i < SD32(COUNT); i++)
     {
       GLenum type = GetShaderOpenGLType(i);
       std::string const & source = m_shaderSource[i];
@@ -489,7 +503,7 @@ namespace Engine
     return result;
   }
 
-  void RT_GLProgram::ResolveUniforms()
+  void RT_RendererProgram::ResolveUniforms()
   {
     /*glUseProgram(m_rendererID);
 
@@ -545,7 +559,7 @@ namespace Engine
     }*/
   }
 
-  void RT_GLProgram::ValidateUniforms()
+  void RT_RendererProgram::ValidateUniforms()
   {
 
   }

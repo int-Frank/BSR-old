@@ -1,3 +1,5 @@
+//@group Renderer/RenderThread
+
 #include <glad/glad.h>
 
 #include "RT_BindingPoint.h"
@@ -6,7 +8,7 @@
 
 namespace Engine
 {
-  RT_BindingPoint::Domain RT_BindingPoint::s_addresses[SBT_COUNT][ShaderDomain::SD_COUNT];
+  RT_BindingPoint::Domain RT_BindingPoint::s_addresses[SBT32(COUNT)][SD32(COUNT)];
 
   //------------------------------------------------------------------------------------------------
   // BindingPointID
@@ -48,12 +50,12 @@ namespace Engine
                            uint32_t a_index)
   {
     BSR_ASSERT(a_index < 0xFFFF, "Index to high!");
-    BSR_ASSERT(a_domain < SD_COUNT, "Invalid Domain!");
-    BSR_ASSERT(a_type < SBT_COUNT, "Invalid Storage block type!");
+    BSR_ASSERT(a_domain != ShaderDomain::COUNT, "Invalid Domain!");
+    BSR_ASSERT(a_type != StorageBlockType::COUNT, "Invalid Storage block type!");
 
     m_data = a_index;
-    m_data = m_data | (a_domain << 16);
-    m_data = m_data | (a_type << 24);
+    m_data = m_data | (static_cast<uint32_t>(a_domain) << 16);
+    m_data = m_data | (static_cast<uint32_t>(a_type) << 24);
   }
 
   //------------------------------------------------------------------------------------------------
@@ -62,20 +64,20 @@ namespace Engine
 
   void RT_BindingPoint::Init()
   {
-    int values[SBT_COUNT][ShaderDomain::SD_COUNT];
+    int values[SBT32(COUNT)][SD32(COUNT)];
 
-    glGetIntegerv(GL_MAX_VERTEX_UNIFORM_BLOCKS, &values[SBT_Uniform][SD_Vertex]);
-    glGetIntegerv(GL_MAX_GEOMETRY_UNIFORM_BLOCKS, &values[SBT_Uniform][SD_Geometry]);
-    glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_BLOCKS, &values[SBT_Uniform][SD_Fragment]);
+    glGetIntegerv(GL_MAX_VERTEX_UNIFORM_BLOCKS, &values[SBT32(Uniform)][SD32(Vertex)]);
+    glGetIntegerv(GL_MAX_GEOMETRY_UNIFORM_BLOCKS, &values[SBT32(Uniform)][SD32(Geometry)]);
+    glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_BLOCKS, &values[SBT32(Uniform)][SD32(Fragment)]);
 
-    glGetIntegerv(GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS, &values[SBT_ShaderStorage][SD_Vertex]);
-    glGetIntegerv(GL_MAX_GEOMETRY_SHADER_STORAGE_BLOCKS, &values[SBT_ShaderStorage][SD_Geometry]);
-    glGetIntegerv(GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS, &values[SBT_ShaderStorage][SD_Fragment]);
+    glGetIntegerv(GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS, &values[SBT32(ShaderStorage)][SD32(Vertex)]);
+    glGetIntegerv(GL_MAX_GEOMETRY_SHADER_STORAGE_BLOCKS, &values[SBT32(ShaderStorage)][SD32(Geometry)]);
+    glGetIntegerv(GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS, &values[SBT32(ShaderStorage)][SD32(Fragment)]);
 
-    for (int i = 0; i < SBT_COUNT; i++)
+    for (int i = 0; i < SBT32(COUNT); i++)
     {
       uint16_t begin = 0;
-      for (int j = 0; j < SD_COUNT; j++)
+      for (int j = 0; j < SD32(COUNT); j++)
       {
         s_addresses[i][j].begin = begin;
         s_addresses[i][j].count = values[i][j];
@@ -88,14 +90,17 @@ namespace Engine
   {
     Release();
 
-    for (uint16_t i = 0; i < s_addresses[a_type][a_domain].count; i++)
+    uint32_t domInd = static_cast<uint32_t>(a_domain);
+    uint32_t typeInd = static_cast<uint32_t>(a_type);
+
+    for (uint16_t i = 0; i < s_addresses[typeInd][domInd].count; i++)
     {
-      uint32_t val = (1 << i) & s_addresses[a_type][a_domain].bindingPoints;
+      uint32_t val = (1 << i) & s_addresses[typeInd][domInd].bindingPoints;
       if (val == 0)
       {
-        uint32_t index = s_addresses[a_type][a_domain].begin + i;
+        uint32_t index = s_addresses[typeInd][domInd].begin + i;
         m_bindingIndex.Set(a_type, a_domain, index);
-        s_addresses[a_type][a_domain].bindingPoints = s_addresses[a_type][a_domain].bindingPoints | (1 << i);
+        s_addresses[typeInd][domInd].bindingPoints = s_addresses[typeInd][domInd].bindingPoints | (1 << i);
         return true;
       }
     }
@@ -105,9 +110,12 @@ namespace Engine
 
   void RT_BindingPoint::Release()
   {
-    uint32_t index = m_bindingIndex.Address() - s_addresses[m_bindingIndex.Type()][m_bindingIndex.Domain()].begin;
-    s_addresses[m_bindingIndex.Type()][m_bindingIndex.Domain()].bindingPoints =
-      s_addresses[m_bindingIndex.Type()][m_bindingIndex.Domain()].bindingPoints & ~(1 << index);
+    uint32_t domInd = static_cast<uint32_t>(m_bindingIndex.Domain());
+    uint32_t typeInd = static_cast<uint32_t>(m_bindingIndex.Type());
+
+    uint32_t index = m_bindingIndex.Address() - s_addresses[typeInd][domInd].begin;
+    s_addresses[typeInd][domInd].bindingPoints =
+      s_addresses[typeInd][domInd].bindingPoints & ~(1 << index);
   }
 
   bool RT_BindingPoint::IsBound() const

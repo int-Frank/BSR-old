@@ -30,7 +30,7 @@ namespace Engine
     static RenderThread * Instance();
 
     //Main
-    void Sync(); //Sync with the render thread. The render thread will waiting.
+    void Sync(); //Sync with the render thread. On return, the render thread will be waiting.
     void Continue(); //Release the render thread after a Sync()
 
     //Render thread

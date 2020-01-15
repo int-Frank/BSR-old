@@ -5,62 +5,10 @@
 #include "Buffer.h"
 #include "RT_Buffer.h"
 #include "RenderThreadData.h"
+#include "ShaderUtils.h"
 
 namespace Engine
 {
-  static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType const a_type)
-  {
-    switch (a_type)
-    {
-      case ShaderDataType::FLOAT:
-      case ShaderDataType::VEC2:
-      case ShaderDataType::VEC3:
-      case ShaderDataType::VEC4:
-      case ShaderDataType::MAT2:
-      case ShaderDataType::MAT3:
-      case ShaderDataType::MAT4:
-      case ShaderDataType::MAT2x3:
-      case ShaderDataType::MAT3x2:
-      case ShaderDataType::MAT2x4:
-      case ShaderDataType::MAT4x2:
-      case ShaderDataType::MAT3x4:
-      case ShaderDataType::MAT4x3:
-        return GL_FLOAT;
-      case ShaderDataType::DOUBLE:
-      case ShaderDataType::DVEC2:
-      case ShaderDataType::DVEC3:
-      case ShaderDataType::DVEC4:
-      case ShaderDataType::DMAT2:
-      case ShaderDataType::DMAT3:
-      case ShaderDataType::DMAT4:
-      case ShaderDataType::DMAT2x3:
-      case ShaderDataType::DMAT3x2:
-      case ShaderDataType::DMAT2x4:
-      case ShaderDataType::DMAT4x2:
-      case ShaderDataType::DMAT3x4:
-      case ShaderDataType::DMAT4x3:
-        return GL_DOUBLE;
-      case ShaderDataType::INT:
-      case ShaderDataType::IVEC2:
-      case ShaderDataType::IVEC3:
-      case ShaderDataType::IVEC4:
-        return GL_INT;
-      case ShaderDataType::UINT:
-      case ShaderDataType::UVEC2:
-      case ShaderDataType::UVEC3:
-      case ShaderDataType::UVEC4:
-        return GL_UNSIGNED_INT;
-      case ShaderDataType::BOOL:
-      case ShaderDataType::BVEC2:
-      case ShaderDataType::BVEC3:
-      case ShaderDataType::BVEC4:
-        return GL_BOOL;
-    };
-
-    BSR_ASSERT(false, "Unknown ShaderDataType!");
-    return 0;
-  }
-
   RT_VertexArray::RT_VertexArray()
     : m_rendererID(0)
     , m_indexBuffer(INVALID_REFID)
@@ -112,7 +60,8 @@ namespace Engine
 
     for (auto it = pVB->GetLayout().begin(); it != pVB->GetLayout().end(); it++)
     {
-      GLenum glBaseType = ShaderDataTypeToOpenGLBaseType(it->type);
+      ShaderDataBaseType baseType = GetShaderDataBaseType(it->type);
+      GLenum glBaseType = ShaderDataBaseTypeToOpenGLType(baseType);
       glEnableVertexAttribArray(m_vertexAttribIndex);
       if (glBaseType == GL_INT)
       {

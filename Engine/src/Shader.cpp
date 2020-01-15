@@ -1,4 +1,4 @@
-////@group Renderer
+//@group Renderer
 //
 //#include "glad/glad.h"
 //

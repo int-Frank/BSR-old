@@ -70,7 +70,7 @@ namespace Engine
     LoadRequiredAssets();
   }
 
-  void RendererAPI::Shutdown()
+  void RendererAPI::ShutDown()
   {
   }
 
