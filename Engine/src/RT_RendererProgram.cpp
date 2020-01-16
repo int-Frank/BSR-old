@@ -43,6 +43,7 @@
 
 #define VAR_EXPRESSION                        VAR _S_ VAR _OS_ OARRAY _OS_ SC
 #define UNIFORM_VAR_EXPRESSION    UNIFORM _S_ VAR _S_ VAR _OS_ OARRAY _OS_ SC
+#define STRUCT_EXPRESSION         STRUCT  _S_ VAR BLOCK_CONTENTS
 
 namespace Engine
 {
@@ -252,7 +253,7 @@ namespace Engine
     std::string subject = m_shaderSource.src[static_cast<uint32_t>(a_domain)];
 
     std::smatch match;
-    std::regex r(STRUCT _S_ VAR BLOCK_CONTENTS);
+    std::regex r(STRUCT_EXPRESSION);
     while (regex_search(subject, match, r))
     {
       ShaderStruct* newStruct = new ShaderStruct(match.str(1));
