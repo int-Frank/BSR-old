@@ -1,7 +1,5 @@
 //R"(
 
-//@type vertex
-
 #version 430
 
 //Scalars

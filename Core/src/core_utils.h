@@ -41,6 +41,8 @@ namespace Core
   //Advance a void pointer a number of bytes
   void* AdvancePtr(void*, size_t);
   void const * AdvancePtr(void const *, size_t);
+
+  std::string ImportTextFile(std::string const & path);
 }
 
 #endif

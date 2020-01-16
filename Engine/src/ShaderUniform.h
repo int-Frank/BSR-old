@@ -94,6 +94,7 @@ namespace Engine
     uint32_t Size();
 
   private:
+    std::string m_name;
   };
 
   class ShaderResourceDeclaration

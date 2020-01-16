@@ -35,11 +35,15 @@ namespace Engine
   {
   public:
 
+    struct ShaderSource
+    {
+      std::string src[SD32(COUNT)];
+    };
+
     RT_RendererProgram();
     ~RT_RendererProgram();
 
-    bool InitFromString(std::string const &);
-    bool InitFromFilePath(std::string const &);
+    bool Init(ShaderSource const &);
     void Destroy();
 
     //void Reload(); 
@@ -58,11 +62,15 @@ namespace Engine
     //const std::string& GetName() const;
   private:
 
-    bool Load(std::string const &);
-    void SplitSource(std::string const & source);
+    bool Load(ShaderSource const &);
     void Parse();
-    void ParseUniform(std::string const & statement, ShaderDomain);
-    void ParseStruct(const std::string& block, ShaderDomain domain);
+
+    void ExtractStructs(ShaderDomain);
+    void ExtractUniforms(ShaderDomain);
+    //void ExtractUniformBlocks(ShaderDomain);
+
+    /*void ParseUniform(std::string const & statement, ShaderDomain);
+    void ParseStruct(const std::string& block, ShaderDomain domain);*/
     bool CompileAndUploadShader();
     void ResolveUniforms();
     void ValidateUniforms();
@@ -110,7 +118,7 @@ namespace Engine
     bool m_loaded;
 
     std::string m_name;
-    std::string m_shaderSource[static_cast<uint32_t>(ShaderDomain::COUNT)];
+    ShaderSource m_shaderSource;
     ShaderUniformDeclarationBuffer * m_uniformBuffers[static_cast<uint32_t>(ShaderDomain::COUNT)];
     ShaderResourceList m_resources;
     ShaderStructList m_structs;

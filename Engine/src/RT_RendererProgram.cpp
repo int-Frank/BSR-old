@@ -16,7 +16,7 @@
   Copyright 2017-2019 Frank Hart <frankhart010@gmail.com>
 */
 
-#include <fstream>
+//#include <fstream>
 #include <regex>
 
 #include "glad/glad.h"
@@ -25,99 +25,87 @@
 #include "core_ErrorCodes.h"
 #include "core_Log.h"
 #include "core_Assert.h"
+#include "DgStringFunctions.h"
 
 //TODO Parse uniform blocks, shader storage blocks
+
+//Helpful regex expressions
+#define IGNORE_COMMENT "^(?:(?!//).)*"
+#define UNIFORM "(?:uniform)"
+#define STRUCT "(?:struct)"
+#define _OS_ "\\s*\\n*\\r*"
+#define _S_ "\\s+" _OS_
+#define VAR "([_a-zA-Z]{1}[_a-zA-Z0-9]*)"
+#define ARRAY "(?:\\[)" _OS_ "([0-9]+)" _OS_ "(?:\\])"
+#define SC "[;]"
+
+#define STD140_DECL "(?:layout)" _OS_ "[(]" _OS_ "(?:std140)" _OS_ "[)]"
+#define BLOCK_CONTENTS "(?:[^{]*)[{]([^}]*)"
+
+#define VAR_EXPRESSION            IGNORE_COMMENT _OS_ VAR _S_ VAR _OS_ SC
+#define ARRAY_EXPRESSION          IGNORE_COMMENT _OS_ VAR _S_ VAR _OS_ ARRAY _OS_ SC
+#define UNIFORM_VAR_EXPRESSION    IGNORE_COMMENT UNIFORM _S_ VAR _S_ VAR _OS_ SC
+#define UNIFORM_ARRAY_EXPRESSION  IGNORE_COMMENT UNIFORM _S_ VAR _S_ VAR _OS_ ARRAY _OS_ SC
 
 namespace Engine
 {
   //--------------------------------------------------------------------------------------------------
   // Parsing helper functions
   //--------------------------------------------------------------------------------------------------
-  static char const * FindToken(char const * a_str, std::string const & a_token)
+  
+  struct varDecl
   {
-    char const * t = a_str;
-    while (t = strstr(t, a_token.c_str()))
-    {
-      bool left = a_str == t || isspace(t[-1]);
-      bool right = !t[a_token.size()] || isspace(t[a_token.size()]);
-      if (left && right)
-        return t;
+    std::string type;
+    std::string name;
+    uint32_t    count;
+  };
 
-      t += a_token.size();
+  typedef Dg::DynamicArray<varDecl> varDeclList;
+
+  static void FindVarDecls(std::string const& a_str, varDeclList & a_out, char const * a_regex)
+  {
+    std::string subject = a_str;
+
+    std::smatch match;
+    std::regex r(a_regex);
+    while (regex_search(subject, match, r))
+    {
+      a_out.push_back(varDecl{match.str(1), match.str(2), 1});
+      subject = match.suffix().str();
     }
-    return nullptr;
   }
 
-  static char const * FindToken(std::string const & a_string, std::string const & a_token)
+  static void FindArrayDecls(std::string const& a_str, varDeclList& a_out, char const* a_regex)
   {
-    return FindToken(a_string.c_str(), a_token);
+    std::string subject = a_str;
+
+    std::smatch match;
+    std::regex r(a_regex);
+    while (regex_search(subject, match, r))
+    {
+      uint32_t count(0);
+      if (!Dg::StringToNumber<uint32_t>(count, match.str(3), std::dec))
+        LOG_ERROR("Could not convert string to number, string: {}", match.str(3).c_str());
+      else
+        a_out.push_back(varDecl{match.str(1), match.str(2), count});
+      subject = match.suffix().str();
+    }
   }
 
-  static std::vector<std::string> SplitString(std::string const & a_string, std::string const & a_delimiters)
+  static varDeclList FindDecls(std::string const& a_str)
   {
-    size_t start = 0;
-    size_t end = a_string.find_first_of(a_delimiters);
-
-    std::vector<std::string> result;
-
-    while (end <= std::string::npos)
-    {
-      std::string token = a_string.substr(start, end - start);
-      if (!token.empty())
-        result.push_back(token);
-
-      if (end == std::string::npos)
-        break;
-
-      start = end + 1;
-      end = a_string.find_first_of(a_delimiters, start);
-    }
-
+    varDeclList result;
+    FindVarDecls(a_str, result, VAR_EXPRESSION);
+    FindArrayDecls(a_str, result, ARRAY_EXPRESSION);
     return result;
   }
-
-  static std::vector<std::string> SplitString(std::string const & a_string, char const a_delimiter)
+  
+  static varDeclList FindUniformDecls(std::string const& a_str)
   {
-    return SplitString(a_string, std::string(1, a_delimiter));
-  }
-
-  static std::vector<std::string> Tokenize(std::string const & a_string)
-  {
-    return SplitString(a_string, " \t\n");
-  }
-
-  static std::vector<std::string> GetLines(std::string const & a_string)
-  {
-    return SplitString(a_string, "\n");
-  }
-
-  static std::string GetBlock(char const * a_str, char const ** a_outPosition)
-  {
-    const char* end = strstr(a_str, "}");
-    if (!end)
-      return a_str;
-
-    if (a_outPosition)
-      *a_outPosition = end;
-    uint32_t length = end - a_str + 1;
-    return std::string(a_str, length);
-  }
-
-  static std::string GetStatement(char const * a_str, char const ** a_outPosition)
-  {
-    const char* end = strstr(a_str, ";");
-    if (!end)
-      return a_str;
-
-    if (a_outPosition)
-      *a_outPosition = end;
-    uint32_t length = end - a_str + 1;
-    return std::string(a_str, length);
-  }
-
-  static bool StartsWith(std::string const & a_string, const std::string& a_start)
-  {
-    return a_string.find(a_start) == 0;
+    varDeclList result;
+    FindVarDecls(a_str, result, UNIFORM_VAR_EXPRESSION);
+    FindArrayDecls(a_str, result, UNIFORM_ARRAY_EXPRESSION);
+    return result;
   }
 
   //--------------------------------------------------------------------------------------------------
@@ -130,49 +118,6 @@ namespace Engine
     if (type == "samplerCube")		return true;
     if (type == "sampler2DShadow")	return true;
     return false;
-  }
-
-  static uint32_t GetShaderOpenGLType(int a_index)
-  {
-    switch (a_index)
-    {
-      case static_cast<uint32_t>(ShaderDomain::Vertex):
-        return GL_VERTEX_SHADER;
-      case static_cast<uint32_t>(ShaderDomain::Fragment):
-        return GL_FRAGMENT_SHADER;
-      case static_cast<uint32_t>(ShaderDomain::Geometry):
-        return GL_GEOMETRY_SHADER;
-    }
-    BSR_ASSERT(false, "Shader index not recognised!");
-    return 0xFFFFFFFF;
-  }
-
-  static uint32_t GetShaderIndex(uint32_t a_shaderType)
-  {
-    switch (a_shaderType)
-    {
-      case GL_VERTEX_SHADER:
-        return static_cast<uint32_t>(ShaderDomain::Vertex);
-      case GL_FRAGMENT_SHADER:
-        return static_cast<uint32_t>(ShaderDomain::Fragment);
-      case GL_GEOMETRY_SHADER:
-        return static_cast<uint32_t>(ShaderDomain::Geometry);
-    }
-    BSR_ASSERT(false, "Shader type not recognised!");
-    return static_cast<uint32_t>(ShaderDomain::INVALID);
-  }
-
-  static uint32_t GetShaderIndex(std::string const& a_shaderType)
-  {
-    if (a_shaderType == "vertex")
-      return static_cast<uint32_t>(ShaderDomain::Vertex);
-    if (a_shaderType == "fragment")
-      return static_cast<uint32_t>(ShaderDomain::Fragment);
-    if (a_shaderType == "geometry")
-      return static_cast<uint32_t>(ShaderDomain::Geometry);
-
-    BSR_ASSERT(false, "Shader type not recognised!");
-    return static_cast<uint32_t>(ShaderDomain::INVALID);
   }
 
   //--------------------------------------------------------------------------------------------------
@@ -204,7 +149,7 @@ namespace Engine
         delete m_uniformBuffers[i];
         m_uniformBuffers[i] = nullptr;
 
-        m_shaderSource[i].clear();
+        m_shaderSource.src[i].clear();
       }
 
       for (auto ptr : m_resources)
@@ -231,33 +176,15 @@ namespace Engine
     glUseProgram(0);
   }
 
-  bool RT_RendererProgram::InitFromString(std::string const& a_source)
+  bool RT_RendererProgram::Init(ShaderSource const & a_source)
   {
     return Load(a_source);
   }
 
-  bool RT_RendererProgram::InitFromFilePath(std::string const& a_filepath)
-  {
-    std::string content;
-    std::ifstream ifs(a_filepath);
-    if (ifs)
-    {
-      content.assign((std::istreambuf_iterator<char>(ifs)),
-                     (std::istreambuf_iterator<char>()));
-    }
-    else
-    {
-      LOG_WARN("Could not read shader file {0}", a_filepath.c_str());
-      return false;
-    }
-
-    return InitFromString(content);
-  }
-
-  bool RT_RendererProgram::Load(std::string const& a_source)
+  bool RT_RendererProgram::Load(ShaderSource const & a_source)
   {
     Destroy();
-    SplitSource(a_source);
+    m_shaderSource = a_source;
     Parse();
 
     if (m_uniformBuffers[0])
@@ -278,159 +205,83 @@ namespace Engine
     return m_loaded;
   }
 
-  void RT_RendererProgram::SplitSource(std::string const & a_source)
-  {
-    const char* typeToken = "//@type";
-    size_t typeTokenLength = strlen(typeToken);
-    size_t pos = a_source.find(typeToken, 0);
-    while (pos != std::string::npos)
-    {
-      size_t eol = a_source.find_first_of("\r\n", pos);
-      BSR_ASSERT(eol != std::string::npos, "Syntax error");
-      size_t begin = pos + typeTokenLength + 1;
-      std::string type = a_source.substr(begin, eol - begin);
-      uint32_t shaderIndex = GetShaderIndex(type);
-      BSR_ASSERT(shaderIndex != static_cast<uint32_t>(ShaderDomain::INVALID), "Invalid shader type specified");
-
-      size_t nextLinePos = a_source.find_first_not_of("\r\n", eol);
-      pos = a_source.find(typeToken, nextLinePos);
-      m_shaderSource[shaderIndex] = a_source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? a_source.size() - 1 : nextLinePos));
-    }
-  }
-
   void RT_RendererProgram::Parse()
   {
     for (int i = 0; i < SD32(COUNT); i++)
     {
-      char const* token;
-      char const* str = m_shaderSource[i].c_str();
-
-      while (token = FindToken(str, "struct"))
-        ParseStruct(GetBlock(token, &str), ShaderDomain(i));
-
-      str = m_shaderSource[i].c_str();
-      while (token = FindToken(str, "uniform"))
-        ParseUniform(GetStatement(token, &str), ShaderDomain(i));
+      ExtractStructs(ShaderDomain(i));
+      ExtractUniforms(ShaderDomain(i));
+      //ExtractUniformBlocks(ShaderDomain(i));
     }
   }
 
-  void RT_RendererProgram::ParseStruct(std::string const & a_block, ShaderDomain a_domain)
+  void RT_RendererProgram::ExtractStructs(ShaderDomain a_domain)
   {
-    std::vector<std::string> tokens = Tokenize(a_block);
+    std::string subject = m_shaderSource.src[static_cast<uint32_t>(a_domain)];
 
-    uint32_t index = 0;
-    index++; // struct
-    std::string name = tokens[index++];
-    ShaderStruct* uniformStruct = new ShaderStruct(name);
-    index++; // {
-    while (index < tokens.size())
+    std::smatch match;
+    std::regex r(IGNORE_COMMENT STRUCT _S_ VAR BLOCK_CONTENTS);
+    while (regex_search(subject, match, r))
     {
-      if (tokens[index] == "}")
-        break;
+      ShaderStruct* newStruct = new ShaderStruct(match.str(1));
+      varDeclList vars = FindDecls(match.str(2));
 
-      std::string type = tokens[index++];
-      std::string name = tokens[index++];
-
-      // Strip ; from name if present
-      //TODO if the next character is a '{' we have a uniform block
-      //     In fact we need to look for:
-      //          layout (std140) uniform Block {
-      if (const char* s = strstr(name.c_str(), ";"))
-        name = std::string(name.c_str(), s - name.c_str());
-
-      uint32_t count = 1;
-      const char* namestr = name.c_str();
-      if (const char* s = strstr(namestr, "["))
+      for (auto const & var : vars)
       {
-        name = std::string(namestr, s - namestr);
-
-        const char* end = strstr(namestr, "]");
-        std::string c(s + 1, end - s);
-        count = atoi(c.c_str());
-      }
-
-      ShaderUniformDeclaration* field = nullptr;
-      ShaderDataType dataType = StringToShaderDataType(type);
-      if (dataType == ShaderDataType::NONE) //might be a previously defined struct
-      {
-        ShaderStruct * pStruct = FindStruct(type);
-        if (pStruct)
-          field = new ShaderUniformDeclaration(a_domain, pStruct, name, count);
-        else
+        ShaderUniformDeclaration* field = nullptr;
+        ShaderDataType dataType = StringToShaderDataType(var.type);
+        if (dataType == ShaderDataType::NONE) //might be a previously defined struct
         {
-          LOG_WARN("Unrecognised field '{}' in struct '{}' while parsing glsl struct.", type.c_str(), name.c_str());
-          continue;
-        }
-      }
-      else
-        field = new ShaderUniformDeclaration(a_domain, StringToShaderDataType(type), name, count);
-      uniformStruct->AddField(field);
-    }
-    m_structs.push_back(uniformStruct);
-  }
-
-  void RT_RendererProgram::ParseUniform(std::string const & a_statement, ShaderDomain a_domain)
-  {
-    std::vector<std::string> tokens = Tokenize(a_statement);
-    uint32_t index = 0;
-
-    index++; // "uniform"
-    std::string typeString = tokens[index++];
-    std::string name = tokens[index++];
-    // Strip ; from name if present
-    if (const char* s = strstr(name.c_str(), ";"))
-      name = std::string(name.c_str(), s - name.c_str());
-
-    std::string n(name);
-    int32_t count = 1;
-    const char* namestr = n.c_str();
-    if (const char* s = strstr(namestr, "["))
-    {
-      name = std::string(namestr, s - namestr);
-
-      const char* end = strstr(namestr, "]");
-      std::string c(s + 1, end - s);
-      count = atoi(c.c_str());
-    }
-
-    if (IsTypeStringResource(typeString))
-    {
-      ShaderResourceDeclaration* declaration = new ShaderResourceDeclaration(StringToShaderResourceType(typeString), name, count);
-      m_resources.push_back(declaration);
-    }
-    else
-    {
-      ShaderDataType t = StringToShaderDataType(typeString);
-      ShaderUniformDeclaration* declaration = nullptr;
-
-      if (t == ShaderDataType::NONE)
-      {
-        do 
-        {
-          ShaderStruct* pStruct = FindStruct(typeString);
+          ShaderStruct* pStruct = FindStruct(var.type);
           if (pStruct)
+            field = new ShaderUniformDeclaration(a_domain, pStruct, var.name, var.count);
+          else
           {
-            declaration = new ShaderUniformDeclaration(a_domain, pStruct, name, count);
-            break;
+            LOG_WARN("Unrecognised field '{}' in struct '{}' while parsing glsl struct.", var.type.c_str(), match.str(1).c_str());
+            continue;
           }
+        }
+        else
+          field = new ShaderUniformDeclaration(a_domain, dataType, var.name, var.count);
+        newStruct->AddField(field);
+      }
+      m_structs.push_back(newStruct);
+      subject = match.suffix().str();
+    }
+  }
 
-          //TODO uniform block...
+  void RT_RendererProgram::ExtractUniforms(ShaderDomain a_domain)
+  {
+    std::string subject = m_shaderSource.src[static_cast<uint32_t>(a_domain)];
+    varDeclList vars = FindUniformDecls(subject);
 
-          continue;
-        } while (false);
+    for (auto const & var : vars)
+    {
+      if (IsTypeStringResource(var.type))
+      {
+        ShaderResourceDeclaration* declaration = new ShaderResourceDeclaration(StringToShaderResourceType(var.type), var.name, var.count);
+        m_resources.push_back(declaration);
       }
       else
-        declaration = new ShaderUniformDeclaration(a_domain, t, name, count);
+      {
+        ShaderDataType t = StringToShaderDataType(var.type);
+        ShaderUniformDeclaration* declaration = nullptr;
 
-      //TODO remove this. We found a uniform block but not implemented yet
-      if (!declaration)
-        return;
+        if (t == ShaderDataType::NONE)
+        {
+          ShaderStruct* pStruct = FindStruct(var.type);
+          BSR_ASSERT(pStruct, "Undefined struct!");
+          declaration = new ShaderUniformDeclaration(a_domain, pStruct, var.name, var.count);
+        }
+        else
+          declaration = new ShaderUniformDeclaration(a_domain, t, var.name, var.count);
 
-      uint32_t ind = static_cast<uint32_t>(a_domain);
+        uint32_t ind = static_cast<uint32_t>(a_domain);
 
-      if (m_uniformBuffers[ind] == nullptr)
-        m_uniformBuffers[ind] = new ShaderUniformDeclarationBuffer("", a_domain);
-      m_uniformBuffers[ind]->PushUniform(declaration);
+        if (m_uniformBuffers[ind] == nullptr)
+          m_uniformBuffers[ind] = new ShaderUniformDeclarationBuffer("", a_domain);
+        m_uniformBuffers[ind]->PushUniform(declaration);
+      }
     }
   }
 
@@ -452,8 +303,8 @@ namespace Engine
     GLuint program = glCreateProgram();
     for (int i = 0; i < SD32(COUNT); i++)
     {
-      GLenum type = GetShaderOpenGLType(i);
-      std::string const & source = m_shaderSource[i];
+      GLenum type = ShaderDomainToOpenGLType(ShaderDomain(i));
+      std::string const & source = m_shaderSource.src[i];
 
       if (source.empty())
         continue;

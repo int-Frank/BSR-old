@@ -5,10 +5,10 @@
 #include <string>
 #include <stdint.h>
 
-#define SD32(x) static_cast<uint32_t>(ShaderDomain::x)
-#define SDT32(x) static_cast<uint32_t>(ShaderDataType::x)
-#define SRT32(x) static_cast<uint32_t>(ShaderResourceType::x)
-#define SBT32(x) static_cast<uint32_t>(StorageBlockType::x)
+#define SD32(x) static_cast<uint32_t>(::Engine::ShaderDomain::x)
+#define SDT32(x) static_cast<uint32_t>(::Engine::ShaderDataType::x)
+#define SRT32(x) static_cast<uint32_t>(::Engine::ShaderResourceType::x)
+#define SBT32(x) static_cast<uint32_t>(::Engine::StorageBlockType::x)
 
 namespace Engine
 {
@@ -121,6 +121,7 @@ namespace Engine
 
   GLenum ShaderDataTypeToOpenGLType(ShaderDataType);
   GLenum ShaderDataBaseTypeToOpenGLType(ShaderDataBaseType);
+  GLenum ShaderDomainToOpenGLType(ShaderDomain);
 
 }
 

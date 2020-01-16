@@ -282,4 +282,22 @@ namespace Engine
     };
     return s_types[static_cast<uint32_t>(a_type)];
   }
+
+  GLenum ShaderDomainToOpenGLType(ShaderDomain a_type)
+  {
+    switch (a_type)
+    {
+      case ShaderDomain::INVALID:
+      case ShaderDomain::COUNT:
+        return GL_INVALID_ENUM;
+      case ShaderDomain::Vertex:
+        return GL_VERTEX_SHADER;
+      case ShaderDomain::Fragment:
+        return GL_FRAGMENT_SHADER;
+      case ShaderDomain::Geometry:
+        return GL_GEOMETRY_SHADER;
+    }
+    BSR_ASSERT(false, "");
+    return GL_INVALID_ENUM;
+  }
 }

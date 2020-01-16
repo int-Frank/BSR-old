@@ -46,8 +46,10 @@ public:
     m_va->AddVertexBuffer(m_vb);
 
     Engine::RT_RendererProgram prog;
-    prog.InitFromFilePath("D:/dev/projects/BSR/Game/src/test_shader.glsl");
-    
+    Engine::RT_RendererProgram::ShaderSource src;
+    src.src[SD32(Vertex)] = Core::ImportTextFile("D:/dev/projects/BSR/Game/src/test_shader.glsl");
+
+    prog.Init(src);
   }
 
   void OnDetach() override
