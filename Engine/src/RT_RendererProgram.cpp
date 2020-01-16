@@ -36,16 +36,14 @@
 #define _OS_ "\\s*\\n*\\r*"
 #define _S_ "\\s+" _OS_
 #define VAR "([_a-zA-Z]{1}[_a-zA-Z0-9]*)"
-#define ARRAY "(?:\\[)" _OS_ "([0-9]+)" _OS_ "(?:\\])"
+#define OARRAY "(?:(?:\\[)" _OS_ "([0-9]+)" _OS_ "(?:\\]))?"
 #define SC "[;]"
 
 #define STD140_DECL "(?:layout)" _OS_ "[(]" _OS_ "(?:std140)" _OS_ "[)]"
 #define BLOCK_CONTENTS "(?:[^{]*)[{]([^}]*)"
 
-#define VAR_EXPRESSION            IGNORE_COMMENT _OS_ VAR _S_ VAR _OS_ SC
-#define ARRAY_EXPRESSION          IGNORE_COMMENT _OS_ VAR _S_ VAR _OS_ ARRAY _OS_ SC
-#define UNIFORM_VAR_EXPRESSION    IGNORE_COMMENT UNIFORM _S_ VAR _S_ VAR _OS_ SC
-#define UNIFORM_ARRAY_EXPRESSION  IGNORE_COMMENT UNIFORM _S_ VAR _S_ VAR _OS_ ARRAY _OS_ SC
+#define VAR_EXPRESSION            IGNORE_COMMENT _OS_        VAR _S_ VAR _OS_ OARRAY _OS_ SC
+#define UNIFORM_VAR_EXPRESSION    IGNORE_COMMENT UNIFORM _S_ VAR _S_ VAR _OS_ OARRAY _OS_ SC
 
 namespace Engine
 {
@@ -62,50 +60,32 @@ namespace Engine
 
   typedef Dg::DynamicArray<varDecl> varDeclList;
 
-  static void FindVarDecls(std::string const& a_str, varDeclList & a_out, char const * a_regex)
+  static varDeclList __FindDecls(std::string const& a_str, char const * a_regex)
   {
+    varDeclList result;
     std::string subject = a_str;
 
     std::smatch match;
     std::regex r(a_regex);
     while (regex_search(subject, match, r))
     {
-      a_out.push_back(varDecl{match.str(1), match.str(2), 1});
+      uint32_t count(1);
+      if (match.str(3) != "")
+        BSR_ASSERT(Dg::StringToNumber<uint32_t>(count, match.str(3), std::dec), "");
+      result.push_back(varDecl{match.str(1), match.str(2), count});
       subject = match.suffix().str();
     }
-  }
-
-  static void FindArrayDecls(std::string const& a_str, varDeclList& a_out, char const* a_regex)
-  {
-    std::string subject = a_str;
-
-    std::smatch match;
-    std::regex r(a_regex);
-    while (regex_search(subject, match, r))
-    {
-      uint32_t count(0);
-      if (!Dg::StringToNumber<uint32_t>(count, match.str(3), std::dec))
-        LOG_ERROR("Could not convert string to number, string: {}", match.str(3).c_str());
-      else
-        a_out.push_back(varDecl{match.str(1), match.str(2), count});
-      subject = match.suffix().str();
-    }
+    return result;
   }
 
   static varDeclList FindDecls(std::string const& a_str)
   {
-    varDeclList result;
-    FindVarDecls(a_str, result, VAR_EXPRESSION);
-    FindArrayDecls(a_str, result, ARRAY_EXPRESSION);
-    return result;
+    return __FindDecls(a_str, VAR_EXPRESSION);
   }
   
   static varDeclList FindUniformDecls(std::string const& a_str)
   {
-    varDeclList result;
-    FindVarDecls(a_str, result, UNIFORM_VAR_EXPRESSION);
-    FindArrayDecls(a_str, result, UNIFORM_ARRAY_EXPRESSION);
-    return result;
+    return __FindDecls(a_str, UNIFORM_VAR_EXPRESSION);
   }
 
   //--------------------------------------------------------------------------------------------------

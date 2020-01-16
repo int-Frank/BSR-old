@@ -81,7 +81,7 @@ struct MyStruct2
   int s2_int;
 };
 
-uniform MyStruct2 mys1;
+uniform MyStruct1 mys1;
 uniform MyStruct2 mys2;
 
 //Struct of structs
