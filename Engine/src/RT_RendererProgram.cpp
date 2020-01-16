@@ -30,20 +30,19 @@
 //TODO Parse uniform blocks, shader storage blocks
 
 //Helpful regex expressions
-#define IGNORE_COMMENT "^(?:(?!//).)*"
 #define UNIFORM "(?:uniform)"
 #define STRUCT "(?:struct)"
-#define _OS_ "\\s*\\n*\\r*"
-#define _S_ "\\s+" _OS_
-#define VAR "([_a-zA-Z]{1}[_a-zA-Z0-9]*)"
+#define _OS_ "[\\s\\n\\r]*"
+#define _S_ "[\\s\\n\\r]+"
+#define VAR "([_a-zA-Z][_a-zA-Z0-9]*)"
 #define OARRAY "(?:(?:\\[)" _OS_ "([0-9]+)" _OS_ "(?:\\]))?"
 #define SC "[;]"
 
 #define STD140_DECL "(?:layout)" _OS_ "[(]" _OS_ "(?:std140)" _OS_ "[)]"
 #define BLOCK_CONTENTS "(?:[^{]*)[{]([^}]*)"
 
-#define VAR_EXPRESSION            IGNORE_COMMENT _OS_        VAR _S_ VAR _OS_ OARRAY _OS_ SC
-#define UNIFORM_VAR_EXPRESSION    IGNORE_COMMENT UNIFORM _S_ VAR _S_ VAR _OS_ OARRAY _OS_ SC
+#define VAR_EXPRESSION                        VAR _S_ VAR _OS_ OARRAY _OS_ SC
+#define UNIFORM_VAR_EXPRESSION    UNIFORM _S_ VAR _S_ VAR _OS_ OARRAY _OS_ SC
 
 namespace Engine
 {
@@ -86,6 +85,51 @@ namespace Engine
   static varDeclList FindUniformDecls(std::string const& a_str)
   {
     return __FindDecls(a_str, UNIFORM_VAR_EXPRESSION);
+  }
+
+  static std::string RemoveComments(std::string const& a_src)
+  {
+    std::stringstream ss(a_src);
+    std::string result;
+    char c;
+    while (ss.get(c))
+    {
+      if (c == '/')
+      {
+        if (ss.get(c))
+        {
+          if (c == '/')
+            ss.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+          else if (c == '*')
+          {
+            while (ss.get(c))
+            {
+              if (c == '*')
+              {
+                if (ss.get(c))
+                {
+                  if (c == '/')
+                    break;
+                }
+              }
+            }
+          }
+          else
+          {
+            result += '/';
+            result += c;
+          }
+        }
+        else
+        {
+          result += c;
+          break;
+        }
+      }
+      else
+        result += c;
+    }
+    return result;
   }
 
   //--------------------------------------------------------------------------------------------------
@@ -161,10 +205,18 @@ namespace Engine
     return Load(a_source);
   }
 
+  void RT_RendererProgram::SetShaderSource(ShaderSource const & a_source)
+  {
+    for (uint32_t i = 0; i < SD32(COUNT); i++)
+    {
+      m_shaderSource.src[i] = RemoveComments(a_source.src[i]);
+    }
+  }
+
   bool RT_RendererProgram::Load(ShaderSource const & a_source)
   {
     Destroy();
-    m_shaderSource = a_source;
+    SetShaderSource(a_source);
     Parse();
 
     if (m_uniformBuffers[0])
@@ -200,7 +252,7 @@ namespace Engine
     std::string subject = m_shaderSource.src[static_cast<uint32_t>(a_domain)];
 
     std::smatch match;
-    std::regex r(IGNORE_COMMENT STRUCT _S_ VAR BLOCK_CONTENTS);
+    std::regex r(STRUCT _S_ VAR BLOCK_CONTENTS);
     while (regex_search(subject, match, r))
     {
       ShaderStruct* newStruct = new ShaderStruct(match.str(1));

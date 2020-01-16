@@ -63,6 +63,7 @@ namespace Engine
   private:
 
     bool Load(ShaderSource const &);
+    void SetShaderSource(ShaderSource const &);
     void Parse();
 
     void ExtractStructs(ShaderDomain);

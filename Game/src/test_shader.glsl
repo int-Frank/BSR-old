@@ -71,7 +71,9 @@ uniform dmat3x4 my_dmat3x4_array_7[7];
 //Struct uniforms
 struct MyStruct1
 {
+  //This
   float s1_float;
+  //That
   int s1_int;
 };
 
