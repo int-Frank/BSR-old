@@ -43,7 +43,7 @@ namespace Engine
   
   void ShaderStruct::Log(int a_indent)
   {
-    std::string indent(a_indent * 2, ' ');
+    std::string indent(size_t(a_indent) * 2, ' ');
     LOG_DEBUG("{}STRUCT - name: {}, size: {}, offset: {}", indent.c_str(), m_name.c_str(), m_size, m_offset);
     LOG_DEBUG("{}[", indent.c_str());
     for (auto field : m_fields)
@@ -163,7 +163,7 @@ namespace Engine
     for (uint32_t c = 0; c < count; c++)
     {
       buf = Core::Serialize<byte>(buf, pSrc, dataSize);
-      void* buf = Core::AdvancePtr(buf, padding);
+      buf = Core::AdvancePtr(buf, padding);
     }
 
     return buf;
@@ -210,11 +210,42 @@ namespace Engine
     return m_frontPadding;
   }
 
+  bool operator==(std140ItemDeclaration const& a_item_0, std140ItemDeclaration const& a_item_1)
+  {
+    bool result = a_item_0.m_type == a_item_1.m_type;
+    result &= (a_item_0.m_count == a_item_1.m_count);
+    result &= (a_item_0.m_matLayout == a_item_1.m_matLayout);
+    return result;
+  }
+
+  bool operator!=(std140ItemDeclaration const& a_item_0, std140ItemDeclaration const& a_item_1)
+  {
+    bool result = a_item_0.m_type == a_item_1.m_type;
+    result &= (a_item_0.m_count == a_item_1.m_count);
+    result &= (a_item_0.m_matLayout == a_item_1.m_matLayout);
+    return !result;
+  }
+
   //---------------------------------------------------------------------------------------------------
-  // std140BlockDeclaration
+  // std140UniformBlock
   //---------------------------------------------------------------------------------------------------
 
+  bool operator==(std140UniformBlock const & a_block_0, std140UniformBlock const & a_block_1)
+  {
+    if (a_block_0.m_items.size() != a_block_1.m_items.size())
+      return false;
 
+    for (uint32_t i = 0; i < uint32_t(a_block_0.m_items.size()); i++)
+    {
+      if (a_block_0.m_items[i] != a_block_1.m_items[i])
+        return false;
+    }
+    return true;
+  }
+
+  //---------------------------------------------------------------------------------------------------
+  // std140UniformBlockBuffer
+  //---------------------------------------------------------------------------------------------------
 
   //---------------------------------------------------------------------------------------------------
   // ShaderResourceDeclaration
@@ -231,7 +262,7 @@ namespace Engine
   }
   void ShaderResourceDeclaration::Log(int a_indent)
   {
-    std::string indent(a_indent * 2, ' ');
+    std::string indent(size_t(a_indent)  * 2, ' ');
     LOG_DEBUG("{}RESOURCE - name: {}, count: {}, reg: {}, type: {}", 
       indent.c_str(), m_name.c_str(), m_count, m_register, ShaderResourceTypeToString(m_type).c_str());
   }
@@ -294,7 +325,7 @@ namespace Engine
 
   void ShaderUniformDeclaration::Log(int a_indent)
   {
-    std::string indent(a_indent * 2, ' ');
+    std::string indent(size_t(a_indent)  * 2, ' ');
     LOG_DEBUG("{}UNIFORM - name: {}, size: {}, count: {}, offset: {}, domain: {}, type: {}",
       indent.c_str(), m_name.c_str(), m_size, m_count, m_offset, static_cast<uint32_t>(m_domain), ShaderDataTypeToString(m_type).c_str());
     if (m_pStruct)
@@ -383,7 +414,7 @@ namespace Engine
 
   void ShaderUniformDeclarationBuffer::Log(int a_indent)
   {
-    std::string indent(a_indent * 2, ' ');
+    std::string indent(size_t(a_indent)  * 2, ' ');
     LOG_DEBUG("{}UNIFORM DECL BUFFER - name: {}, register: {}, size: {}, domain: {}",
       indent.c_str(), m_name.c_str(), m_register, m_size, static_cast<uint32_t>(m_domain));
     for (auto ptr : m_uniforms)

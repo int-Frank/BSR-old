@@ -41,12 +41,57 @@
 #define STD140_DECL "(?:layout)" _OS_ "[(]" _OS_ "(?:std140)" _OS_ "[)]"
 #define BLOCK_CONTENTS "(?:[^{]*)[{]([^}]*)"
 
+#define UNIFORM_BLOCK_EXPRESSION STD140_DECL _OS_ UNIFORM _S_ VAR BLOCK_CONTENTS
+
 #define VAR_EXPRESSION                        VAR _S_ VAR _OS_ OARRAY _OS_ SC
 #define UNIFORM_VAR_EXPRESSION    UNIFORM _S_ VAR _S_ VAR _OS_ OARRAY _OS_ SC
 #define STRUCT_EXPRESSION         STRUCT  _S_ VAR BLOCK_CONTENTS
 
 namespace Engine
 {
+  //--------------------------------------------------------------------------------------------------
+  // ShaderSource
+  //--------------------------------------------------------------------------------------------------
+   void ShaderSource::Set(ShaderDomain a_domain, std::string const & a_src)
+   {
+     if (a_domain == ShaderDomain::INVALID)
+     {
+       LOG_WARN("'INVALID' passed to ShaderSource::Set()");
+       return;
+     }
+
+     if (a_domain == ShaderDomain::COUNT)
+     {
+       LOG_WARN("'COUNT' passed to ShaderSource::Set()");
+       return;
+     }
+
+     m_src[static_cast<uint32_t>(a_domain)] = a_src;
+   }
+
+   std::string const & ShaderSource::Get(ShaderDomain a_domain) const
+   {
+     if (a_domain == ShaderDomain::INVALID)
+     {
+       LOG_WARN("'INVALID' passed to ShaderSource::Get()");
+       return std::string();
+     }
+
+     if (a_domain == ShaderDomain::COUNT)
+     {
+       LOG_WARN("'COUNT' passed to ShaderSource::Get()");
+       return std::string();
+     }
+
+     return m_src[static_cast<uint32_t>(a_domain)];
+   }
+
+   void ShaderSource::Clear()
+   {
+     for (uint32_t i = 0; i < SD32(COUNT); i++)
+       m_src[i].clear();
+   }
+
   //--------------------------------------------------------------------------------------------------
   // Parsing helper functions
   //--------------------------------------------------------------------------------------------------
@@ -173,9 +218,9 @@ namespace Engine
       {
         delete m_uniformBuffers[i];
         m_uniformBuffers[i] = nullptr;
-
-        m_shaderSource.src[i].clear();
       }
+
+      m_shaderSource.Clear();
 
       for (auto ptr : m_resources)
         delete ptr;
@@ -210,7 +255,8 @@ namespace Engine
   {
     for (uint32_t i = 0; i < SD32(COUNT); i++)
     {
-      m_shaderSource.src[i] = RemoveComments(a_source.src[i]);
+      ShaderDomain domain = static_cast<ShaderDomain>(i);
+      m_shaderSource.Set(domain, RemoveComments(a_source.Get(domain)));
     }
   }
 
@@ -250,7 +296,7 @@ namespace Engine
 
   void RT_RendererProgram::ExtractStructs(ShaderDomain a_domain)
   {
-    std::string subject = m_shaderSource.src[static_cast<uint32_t>(a_domain)];
+    std::string subject = m_shaderSource.Get(a_domain);
 
     std::smatch match;
     std::regex r(STRUCT_EXPRESSION);
@@ -283,9 +329,21 @@ namespace Engine
     }
   }
 
+  void RT_RendererProgram::ExtractUniformBlocks(ShaderDomain a_domain)
+  {
+    std::string subject = m_shaderSource.Get(a_domain);
+
+    std::smatch match;
+    std::regex r(UNIFORM_BLOCK_EXPRESSION);
+    while (regex_search(subject, match, r))
+    {
+
+    }
+  }
+
   void RT_RendererProgram::ExtractUniforms(ShaderDomain a_domain)
   {
-    std::string subject = m_shaderSource.src[static_cast<uint32_t>(a_domain)];
+    std::string subject = m_shaderSource.Get(a_domain);
     varDeclList vars = FindUniformDecls(subject);
 
     for (auto const & var : vars)
@@ -337,7 +395,8 @@ namespace Engine
     for (int i = 0; i < SD32(COUNT); i++)
     {
       GLenum type = ShaderDomainToOpenGLType(ShaderDomain(i));
-      std::string const & source = m_shaderSource.src[i];
+      ShaderDomain domain = static_cast<ShaderDomain>(i);
+      std::string const & source = m_shaderSource.Get(domain);
 
       if (source.empty())
         continue;

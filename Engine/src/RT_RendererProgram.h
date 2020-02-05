@@ -31,14 +31,23 @@ namespace Engine
 {
   class RT_BindingPoint;
 
-  class RT_RendererProgram
+  class ShaderSource
   {
   public:
 
-    struct ShaderSource
-    {
-      std::string src[SD32(COUNT)];
-    };
+    void Set(ShaderDomain, std::string const&);
+    std::string const & Get(ShaderDomain) const;
+
+    void Clear();
+
+  private:
+
+    std::string m_src[SD32(COUNT)];
+  };
+
+  class RT_RendererProgram
+  {
+  public:
 
     RT_RendererProgram();
     ~RT_RendererProgram();
@@ -68,7 +77,7 @@ namespace Engine
 
     void ExtractStructs(ShaderDomain);
     void ExtractUniforms(ShaderDomain);
-    //void ExtractUniformBlocks(ShaderDomain);
+    void ExtractUniformBlocks(ShaderDomain);
 
     /*void ParseUniform(std::string const & statement, ShaderDomain);
     void ParseStruct(const std::string& block, ShaderDomain domain);*/
@@ -120,6 +129,7 @@ namespace Engine
 
     std::string m_name;
     ShaderSource m_shaderSource;
+
     ShaderUniformDeclarationBuffer * m_uniformBuffers[static_cast<uint32_t>(ShaderDomain::COUNT)];
     ShaderResourceList m_resources;
     ShaderStructList m_structs;

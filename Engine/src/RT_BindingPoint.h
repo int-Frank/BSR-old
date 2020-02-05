@@ -48,6 +48,8 @@ namespace Engine
     {
       Domain()
         : bindingPoints(0)
+        , begin(0)
+        , count(0)
       {
       }
 

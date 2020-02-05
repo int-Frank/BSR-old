@@ -65,6 +65,9 @@ namespace Engine
     std140ItemDeclaration(ShaderDataType, uint32_t count, MatrixLayout layout = MatrixLayout::ColumnMajor);
     void * CopyToBuffer(void * buffer, void const * data) const;
 
+    friend bool operator==(std140ItemDeclaration const&, std140ItemDeclaration const&);
+    friend bool operator!=(std140ItemDeclaration const&, std140ItemDeclaration const&);
+
     void SetBaseAlignment(uint32_t offset);
     void SetFrontPadding(uint32_t padding);
 
@@ -83,18 +86,44 @@ namespace Engine
     uint32_t              m_frontPadding;
   };
 
+  typedef Dg::DynamicArray<std140ItemDeclaration> std140UniformBlockList;
+
   //Matrices will be column-major
   class std140UniformBlock
   {
   public:
 
+    std140UniformBlock(MatrixLayout);
+    ~std140UniformBlock();
+
+    friend bool operator==(std140UniformBlock const &, std140UniformBlock const&);
+
     void Push(std140ItemDeclaration const&);
     void * OutputNext(void *);
+
+    uint32_t Size() const;
+    uint32_t ItemCount() const;
+
+  private:
+    std::string m_name;
+    MatrixLayout m_matrixLayout;
+    std140UniformBlockList m_items;
+  };
+
+  class std140UniformBlockBuffer
+  {
+  public:
+
+    std140UniformBlockBuffer();
+    ~std140UniformBlockBuffer();
+
+    void Push(std140UniformBlock const&);
+    std140UniformBlock * Get(std::string const & name);
 
     uint32_t Size();
 
   private:
-    std::string m_name;
+    Dg::DynamicArray<std140UniformBlock *> m_blocks;
   };
 
   class ShaderResourceDeclaration
