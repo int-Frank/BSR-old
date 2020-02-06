@@ -6,7 +6,7 @@
 #include "RendererAPI.h"
 #include "Buffer.h"
 #include "VertexArray.h"
-#include "RT_RendererProgram.h"
+#include "RendererProgram.h"
 
 #include "imgui.h"
 
@@ -45,11 +45,11 @@ public:
 
     m_va->AddVertexBuffer(m_vb);
 
-    Engine::RT_RendererProgram prog;
-    Engine::RT_RendererProgram::ShaderSource src;
-    src.src[SD32(Vertex)] = Core::ImportTextFile("D:/dev/projects/BSR/Game/src/test_shader.glsl");
-
-    prog.Init(src);
+    Engine::Ref<Engine::RendererProgram> prog = Engine::RendererProgram::Create();
+    prog->Init(
+      {
+        { Engine::ShaderDomain::Vertex, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/test_shader.glsl" }
+      });
   }
 
   void OnDetach() override
@@ -59,7 +59,7 @@ public:
 
   void Update(float a_dt) override
   {
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     //LOG_DEBUG("VertexArray: Renderer ID: {}, Ref ID: {}", m_va->GetRendererID(), m_va->GetRefID().GetID());
   }
 
@@ -85,7 +85,7 @@ public:
   {
     PushLayer(new GameLayer());
     LOG_TRACE("Game initialised!");
-    RequestQuit();
+    //RequestQuit();
   }
 
   ~Game()
