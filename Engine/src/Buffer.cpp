@@ -275,6 +275,7 @@ namespace Engine
 
   void VertexBuffer::SetLayout(BufferLayout const& a_layout)
   {
+    //TODO why am I Serializing and not just creating a copy on the heap and passing a pointer??
     void * buffer = RENDER_ALLOCATE(static_cast<uint32_t>(a_layout.Size()));
     a_layout.Serialize(buffer);
 

@@ -1,3 +1,6 @@
+#Custom
+Engine/Engine_vpaths.lua
+
 # Prerequisites
 *.d
 

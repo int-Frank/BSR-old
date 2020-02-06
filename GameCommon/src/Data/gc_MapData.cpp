@@ -3,8 +3,21 @@
 #define DG_ASSERTS_ENABLED
 #include "DgAssert.h"
 
+#define GetSubInt64(item, data) Dg::GetSubInt<DataType, static_cast<DataType>(Loc::item), static_cast<DataType>(Size::item)>(data)
+#define SetSubInt64(item, data, val) Dg::SetSubInt<DataType, static_cast<DataType>(Loc::item), static_cast<DataType>(Size::item)>(data, val)
+
 namespace GC
 {
+  BSP_Node::Meta const BSP_Node::s_meta[6] =
+  {
+    {31, 1},
+    {0, 31},
+    {0, 12},
+    {12, 12},
+    {24, 6},
+    {30, 1},
+  };
+
   Arc const Corner::Arcs[4] = 
   {
     {{0.0f, 1.0f, 0.0f},  {1.0f, 0.0f, 0.0f}},
@@ -25,87 +38,18 @@ namespace GC
   {
     return vec2(direction[1], -direction[0]);
   }
-}
 
-//Node::Node()
-//  : m_data(0)
-//  , m_offset(0.0f)
-//{
-//
-//}
-//
-//Node::Node(Node const & a_other)
-//  : m_data(a_other.m_data)
-//  , m_offset(a_other.m_offset)
-//{
-//
-//}
-//
-//Node & Node::operator=(Node const & a_other)
-//{
-//  m_data = a_other.m_data;
-//  m_offset = a_other.m_offset;
-//  return *this;
-//}
-//
-//Node::NodeType Node::GetType() const
-//{
-//  return NodeType(m_data & 1);
-//}
-//
-//uint32_t Node::GetElement() const
-//{
-//  return ((m_data >> 1) & 1);
-//}
-//
-//uint32_t Node::GetChildAboveInd() const
-//{
-//  return ((m_data >> 2) & 0x7FFF);
-//}
-//
-//uint32_t Node::GetChildBelowInd() const
-//{
-//  return ((m_data >> 17) & 0x7FFF);
-//}
-// 
-//float Node::GetOffset() const
-//{
-//  return m_offset;
-//}
-//
-//uint32_t Node::GetBlockID() const
-//{
-//  return (m_data & 0x7FFFFFFF);
-//}
-//
-//void Node::SetType(NodeType a_val)
-//{
-//  m_data = (m_data & 0xFFFFFFFE) | uint32_t(a_val & 1);
-//}
-//
-//void Node::SetElement(uint32_t a_val)
-//{
-//  m_data = (m_data & 0xFFFFFFFD) | ((a_val & 1) << 1);
-//}
-//
-//void Node::SetChildAboveInd(uint32_t a_val)
-//{
-//  DG_ASSERT(a_val <= 0x7FFFF);
-//  m_data = (m_data & 0xFFFE0003) | ((a_val & 0x7FFF) << 2);
-//}
-//
-//void Node::SetChildBelowInd(uint32_t a_val)
-//{
-//  DG_ASSERT(a_val <= 0x7FFFF);
-//  m_data = (m_data & 0x1FFFF) | ((a_val & 0x7FFF) << 17);
-//}
-//
-//void Node::SetOffset(float a_val)
-//{
-//  m_offset = a_val;
-//}
-//
-//void Node::SetBlockID(uint32_t a_val)
-//{
-//  m_data = (m_data & 0x80000000) | (a_val & 0x7FFFFFFF);
-//}
+  BSP_Node::BSP_Node()
+    : m_data(0)
+  {
+
+  }
+
+  BSP_Node::BSP_Node(uint64_t a_data)
+    : m_data(a_data)
+  {
+
+  }
+
+  
+}
