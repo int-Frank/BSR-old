@@ -107,6 +107,13 @@ namespace Engine
 
         BindingPointCreate,
         BindingPointDelete,
+
+        RendererProgramCreate,
+        RendererProgramDelete,
+        RendererProgramInit,
+        RendererProgramDestroy,
+        RendererProgramBind,
+        RendererProgramUnbind,
       };
     };
 

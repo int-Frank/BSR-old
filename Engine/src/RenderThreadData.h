@@ -24,13 +24,13 @@ namespace Engine
 
   public:
 
-    Dg::OpenHashMap<RefID, ::Engine::RT_VertexArray>          VAOs;
-    Dg::OpenHashMap<RefID, ::Engine::RT_IndexBuffer>          IBOs;
-    Dg::OpenHashMap<RefID, ::Engine::RT_VertexBuffer>         VBOs;
-    Dg::OpenHashMap<RefID, ::Engine::RT_UniformBuffer>        UBOs;
-    Dg::OpenHashMap<RefID, ::Engine::RT_ShaderStorageBuffer>  SSBOs;
-    Dg::OpenHashMap<RefID, ::Engine::RT_BindingPoint>         bindingPoints;
-    //Dg::OpenHashMap<RefID, ::Engine::RT_Shader>             shaders;
+    Dg::OpenHashMap<RefID, RT_VertexArray>          VAOs;
+    Dg::OpenHashMap<RefID, RT_IndexBuffer>          IBOs;
+    Dg::OpenHashMap<RefID, RT_VertexBuffer>         VBOs;
+    Dg::OpenHashMap<RefID, RT_UniformBuffer>        UBOs;
+    Dg::OpenHashMap<RefID, RT_ShaderStorageBuffer>  SSBOs;
+    Dg::OpenHashMap<RefID, RT_BindingPoint>         bindingPoints;
+    Dg::OpenHashMap<RefID, RT_RendererProgram>      rendererPrograms;
   };
 }
 

@@ -19,31 +19,17 @@
 #ifndef RT_RENDERERPROGRAM_H
 #define RT_RENDERERPROGRAM_H
 
-#include <string>
 #include <stdint.h>
 #include "MemBuffer.h"
 #include "Memory.h"
 #include "core_utils.h"
 #include "ShaderUniform.h"
 #include "RendererAPI.h"
+#include "ShaderSource.h"
 
 namespace Engine
 {
   class RT_BindingPoint;
-
-  class ShaderSource
-  {
-  public:
-
-    void Set(ShaderDomain, std::string const&);
-    std::string const & Get(ShaderDomain) const;
-
-    void Clear();
-
-  private:
-
-    std::string m_src[SD32(COUNT)];
-  };
 
   class RT_RendererProgram
   {

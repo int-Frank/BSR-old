@@ -50,49 +50,6 @@
 namespace Engine
 {
   //--------------------------------------------------------------------------------------------------
-  // ShaderSource
-  //--------------------------------------------------------------------------------------------------
-   void ShaderSource::Set(ShaderDomain a_domain, std::string const & a_src)
-   {
-     if (a_domain == ShaderDomain::INVALID)
-     {
-       LOG_WARN("'INVALID' passed to ShaderSource::Set()");
-       return;
-     }
-
-     if (a_domain == ShaderDomain::COUNT)
-     {
-       LOG_WARN("'COUNT' passed to ShaderSource::Set()");
-       return;
-     }
-
-     m_src[static_cast<uint32_t>(a_domain)] = a_src;
-   }
-
-   std::string const & ShaderSource::Get(ShaderDomain a_domain) const
-   {
-     if (a_domain == ShaderDomain::INVALID)
-     {
-       LOG_WARN("'INVALID' passed to ShaderSource::Get()");
-       return std::string();
-     }
-
-     if (a_domain == ShaderDomain::COUNT)
-     {
-       LOG_WARN("'COUNT' passed to ShaderSource::Get()");
-       return std::string();
-     }
-
-     return m_src[static_cast<uint32_t>(a_domain)];
-   }
-
-   void ShaderSource::Clear()
-   {
-     for (uint32_t i = 0; i < SD32(COUNT); i++)
-       m_src[i].clear();
-   }
-
-  //--------------------------------------------------------------------------------------------------
   // Parsing helper functions
   //--------------------------------------------------------------------------------------------------
   
@@ -133,50 +90,7 @@ namespace Engine
     return __FindDecls(a_str, UNIFORM_VAR_EXPRESSION);
   }
 
-  static std::string RemoveComments(std::string const& a_src)
-  {
-    std::stringstream ss(a_src);
-    std::string result;
-    char c;
-    while (ss.get(c))
-    {
-      if (c == '/')
-      {
-        if (ss.get(c))
-        {
-          if (c == '/')
-            ss.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-          else if (c == '*')
-          {
-            while (ss.get(c))
-            {
-              if (c == '*')
-              {
-                if (ss.get(c))
-                {
-                  if (c == '/')
-                    break;
-                }
-              }
-            }
-          }
-          else
-          {
-            result += '/';
-            result += c;
-          }
-        }
-        else
-        {
-          result += c;
-          break;
-        }
-      }
-      else
-        result += c;
-    }
-    return result;
-  }
+  
 
   //--------------------------------------------------------------------------------------------------
   // Helper functions
@@ -253,11 +167,7 @@ namespace Engine
 
   void RT_RendererProgram::SetShaderSource(ShaderSource const & a_source)
   {
-    for (uint32_t i = 0; i < SD32(COUNT); i++)
-    {
-      ShaderDomain domain = static_cast<ShaderDomain>(i);
-      m_shaderSource.Set(domain, RemoveComments(a_source.Get(domain)));
-    }
+    m_shaderSource = a_source;
   }
 
   bool RT_RendererProgram::Load(ShaderSource const & a_source)
