@@ -94,7 +94,12 @@ namespace Engine
 
   void RenderThread::Stop()
   {
+    int renderInd = OTHER(m_index);
+    m_mutex[renderInd].lock();
+    m_mutex[renderInd].unlock();
+
     m_shouldStop = true;
+
     m_mutex[m_index].unlock();
     m_renderThread.join();
   }
@@ -111,6 +116,8 @@ namespace Engine
     int renderInd = OTHER(m_index);
     m_index = renderInd;
     m_mutex[mainInd].unlock();
+    m_mutex[2].lock();
+    m_mutex[2].unlock();
   }
 
   void RenderThread::RenderThreadInitFinished()
@@ -129,8 +136,7 @@ namespace Engine
 
   void RenderThread::RenderThreadShutDownFinished()
   {
-    int renderInd = OTHER(m_index);
-    m_mutex[renderInd].unlock();
+    m_mutex[m_index].unlock();
   }
 
   void RenderThread::RenderThreadFrameFinished()
@@ -138,7 +144,9 @@ namespace Engine
     int mainInd = m_index;
     int renderInd = OTHER(m_index);
     m_mutex[renderInd].unlock();
+    m_mutex[2].lock();
     m_mutex[mainInd].lock();
+    m_mutex[2].unlock();
   }
 
   bool RenderThread::ShouldExit()

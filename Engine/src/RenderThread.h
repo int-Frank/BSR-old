@@ -43,7 +43,7 @@ namespace Engine
   private:
 
     int m_index;
-    std::mutex m_mutex[2];
+    std::mutex m_mutex[3];
     std::atomic<ReturnCode> m_returnCode;
     std::condition_variable m_cv;
     std::atomic<bool> m_shouldStop;
