@@ -21,7 +21,7 @@
 
 #include <stdint.h>
 #include "DgDynamicArray.h"
-#include "RendererAPI.h"
+#include "RT_RendererAPI.h"
 #include "ResourceID.h"
 
 namespace Engine

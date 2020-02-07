@@ -1,4 +1,4 @@
-//@group Renderer
+//@group Renderer/RenderThread
 
 /*
   Original Copyright Yan Chernikov <github.com/TheCherno/Hazel-dev> and contributors.
@@ -17,7 +17,7 @@
 */
 
 #include <glad/glad.h>
-#include "RendererAPI.h"
+#include "RT_RendererAPI.h"
 #include "core_Log.h"
 #include "core_Assert.h"
 

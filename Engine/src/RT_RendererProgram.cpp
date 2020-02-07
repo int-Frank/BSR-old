@@ -30,8 +30,8 @@
 //TODO Parse uniform blocks, shader storage blocks
 
 //Helpful regex expressions
-#define UNIFORM "(?:uniform)"
-#define STRUCT "(?:struct)"
+#define REG_UNIFORM "(?:uniform)"
+#define REG_STRUCT "(?:struct)"
 #define _OS_ "[\\s\\n\\r]*"
 #define _S_ "[\\s\\n\\r]+"
 #define VAR "([_a-zA-Z][_a-zA-Z0-9]*)"
@@ -41,11 +41,11 @@
 #define STD140_DECL "(?:layout)" _OS_ "[(]" _OS_ "(?:std140)" _OS_ "[)]"
 #define BLOCK_CONTENTS "(?:[^{]*)[{]([^}]*)"
 
-#define UNIFORM_BLOCK_EXPRESSION STD140_DECL _OS_ UNIFORM _S_ VAR BLOCK_CONTENTS
+#define UNIFORM_BLOCK_EXPRESSION STD140_DECL _OS_ REG_UNIFORM _S_ VAR BLOCK_CONTENTS
 
-#define VAR_EXPRESSION                        VAR _S_ VAR _OS_ OARRAY _OS_ SC
-#define UNIFORM_VAR_EXPRESSION    UNIFORM _S_ VAR _S_ VAR _OS_ OARRAY _OS_ SC
-#define STRUCT_EXPRESSION         STRUCT  _S_ VAR BLOCK_CONTENTS
+#define VAR_EXPRESSION                            VAR _S_ VAR _OS_ OARRAY _OS_ SC
+#define UNIFORM_VAR_EXPRESSION    REG_UNIFORM _S_ VAR _S_ VAR _OS_ OARRAY _OS_ SC
+#define STRUCT_EXPRESSION         REG_STRUCT  _S_ VAR BLOCK_CONTENTS
 
 namespace Engine
 {
@@ -184,10 +184,10 @@ namespace Engine
     for (auto ptr : m_structs)
       ptr->Log();
 
-    //if (!CompileAndUploadShader())
-    //  return false;
+    if (!CompileAndUploadShader())
+      return false;
 
-    //ResolveUniforms();
+    ResolveUniforms();
     //ValidateUniforms();
 
     m_loaded = true;
@@ -370,14 +370,17 @@ namespace Engine
       glDetachShader(program, id);
 
     m_rendererID = program;
+
+    LOG_DEBUG("Successfully created program");
+
     return result;
   }
 
   void RT_RendererProgram::ResolveUniforms()
   {
-    /*glUseProgram(m_rendererID);
+    glUseProgram(m_rendererID);
 
-    for (int i = 0; i < SD_COUNT; i++)
+    for (int i = 0; i < SD32(COUNT); i++)
     {
       ShaderUniformDeclarationBuffer * decl = m_uniformBuffers[i];
       if (decl)
@@ -402,7 +405,7 @@ namespace Engine
       }
     }
 
-    uint32_t sampler = 0;
+    /*uint32_t sampler = 0;
     for (size_t i = 0; i < m_resources.size(); i++)
     {
       ShaderResourceDeclaration* resource = m_resources[i];
@@ -427,6 +430,15 @@ namespace Engine
         delete[] samplers;
       }
     }*/
+  }
+
+  int32_t RT_RendererProgram::GetUniformLocation(std::string const & name) const
+  {
+    int32_t result = glGetUniformLocation(m_rendererID, name.c_str());
+    if (result == -1)
+      LOG_WARN("Could not find uniform '{0}' in shader", name);
+
+    return result;
   }
 
   void RT_RendererProgram::ValidateUniforms()

@@ -391,12 +391,17 @@ namespace Engine
     return m_pStruct;
   }
 
-  void ShaderUniformDeclaration::SetOffset(uint32_t offset)
+  void ShaderUniformDeclaration::SetLocation(int32_t a_loc)
+  {
+    m_location = a_loc;
+  }
+
+  void ShaderUniformDeclaration::SetOffset(uint32_t a_offset)
   {
     if (m_type == ShaderDataType::STRUCT)
-      m_pStruct->SetOffset(offset);
+      m_pStruct->SetOffset(a_offset);
 
-    m_offset = offset;
+    m_offset = a_offset;
   }
 
   //---------------------------------------------------------------------------------------------------

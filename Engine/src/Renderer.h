@@ -24,7 +24,7 @@
 #include "Memory.h"
 
 #include "PODArray.h"
-#include "RendererAPI.h"
+#include "RT_RendererAPI.h"
 #include "RenderState.h"
 #include "Group.h"
 #include "RenderCommandQueue.h"

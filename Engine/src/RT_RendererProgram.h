@@ -24,7 +24,7 @@
 #include "Memory.h"
 #include "core_utils.h"
 #include "ShaderUniform.h"
-#include "RendererAPI.h"
+#include "RT_RendererAPI.h"
 #include "ShaderSource.h"
 
 namespace Engine
@@ -65,8 +65,6 @@ namespace Engine
     void ExtractUniforms(ShaderDomain);
     void ExtractUniformBlocks(ShaderDomain);
 
-    /*void ParseUniform(std::string const & statement, ShaderDomain);
-    void ParseStruct(const std::string& block, ShaderDomain domain);*/
     bool CompileAndUploadShader();
     void ResolveUniforms();
     void ValidateUniforms();
@@ -74,7 +72,7 @@ namespace Engine
     //bool Bind(ShaderDomain, std::string const & name, RT_BindingPoint const &);
 
     ShaderStruct* FindStruct(std::string const & name);
-    //int32_t GetUniformLocation(const std::string& name) const;
+    int32_t GetUniformLocation(std::string const & name) const;
 
     //void ResolveAndSetUniforms(ShaderUniformDeclarationBuffer* decl, MemBufferDynamic buffer);
     //void ResolveAndSetUniform(ShaderUniformDeclaration* uniform, MemBufferDynamic buffer);

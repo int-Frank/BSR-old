@@ -68,7 +68,8 @@ namespace Engine
         LOG_WARN("RendererProgram::Init: RefID '{}' does not exist!", resID);
         return;
       }
-      pRP->Init(*ptr);
+      if (!pRP->Init(*ptr))
+        LOG_WARN("RendererProgram::Init: Failed! RefID: {}", resID);
       delete ptr;
     });
   }

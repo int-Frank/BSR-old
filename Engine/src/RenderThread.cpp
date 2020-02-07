@@ -3,7 +3,7 @@
 #include "core_Assert.h"
 #include "RenderThread.h"
 #include "Framework.h"
-#include "RendererAPI.h"
+#include "RT_RendererAPI.h"
 #include "RenderThreadData.h"
 #include "RT_BindingPoint.h"
 #include "Renderer.h"

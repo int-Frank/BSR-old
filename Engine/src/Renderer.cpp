@@ -21,7 +21,7 @@
 #include "core_Assert.h"
 #include "Framework.h"
 #include "core_Log.h"
-#include "RendererAPI.h"
+#include "RT_RendererAPI.h"
 #include "RenderThread.h"
 
 namespace Engine

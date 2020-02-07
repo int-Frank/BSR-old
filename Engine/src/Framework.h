@@ -11,7 +11,6 @@
 #include "IEventPoller.h"
 #include "IMouseController.h"
 #include "IGraphicsContext.h"
-#include "Shader.h"
 #include "Buffer.h"
 #include "Memory.h"
 

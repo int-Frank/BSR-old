@@ -1,4 +1,4 @@
-//@group Renderer
+//@group Renderer/RenderThread
 
 /*
   Original Copyright Yan Chernikov <github.com/TheCherno/Hazel-dev> and contributors.
@@ -16,8 +16,8 @@
   Copyright 2017-2019 Frank Hart <frankhart010@gmail.com>
 */
 
-#ifndef RENDERERAPI_H
-#define RENDERERAPI_H
+#ifndef RT_RENDERERAPI_H
+#define RT_RENDERERAPI_H
 
 #include <stdint.h>
 #include <string>

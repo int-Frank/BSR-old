@@ -4,7 +4,7 @@
 #define RENDERTHREADDATA_H
 
 #include "DgOpenHashMap.h"
-#include "RendererAPI.h"
+//#include "RT_RendererAPI.h"
 #include "RT_Buffer.h"
 #include "RT_VertexArray.h"
 #include "RT_RendererProgram.h"

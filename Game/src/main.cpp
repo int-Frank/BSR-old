@@ -3,7 +3,7 @@
 
 #include "Engine.h"
 #include "Renderer.h"
-#include "RendererAPI.h"
+#include "RT_RendererAPI.h"
 #include "Buffer.h"
 #include "VertexArray.h"
 #include "RendererProgram.h"
@@ -26,9 +26,9 @@ public:
 
     float verts[] = 
     {
-      0.0f, 0.5f, 0.0f,
-      0.5f, -0.5f, 0.0f,
-      -0.5f, -0.5f, 0.0f
+      0.0f, 0.5f,
+      0.5f, -0.5f,
+      -0.5f, -0.5f  
     };
 
     int indices[] = {0, 1, 2};
@@ -44,11 +44,13 @@ public:
     m_va = Engine::VertexArray::Create();
 
     m_va->AddVertexBuffer(m_vb);
+    m_va->SetIndexBuffer(m_ib);
 
-    Engine::Ref<Engine::RendererProgram> prog = Engine::RendererProgram::Create();
-    prog->Init(
+    m_prog = Engine::RendererProgram::Create();
+    m_prog->Init(
       {
-        { Engine::ShaderDomain::Vertex, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/test_shader.glsl" }
+        { Engine::ShaderDomain::Vertex, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/vs.glsl" },
+        { Engine::ShaderDomain::Fragment, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/fs.glsl" }
       });
   }
 
@@ -72,9 +74,10 @@ public:
 
 private:
 
-  Engine::Ref<Engine::VertexBuffer> m_vb;
-  Engine::Ref<Engine::IndexBuffer>  m_ib;
-  Engine::Ref<Engine::VertexArray>  m_va;
+  Engine::Ref<Engine::VertexBuffer>     m_vb;
+  Engine::Ref<Engine::IndexBuffer>      m_ib;
+  Engine::Ref<Engine::VertexArray>      m_va;
+  Engine::Ref<Engine::RendererProgram>  m_prog;
 };
 
 class Game : public Engine::Application
