@@ -87,6 +87,7 @@ namespace Engine
         SwapWindow,
         SetClearColor,
         Clear,
+        Draw,
 
         BufferCreate,
         BufferDelete,

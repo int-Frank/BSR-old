@@ -62,6 +62,18 @@ namespace Engine
 
   }
 
+  void Renderer::DrawIndexed(unsigned int a_count, bool a_depthTest)
+  {
+    Engine::RenderState state = Engine::RenderState::Create();
+    state.Set<Engine::RenderState::Attr::Type>(Engine::RenderState::Type::Command);
+    state.Set<Engine::RenderState::Attr::Command>(Engine::RenderState::Command::Draw);
+
+    RENDER_SUBMIT(state, [count = a_count, depthTest = a_depthTest]()
+      {
+        RendererAPI::DrawIndexed(count, depthTest);
+      });
+  }
+
   void Renderer::Clear()
   {
     Engine::RenderState state = Engine::RenderState::Create();

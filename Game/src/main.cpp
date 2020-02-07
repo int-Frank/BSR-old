@@ -36,7 +36,7 @@ public:
     m_vb = Engine::VertexBuffer::Create(verts, SIZEOF32(verts));
     m_vb->SetLayout(
       {
-        { Engine::ShaderDataType::VEC3, "a_Position" }
+        { Engine::ShaderDataType::VEC2, "a_Position" }
       });
 
     m_ib = Engine::IndexBuffer::Create(indices, SIZEOF32(indices));
@@ -61,7 +61,7 @@ public:
 
   void Update(float a_dt) override
   {
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    //std::this_thread::sleep_for(std::chrono::milliseconds(500));
     //LOG_DEBUG("VertexArray: Renderer ID: {}, Ref ID: {}", m_va->GetRendererID(), m_va->GetRefID().GetID());
   }
 
@@ -69,6 +69,10 @@ public:
   {
     Engine::Renderer::Clear(1.0f, 0.0f, 1.0f);
 
+    m_prog->Bind();
+    m_va->Bind();
+
+    Engine::Renderer::DrawIndexed(3, false);
 
   }
 
