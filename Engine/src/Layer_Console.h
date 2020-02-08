@@ -11,8 +11,9 @@ namespace Engine
 {
   class Layer_Console : public Layer
   {
-    ASSIGN_ID
   public:
+
+    ASSIGN_ID(2)
 
     Layer_Console();
     ~Layer_Console();

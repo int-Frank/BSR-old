@@ -12,8 +12,9 @@ namespace Engine
   //Framework class. The imgui layer is responsible for handling input and rendering.
   class Layer_imgui : public Layer
   {
-    ASSIGN_ID
   public:
+
+    ASSIGN_ID(3)
 
     Layer_imgui();
     ~Layer_imgui();

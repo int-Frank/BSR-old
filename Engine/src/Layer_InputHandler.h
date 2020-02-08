@@ -20,8 +20,9 @@ namespace Engine
 
   class Layer_InputHandler : public Layer
   {
-    ASSIGN_ID
   public:
+
+    ASSIGN_ID(4)
 
     Layer_InputHandler();
     ~Layer_InputHandler();

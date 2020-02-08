@@ -7,12 +7,8 @@
 #include "MessageHandler.h"
 #include "Memory.h"
 
-#define ASSIGN_ID public:\
-static ::Engine::Layer::ID GetStaticID() \
-{\
-  return reinterpret_cast<::Engine::Layer::ID>(GetStaticID);\
-}\
-::Engine::Layer::ID GetID() override {return GetStaticID();}
+#define ASSIGN_ID(id) ::Engine::Layer::ID GetID() override {return id;}\
+static ::Engine::Layer::ID GetStaticID() {return id;}
 
 namespace Engine
 {
@@ -25,7 +21,7 @@ namespace Engine
   {
   public: 
 
-    typedef intptr_t ID;
+    typedef uint32_t ID;
 
     virtual ~Layer(){}
 
@@ -37,6 +33,11 @@ namespace Engine
     virtual void Update(float dt) =0;
     virtual void Render() {}
     virtual void DoImGui(){}
+
+  protected:
+
+    static ID s_currentID;
+    static ID GetNextID();
 
     //Layer(Layer const &);
     //Layer & operator=(Layer const &);

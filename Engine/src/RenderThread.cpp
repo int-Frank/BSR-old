@@ -34,7 +34,6 @@ namespace Engine
       Renderer::Instance()->ExecuteRenderCommands();
       RenderThread::Instance()->RenderThreadFrameFinished();
     }
-
     RenderThreadData::ShutDown();
     RendererAPI::ShutDown();
 
@@ -94,18 +93,29 @@ namespace Engine
 
   void RenderThread::Stop()
   {
-    int renderInd = OTHER(m_index);
-    m_mutex[renderInd].lock();
-    m_mutex[renderInd].unlock();
+    //We need to sleep the main thread for a bit to allow the render thread to catch up.
+    //Not sure why we need to do this, but I think it has something to do with threads
+    //waiting on a mutex can be retasked by the OS and given back to the program
+    //at a later time. Even if another thread unlocks the mutex, there is no guarentee
+    //the thread will then immediatly take the lock.
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
+    Sync();
     m_shouldStop = true;
+    Continue();
 
-    m_mutex[m_index].unlock();
     m_renderThread.join();
+    m_mutex[m_index].unlock();
   }
 
   void RenderThread::Sync()
   {
+    //Do not proceed until the render thread has this lock. This may happen in the unlikely
+    //case where the render thread has stalled between switching locks, allowing the main
+    //thread to complete one full frame.
+    while (m_mutex[m_index].try_lock())
+      m_mutex[m_index].unlock();
+
     int renderInd = OTHER(m_index);
     m_mutex[renderInd].lock();
   }
@@ -116,8 +126,6 @@ namespace Engine
     int renderInd = OTHER(m_index);
     m_index = renderInd;
     m_mutex[mainInd].unlock();
-    m_mutex[2].lock();
-    m_mutex[2].unlock();
   }
 
   void RenderThread::RenderThreadInitFinished()
@@ -136,7 +144,7 @@ namespace Engine
 
   void RenderThread::RenderThreadShutDownFinished()
   {
-    m_mutex[m_index].unlock();
+    m_mutex[OTHER(m_index)].unlock();
   }
 
   void RenderThread::RenderThreadFrameFinished()
@@ -144,9 +152,7 @@ namespace Engine
     int mainInd = m_index;
     int renderInd = OTHER(m_index);
     m_mutex[renderInd].unlock();
-    m_mutex[2].lock();
     m_mutex[mainInd].lock();
-    m_mutex[2].unlock();
   }
 
   bool RenderThread::ShouldExit()

@@ -12,12 +12,12 @@
 
 class GameLayer : public Engine::Layer
 {
-  ASSIGN_ID
 public:
 
+  ASSIGN_ID(256);
   GameLayer()
   {
-    
+
   }
 
   void OnAttach() override
@@ -61,8 +61,8 @@ public:
 
   void Update(float a_dt) override
   {
-    //std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    //LOG_DEBUG("VertexArray: Renderer ID: {}, Ref ID: {}", m_va->GetRendererID(), m_va->GetRefID().GetID());
+    //std::this_thread::sleep_for(std::chrono::milliseconds(vals[i]));
+    //LOG_DEBUG("ASDF");
   }
 
   void Render() override

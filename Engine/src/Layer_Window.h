@@ -15,8 +15,10 @@ namespace Engine
 
   class Layer_Window : public Layer
   {
-    ASSIGN_ID
+
   public:
+
+    ASSIGN_ID(5)
 
     Layer_Window(Ref<IWindow>);
     ~Layer_Window();

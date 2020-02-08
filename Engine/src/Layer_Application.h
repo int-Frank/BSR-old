@@ -13,8 +13,9 @@ namespace Engine
 {
   class Layer_Application : public Layer
   {
-    ASSIGN_ID
   public:
+
+    ASSIGN_ID(1)
 
       Layer_Application();
     ~Layer_Application();
