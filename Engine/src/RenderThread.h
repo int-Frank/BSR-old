@@ -2,9 +2,9 @@
 #ifndef RENDERTHREAD_H
 #define RENDERTHREAD_H
 
-#include <mutex>
 #include <thread>
 #include <atomic>
+#include <condition_variable>
 
 namespace Engine
 {
@@ -42,8 +42,17 @@ namespace Engine
 
   private:
 
+    void WaitAndLock(int);
+    void Unlock(int);
+
+    enum LockState
+    {
+      Locked,
+      Unlocked
+    };
+
     int m_index;
-    std::mutex m_mutex[2];
+    std::atomic<LockState> m_locks[2];
     std::atomic<ReturnCode> m_returnCode;
     std::condition_variable m_cv;
     std::atomic<bool> m_shouldStop;

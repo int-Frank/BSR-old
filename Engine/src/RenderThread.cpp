@@ -52,6 +52,7 @@ namespace Engine
     : m_index(0)
     , m_returnCode(ReturnCode::None)
     , m_shouldStop(false)
+    , m_locks{Locked, Locked}
   {
 
   }
@@ -78,7 +79,6 @@ namespace Engine
 
   bool RenderThread::Start()
   {
-    m_mutex[m_index].lock();
     m_renderThread = std::thread(RenderThreadWorker);
     {
       std::mutex mutex_start;
@@ -93,31 +93,30 @@ namespace Engine
 
   void RenderThread::Stop()
   {
-    //We need to sleep the main thread for a bit to allow the render thread to catch up.
-    //Not sure why we need to do this, but I think it has something to do with threads
-    //waiting on a mutex can be retasked by the OS and given back to the program
-    //at a later time. Even if another thread unlocks the mutex, there is no guarentee
-    //the thread will then immediatly take the lock.
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
     Sync();
     m_shouldStop = true;
     Continue();
 
     m_renderThread.join();
-    m_mutex[m_index].unlock();
+  }
+
+  void RenderThread::WaitAndLock(int a_index)
+  {
+    uint32_t counter = 0;
+    while (m_locks[a_index] == Locked)
+      counter++; //Debug
+    m_locks[a_index] = Locked;
+  }
+
+  void RenderThread::Unlock(int a_index)
+  {
+    m_locks[a_index] = Unlocked;
   }
 
   void RenderThread::Sync()
   {
-    //Do not proceed until the render thread has this lock. This may happen in the unlikely
-    //case where the render thread has stalled between switching locks, allowing the main
-    //thread to complete one full frame.
-    while (m_mutex[m_index].try_lock())
-      m_mutex[m_index].unlock();
-
     int renderInd = OTHER(m_index);
-    m_mutex[renderInd].lock();
+    WaitAndLock(renderInd);
   }
 
   void RenderThread::Continue()
@@ -125,13 +124,12 @@ namespace Engine
     int mainInd = m_index;
     int renderInd = OTHER(m_index);
     m_index = renderInd;
-    m_mutex[mainInd].unlock();
+    Unlock(mainInd);
   }
 
   void RenderThread::RenderThreadInitFinished()
   {
     int renderInd = OTHER(m_index);
-    m_mutex[renderInd].lock();
     m_returnCode = ReturnCode::Ready;
     m_cv.notify_all();
   }
@@ -144,15 +142,15 @@ namespace Engine
 
   void RenderThread::RenderThreadShutDownFinished()
   {
-    m_mutex[OTHER(m_index)].unlock();
+
   }
 
   void RenderThread::RenderThreadFrameFinished()
   {
     int mainInd = m_index;
     int renderInd = OTHER(m_index);
-    m_mutex[renderInd].unlock();
-    m_mutex[mainInd].lock();
+    Unlock(renderInd);
+    WaitAndLock(mainInd);
   }
 
   bool RenderThread::ShouldExit()

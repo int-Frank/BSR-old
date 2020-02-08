@@ -61,7 +61,7 @@ public:
 
   void Update(float a_dt) override
   {
-    //std::this_thread::sleep_for(std::chrono::milliseconds(vals[i]));
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     //LOG_DEBUG("ASDF");
   }
 
