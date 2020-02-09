@@ -102,9 +102,8 @@ namespace Engine
 
   void RenderThread::WaitAndLock(int a_index)
   {
-    uint32_t counter = 0;
     while (m_locks[a_index] == Locked)
-      counter++; //Debug
+      std::this_thread::yield();
     m_locks[a_index] = Locked;
   }
 
