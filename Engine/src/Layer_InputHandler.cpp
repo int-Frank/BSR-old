@@ -21,15 +21,15 @@ namespace Engine
     , m_yMouseRotRate(1.0f)
   {
     //TODO move these to OnAttach(). Also Undind on OnDetatch()
-    Bind(IC_MOUSE_MOTION, Message_Input_MouseMove::GetStaticID(), new Message_GUI_MouseMove());
-    Bind(IC_MOUSE_WHEEL_UP, Message_Input_MouseWheelUp::GetStaticID(), new Message_GUI_MouseWheelUp());
-    Bind(IC_MOUSE_WHEEL_DOWN, Message_Input_MouseWheelDown::GetStaticID(), new Message_GUI_MouseWheelDown());
-    Bind(IC_MOUSE_BUTTON_LEFT, Message_Input_MouseButtonDown::GetStaticID(), new Message_GUI_MouseButtonDown());
-    Bind(IC_MOUSE_BUTTON_LEFT, Message_Input_MouseButtonUp::GetStaticID(), new Message_GUI_MouseButtonUp());
-    Bind(IC_MOUSE_BUTTON_RIGHT, Message_Input_MouseButtonDown::GetStaticID(), new Message_GUI_MouseButtonDown());
-    Bind(IC_MOUSE_BUTTON_RIGHT, Message_Input_MouseButtonUp::GetStaticID(), new Message_GUI_MouseButtonUp());
-
-    Bind(IC_UNKNOWN, Message_Input_Text::GetStaticID(), new Message_GUI_Text());
+    //Bind(IC_MOUSE_MOTION, Message_Input_MouseMove::GetStaticID(), new Message_GUI_MouseMove());
+    //Bind(IC_MOUSE_WHEEL_UP, Message_Input_MouseWheelUp::GetStaticID(), new Message_GUI_MouseWheelUp());
+    //Bind(IC_MOUSE_WHEEL_DOWN, Message_Input_MouseWheelDown::GetStaticID(), new Message_GUI_MouseWheelDown());
+    //Bind(IC_MOUSE_BUTTON_LEFT, Message_Input_MouseButtonDown::GetStaticID(), new Message_GUI_MouseButtonDown());
+    //Bind(IC_MOUSE_BUTTON_LEFT, Message_Input_MouseButtonUp::GetStaticID(), new Message_GUI_MouseButtonUp());
+    //Bind(IC_MOUSE_BUTTON_RIGHT, Message_Input_MouseButtonDown::GetStaticID(), new Message_GUI_MouseButtonDown());
+    //Bind(IC_MOUSE_BUTTON_RIGHT, Message_Input_MouseButtonUp::GetStaticID(), new Message_GUI_MouseButtonUp());
+    //
+    //Bind(IC_UNKNOWN, Message_Input_Text::GetStaticID(), new Message_GUI_Text());
   }
 
   Layer_InputHandler::~Layer_InputHandler()
@@ -65,56 +65,56 @@ namespace Engine
 
   void Layer_InputHandler::HandleMessage(Message_Input_Text* a_pMsg)
   {
-    uint64_t mapKey = PackKey(IC_UNKNOWN, Message_Input_Text::GetStaticID());
+    uint64_t mapKey = PackKey(IC_TEXT, IE_NA);
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void  Layer_InputHandler::HandleMessage(Message_Input_KeyUp * a_pMsg)
   {
-    uint64_t mapKey = PackKey(a_pMsg->keyCode, Message_Input_KeyUp::GetStaticID());
+    uint64_t mapKey = PackKey(InputCode(a_pMsg->keyCode), IE_BUTTON_UP);
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void  Layer_InputHandler::HandleMessage(Message_Input_KeyDown * a_pMsg)
   {
-    uint64_t mapKey = PackKey(a_pMsg->keyCode, Message_Input_KeyDown::GetStaticID());
+    uint64_t mapKey = PackKey(InputCode(a_pMsg->keyCode), IE_BUTTON_DOWN);
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void  Layer_InputHandler::HandleMessage(Message_Input_MouseButtonUp * a_pMsg)
   {
-    uint64_t mapKey = PackKey(a_pMsg->button, Message_Input_MouseButtonUp::GetStaticID());
+    uint64_t mapKey = PackKey(InputCode(a_pMsg->button), IE_BUTTON_UP);
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void  Layer_InputHandler::HandleMessage(Message_Input_MouseButtonDown * a_pMsg)
   {
-    uint64_t mapKey = PackKey(a_pMsg->button, Message_Input_MouseButtonDown::GetStaticID());
+    uint64_t mapKey = PackKey(InputCode(a_pMsg->button), IE_BUTTON_DOWN);
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void  Layer_InputHandler::HandleMessage(Message_Input_MouseWheelUp * a_pMsg)
   {
-    uint64_t mapKey = PackKey(IC_MOUSE_WHEEL_UP, Message_Input_MouseWheelUp::GetStaticID());
+    uint64_t mapKey = PackKey(IC_MOUSE_WHEEL_UP, IE_NA);
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void  Layer_InputHandler::HandleMessage(Message_Input_MouseWheelDown * a_pMsg)
   {
-    uint64_t mapKey = PackKey(IC_MOUSE_WHEEL_DOWN, Message_Input_MouseWheelDown::GetStaticID());
+    uint64_t mapKey = PackKey(IC_MOUSE_WHEEL_DOWN, IE_NA);
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
 
   void  Layer_InputHandler::HandleMessage(Message_Input_MouseMove * a_pMsg)
   {
-    uint64_t mapKey = PackKey(IC_MOUSE_MOTION, Message_Input_MouseMove::GetStaticID());
+    uint64_t mapKey = PackKey(IC_MOUSE_MOTION, IE_NA);
     HandleBinding(mapKey, a_pMsg);
     a_pMsg->SetFlag(Message::Flag::Handled);
   }
@@ -135,9 +135,9 @@ namespace Engine
     m_yMouseRotRate = a_yRate;
   }
 
-  uint64_t Layer_InputHandler::PackKey(uint32_t a_inputCode, uint32_t a_messageType)
+  uint32_t Layer_InputHandler::PackKey(InputCode a_code, InputEvent a_event)
   {
-    return (uint64_t(a_inputCode) << 32) | a_messageType;
+    return (a_code << 16) | a_event;
   }
 
   void Layer_InputHandler::ClearBindings()
@@ -145,9 +145,10 @@ namespace Engine
     m_bindings.clear();
   }
 
-  void Layer_InputHandler::Bind(InputCode a_inputCode, uint32_t a_event, Message * a_binding)
+  void Layer_InputHandler::SetBindings(std::initializer_list<InputBinding> const & a_bindings)
   {
-    m_bindings.insert(PackKey(a_inputCode, a_event), Ref<Message>(a_binding));
+    for (auto const & item : a_bindings)
+      m_bindings.insert(PackKey(item.code, item.evnt), item.pMsg);
   }
 
   /*template<>

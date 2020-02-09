@@ -187,7 +187,16 @@ namespace Engine
     IC_MOUSE_BUTTON_X2,
     IC_MOUSE_WHEEL_UP,
     IC_MOUSE_WHEEL_DOWN,
-    IC_MOUSE_MOTION
+    IC_MOUSE_MOTION,
+
+    IC_TEXT
+  };
+
+  enum InputEvent : uint32_t
+  {
+    IE_NA,
+    IE_BUTTON_UP,
+    IE_BUTTON_DOWN
   };
 }
 

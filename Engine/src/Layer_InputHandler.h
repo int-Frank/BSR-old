@@ -4,6 +4,7 @@
 #define EN_LAYER_INPUTHANDLER_H
 
 #include <stdint.h>
+#include <initializer_list>
 
 #include "DgMap_AVL.h"
 
@@ -17,6 +18,18 @@ namespace Engine
 {
   class IEventPoller;
   class IMouseController;
+
+  class InputBinding
+  {
+  public:
+
+    InputCode code;
+    InputEvent evnt;
+    Message * pMsg;
+
+    InputBinding(InputCode, InputEvent, Message*);
+    InputBinding(InputCode, Message*);
+  };
 
   class Layer_InputHandler : public Layer
   {
@@ -44,13 +57,13 @@ namespace Engine
     void HandleMessage(Message_Input_MouseWheelDown *);
     void HandleMessage(Message_Input_MouseMove *);
 
-    void Bind(InputCode inputCode, uint32_t event, Message * binding);
+    void SetBindings(std::initializer_list<InputBinding> const &);
 
   private:
 
     void HandleBinding(uint64_t key, Message const * source);
 
-    uint64_t PackKey(uint32_t inputCode, uint32_t MessageType);
+    uint32_t PackKey(InputCode, InputEvent);
 
     Ref<IEventPoller>                   m_eventPoller;
     Ref<IMouseController>               m_mouseController;
