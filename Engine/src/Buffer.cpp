@@ -47,11 +47,11 @@ namespace Engine
 
   size_t BufferElement::Size() const
   {
-    return Core::SerializedSize(name)
-      + Core::SerializedSize(type)
-      + Core::SerializedSize(size)
-      + Core::SerializedSize(offset)
-      + Core::SerializedSize(normalized);
+    return size_t(Core::SerializedSize(name))
+         + size_t(Core::SerializedSize(type))
+         + size_t(Core::SerializedSize(size))
+         + size_t(Core::SerializedSize(offset))
+         + size_t(Core::SerializedSize(normalized));
   }
 
   void* BufferElement::Serialize(void* a_out) const

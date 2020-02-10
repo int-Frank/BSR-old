@@ -67,6 +67,11 @@ namespace Engine
     m_pimpl->layerStack.PushLayer(a_pLayer, a_pLayer->GetID());
   }
 
+  Layer * Application::GetLayer(Layer::ID a_id)
+  {
+    return m_pimpl->layerStack.GetLayer(a_id);
+  }
+
   Application::Application(Opts const & a_opts)
     : m_pimpl(new PIMPL())
   {

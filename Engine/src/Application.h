@@ -4,6 +4,7 @@
 #define EN_APPLICATION_H
 
 #include <string>
+#include "Layer.h"
 
 namespace Engine
 {
@@ -41,6 +42,7 @@ namespace Engine
     static Application * Instance();
 
     void PushLayer(Layer*);
+    Layer * GetLayer(Layer::ID);
 
     void Run();
     void RequestQuit();

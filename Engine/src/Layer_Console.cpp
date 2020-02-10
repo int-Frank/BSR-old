@@ -24,6 +24,8 @@ namespace Engine
 
   void Layer_Console::HandleMessage(Message * a_pMsg)
   {
-    //Don't write to console...
+    if (!a_pMsg->GetCategory() == MC_Input)
+      return;
+
   }
 }

@@ -61,9 +61,11 @@ namespace Engine
 
   private:
 
-    void HandleBinding(uint64_t key, Message const * source);
+    typedef uint32_t BindingKey;
 
-    uint32_t PackKey(InputCode, InputEvent);
+    void HandleBinding(BindingKey key, Message const * source);
+
+    BindingKey PackKey(InputCode, InputEvent);
 
     Ref<IEventPoller>                   m_eventPoller;
     Ref<IMouseController>               m_mouseController;

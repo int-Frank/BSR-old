@@ -2,6 +2,7 @@
 #include <chrono>
 
 #include "Engine.h"
+#include "Layer_InputHandler.h"
 #include "Renderer.h"
 #include "RT_RendererAPI.h"
 #include "Buffer.h"
@@ -91,6 +92,24 @@ public:
     : Application(a_opts)
   {
     PushLayer(new GameLayer());
+
+    Engine::Layer_InputHandler * layer = static_cast<Engine::Layer_InputHandler*>(GetLayer(Engine::Layer_InputHandler::GetStaticID()));
+    if (!layer)
+      LOG_ERROR("Couldn't find input layer!");
+    else
+    {
+      layer->SetBindings(
+        {
+          {Engine::IC_MOUSE_BUTTON_LEFT,  Engine::IE_BUTTON_UP,   new Engine::Message_GUI_MouseButtonUp()},
+          {Engine::IC_MOUSE_BUTTON_LEFT,  Engine::IE_BUTTON_DOWN, new Engine::Message_GUI_MouseButtonDown()},
+          {Engine::IC_MOUSE_BUTTON_RIGHT, Engine::IE_BUTTON_UP,   new Engine::Message_GUI_MouseButtonUp()},
+          {Engine::IC_MOUSE_BUTTON_RIGHT, Engine::IE_BUTTON_DOWN, new Engine::Message_GUI_MouseButtonDown()},
+          {Engine::IC_MOUSE_MOTION,                               new Engine::Message_GUI_MouseMove()},
+          {Engine::IC_MOUSE_WHEEL_UP,                             new Engine::Message_GUI_MouseWheelUp()},
+          {Engine::IC_MOUSE_WHEEL_DOWN,                           new Engine::Message_GUI_MouseWheelDown()},
+          {Engine::IC_TEXT,                                       new Engine::Message_GUI_Text()}
+        });
+    }
 
     LOG_TRACE("Game initialised!");
     //RequestQuit();

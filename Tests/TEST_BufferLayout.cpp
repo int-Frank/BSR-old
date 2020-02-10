@@ -5,10 +5,10 @@ TEST(Stack_BufferLayout, creation_BufferLayout)
 {
   Engine::BufferLayout layout(
     {
-      {Engine::ShaderDataType::Float, "float", true},
-      {Engine::ShaderDataType::Float3, "float3", false},
-      {Engine::ShaderDataType::Mat3, "mat3", true},
-      {Engine::ShaderDataType::Int2, "int2", false}
+      {Engine::ShaderDataType::FLOAT, "float", true},
+      {Engine::ShaderDataType::VEC3, "vec3", false},
+      {Engine::ShaderDataType::MAT3, "mat3", true},
+      {Engine::ShaderDataType::IVEC2, "ivec2", false}
     });
 
   unsigned char * buf = new unsigned char[layout.Size()];
