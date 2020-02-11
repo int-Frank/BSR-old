@@ -50,7 +50,7 @@ namespace Engine
     //void SetVSMaterialUniformBuffer(MemBufferDynamic const& buffer);
     //void SetPSMaterialUniformBuffer(MemBufferDynamic const& buffer);
 
-    void UploadUniform(std::string const & name, void * data);
+    void UploadUniform(std::string const & name, void const * data);
 
     //const std::string& GetName() const;
   private:

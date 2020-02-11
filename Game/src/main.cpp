@@ -53,9 +53,13 @@ public:
         { Engine::ShaderDomain::Vertex, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/vs.glsl" },
         { Engine::ShaderDomain::Fragment, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/fs.glsl" }
       });
-    m_prog->UploadUniform_bool("u_bool_vs", true);
-    m_prog->UploadUniform_bool("u_bool_fs", true);
-    m_prog->UploadUniform_bool("u_bool", true);
+
+    int t = 1;
+    int f = 0;
+
+    m_prog->UploadUniform("u_bool_vs", &t, 4);
+    m_prog->UploadUniform("u_bool_fs", &t, 4);
+    m_prog->UploadUniform("u_bool", &t, 4);
   }
 
   void OnDetach() override

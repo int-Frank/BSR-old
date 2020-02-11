@@ -129,17 +129,20 @@ namespace Engine
     });
   }
 
-  void RendererProgram::UploadUniform_bool(std::string const& a_name, bool a_val)
+  void RendererProgram::UploadUniform(std::string const& a_name, void const* a_buf, uint32_t a_size)
   {
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::RendererProgramUploadUniform);
 
-    uint32_t sze = Core::SerializedSize(a_name);
-    void * buf = RENDER_ALLOCATE(sze);
-    Core::Serialize(buf, &a_name);
+    uint32_t sze_name = Core::SerializedSize(a_name);
+    void* buf_name = RENDER_ALLOCATE(sze_name);
+    Core::Serialize(buf_name, &a_name);
 
-    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), buf = buf, val = a_val]()
+    void* buf_data = RENDER_ALLOCATE(a_size);
+    memcpy(buf_data, a_buf, a_size);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), buf_name = buf_name, buf_data = buf_data]()
     {
       RT_RendererProgram* pRP = RenderThreadData::Instance()->rendererPrograms.at(resID);
       if (pRP == nullptr)
@@ -149,9 +152,33 @@ namespace Engine
       }
       std::string name;
 
-      int i = val ? 1 : 0;
-      Core::Deserialize(buf, &name, 1);
-      pRP->UploadUniform(name, &i);
+      Core::Deserialize(buf_name, &name, 1);
+      pRP->UploadUniform(name, buf_data);
+    });
+  }
+
+  void RendererProgram::UploadUniformNoCopy(std::string const& a_name, void const* a_buf, uint32_t a_size)
+  {
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::RendererProgramUploadUniform);
+
+    uint32_t sze_name = Core::SerializedSize(a_name);
+    void* buf_name = RENDER_ALLOCATE(sze_name);
+    Core::Serialize(buf_name, &a_name);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), buf_name = buf_name, buf_data = a_buf]()
+    {
+      RT_RendererProgram* pRP = RenderThreadData::Instance()->rendererPrograms.at(resID);
+      if (pRP == nullptr)
+      {
+        LOG_WARN("RendererProgram::Bind: RefID '{}' does not exist!", resID);
+        return;
+      }
+      std::string name;
+
+      Core::Deserialize(buf_name, &name, 1);
+      pRP->UploadUniform(name, buf_data);
     });
   }
 }

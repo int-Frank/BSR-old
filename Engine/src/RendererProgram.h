@@ -24,7 +24,10 @@ namespace Engine
     void Init(ShaderSource const &);
     void Destroy();
 
-    void UploadUniform_bool(std::string const& name, bool);
+    void UploadUniform(std::string const& name, void const * buf, uint32_t size);
+
+    //Use if buf is already on the renderer memory arena
+    void UploadUniformNoCopy(std::string const& name, void const * buf, uint32_t size);
 
     //void Reload(); 
     //void AddShaderReloadedCallback(const ShaderReloadedCallback& callback);

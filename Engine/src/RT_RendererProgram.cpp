@@ -443,7 +443,7 @@ namespace Engine
     return nullptr;
   }
 
-  void RT_RendererProgram::UploadUniform(std::string const & a_name, void * a_pbuf)
+  void RT_RendererProgram::UploadUniform(std::string const & a_name, void const * a_pbuf)
   {
     ShaderUniformDeclaration * pdecl = FindUniform(a_name);
     if (pdecl == nullptr)
@@ -462,9 +462,9 @@ namespace Engine
       case ShaderDataType::BOOL:
       {
         if (pdecl->GetCount() == 1)
-          glUniform1i(pdecl->GetLocation(), *static_cast<int*>(a_pbuf));
+          glUniform1i(pdecl->GetLocation(), *static_cast<int const *>(a_pbuf));
         else
-          glUniform1iv(pdecl->GetLocation(), pdecl->GetCount(), static_cast<int*>(a_pbuf));
+          glUniform1iv(pdecl->GetLocation(), pdecl->GetCount(), static_cast<int const *>(a_pbuf));
       }
     }
   }
