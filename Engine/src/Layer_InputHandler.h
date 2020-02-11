@@ -35,7 +35,7 @@ namespace Engine
   {
   public:
 
-    ASSIGN_ID(4)
+    ASSIGN_ID(static_cast<ID>(DefaultLayer::InputHandler))
 
     Layer_InputHandler();
     ~Layer_InputHandler();

@@ -120,8 +120,6 @@ namespace Engine
 
     //std::vector<ShaderReloadedCallback> m_ShaderReloadedCallbacks;
 
-    //ShaderUniformBufferList m_VSRendererUniformBuffers;
-    //ShaderUniformBufferList m_PSRendererUniformBuffers;
   };
 }
 

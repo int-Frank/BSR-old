@@ -14,7 +14,7 @@ namespace Engine
   {
   public:
 
-    ASSIGN_ID(3)
+    ASSIGN_ID(static_cast<ID>(DefaultLayer::ImGUI))
 
     Layer_imgui();
     ~Layer_imgui();

@@ -18,7 +18,7 @@ namespace Engine
 
   public:
 
-    ASSIGN_ID(5)
+    ASSIGN_ID(static_cast<ID>(DefaultLayer::Window))
 
     Layer_Window(Ref<IWindow>);
     ~Layer_Window();

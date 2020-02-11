@@ -15,7 +15,7 @@ namespace Engine
   {
   public:
 
-    ASSIGN_ID(1)
+    ASSIGN_ID(static_cast<ID>(DefaultLayer::Application))
 
       Layer_Application();
     ~Layer_Application();

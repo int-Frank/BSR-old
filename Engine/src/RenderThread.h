@@ -52,7 +52,7 @@ namespace Engine
     };
 
     int m_index;
-    std::atomic<LockState> m_locks[2];
+    LockState m_locks[2]; //Do these need to be atomic??
     std::atomic<ReturnCode> m_returnCode;
     std::condition_variable m_cv;
     std::atomic<bool> m_shouldStop;

@@ -13,7 +13,7 @@ namespace Engine
   {
   public:
 
-    ASSIGN_ID(2)
+    ASSIGN_ID(static_cast<ID>(DefaultLayer::Console))
 
     Layer_Console();
     ~Layer_Console();

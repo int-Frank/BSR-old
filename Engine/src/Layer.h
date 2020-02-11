@@ -14,6 +14,15 @@ namespace Engine
 {
   class MessageBus;
 
+  enum class DefaultLayer
+  {
+    Application,
+    Console,
+    ImGUI,
+    InputHandler,
+    Window,
+  };
+
   //TODO Subscribers should collect messages and process them on a single call
   //     to Update(). This way, we can throw the subscriber on a separate thread
   //     and update.
