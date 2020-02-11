@@ -57,9 +57,9 @@ public:
     int t = 1;
     int f = 0;
 
-    m_prog->UploadUniform("u_bool_vs", &t, 4);
-    m_prog->UploadUniform("u_bool_fs", &t, 4);
-    m_prog->UploadUniform("u_bool", &t, 4);
+    int vals[3] = {1, 0, 1};
+
+    m_prog->UploadUniform("u_bool", vals, 4 * 3);
   }
 
   void OnDetach() override
