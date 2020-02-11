@@ -45,10 +45,7 @@ namespace Engine
     friend bool operator==(ShaderStruct const &, ShaderStruct const &);
 
     void AddField(ShaderUniformDeclaration*);
-    void SetOffset(uint32_t);
     std::string const & GetName() const;
-    uint32_t GetSize() const;
-    uint32_t GetOffset() const;
     ShaderDomain GetDomain() const;
     Dg::DynamicArray<ShaderUniformDeclaration*> const & GetFields() const;
 
@@ -56,8 +53,6 @@ namespace Engine
     std::string m_name;
     Dg::DynamicArray<ShaderUniformDeclaration*> m_fields;
     ShaderDomain m_domain;
-    uint32_t m_size;
-    uint32_t m_offset; //offset in the buffer to where the uniform is kept
   };
 
   //A data type of STRUCT will just be padding. This can be used 
@@ -167,10 +162,7 @@ namespace Engine
     friend bool operator==(ShaderUniformDeclaration const&, ShaderUniformDeclaration const&);
 
     std::string GetName() const;
-    uint32_t GetSize() const;
     uint32_t GetCount() const;
-    uint32_t GetOffset() const;
-    uint32_t GetAbsoluteOffset() const;
     ShaderDomains & GetDomains();
     int32_t GetLocation() const;
     ShaderDataType GetType() const;
@@ -186,9 +178,7 @@ namespace Engine
 
   private:
     std::string m_name;
-    uint32_t m_size;
     uint32_t m_count;
-    uint32_t m_offset;
     ShaderDomains m_domains;
 
     ShaderDataType m_type;
@@ -210,7 +200,6 @@ namespace Engine
     void Clear();
     std::string GetName() const;
     uint32_t GetRegister() const;
-    uint32_t GetSize() const;
     ShaderUniformList& GetUniformDeclarations();
     ShaderUniformList const & GetUniformDeclarations() const;
 
@@ -223,7 +212,6 @@ namespace Engine
     std::string m_name;
     ShaderUniformList m_uniforms;
     uint32_t m_register;
-    uint32_t m_size;
   };
 
   typedef Dg::DynamicArray<ShaderUniformDeclarationBuffer*> ShaderUniformBufferList;
