@@ -33,10 +33,11 @@ namespace Engine
   //---------------------------------------------------------------------------------------------------
   // ShaderStruct
   //---------------------------------------------------------------------------------------------------
-  ShaderStruct::ShaderStruct(std::string const & a_name)
+  ShaderStruct::ShaderStruct(std::string const & a_name, ShaderDomain a_domain)
     : m_name(a_name)
     , m_size(0)
     , m_offset(0)
+    , m_domain(a_domain)
   {
 
   }
@@ -82,6 +83,11 @@ namespace Engine
   uint32_t ShaderStruct::GetOffset() const
   {
     return m_offset;
+  }
+
+  ShaderDomain ShaderStruct::GetDomain() const
+  {
+    return m_domain;
   }
 
   Dg::DynamicArray<ShaderUniformDeclaration*> const & ShaderStruct::GetFields() const
@@ -290,12 +296,10 @@ namespace Engine
   //---------------------------------------------------------------------------------------------------
   // ShaderUniformDeclaration
   //---------------------------------------------------------------------------------------------------
-  ShaderUniformDeclaration::ShaderUniformDeclaration(ShaderDomain a_domain, 
-                                                     ShaderDataType a_type, 
+  ShaderUniformDeclaration::ShaderUniformDeclaration(ShaderDataType a_type, 
                                                      std::string a_name, 
                                                      uint32_t a_count)
-    : m_domain(a_domain)
-    , m_type(a_type)
+    : m_type(a_type)
     , m_name(a_name)
     , m_count(a_count)
     , m_location(-1)
@@ -308,12 +312,10 @@ namespace Engine
     m_size = baseTypeSize * nElements * a_count;
   }
   
-  ShaderUniformDeclaration::ShaderUniformDeclaration(ShaderDomain a_domain, 
-                                                     ShaderStruct* a_pStruct, 
+  ShaderUniformDeclaration::ShaderUniformDeclaration(ShaderStruct* a_pStruct, 
                                                      std::string a_name, 
                                                      uint32_t a_count)
-    : m_domain(a_domain)
-    , m_type(ShaderDataType::STRUCT)
+    : m_type(ShaderDataType::STRUCT)
     , m_name(a_name)
     , m_count(a_count)
     , m_location(-1)
@@ -326,8 +328,11 @@ namespace Engine
   void ShaderUniformDeclaration::Log(int a_indent)
   {
     std::string indent(size_t(a_indent)  * 2, ' ');
-    LOG_DEBUG("{}UNIFORM - name: {}, size: {}, count: {}, offset: {}, domain: {}, type: {}",
-      indent.c_str(), m_name.c_str(), m_size, m_count, m_offset, static_cast<uint32_t>(m_domain), ShaderDataTypeToString(m_type).c_str());
+    LOG_DEBUG("{}UNIFORM - name: {}, size: {}, count: {}, offset: {}, type: {}, IsVS: {}, IsFS: {}, IsGS: {}",
+      indent.c_str(), m_name.c_str(), m_size, m_count, m_offset, ShaderDataTypeToString(m_type).c_str(), 
+      m_domains.IsDomain(ShaderDomain::Vertex), 
+      m_domains.IsDomain(ShaderDomain::Fragment), 
+      m_domains.IsDomain(ShaderDomain::Geometry));
     if (m_pStruct)
     {
       m_pStruct->Log(a_indent + 1);
@@ -360,9 +365,9 @@ namespace Engine
     return m_pStruct ? m_pStruct->GetOffset() + m_offset : m_offset;
   }
 
-  ShaderDomain ShaderUniformDeclaration::GetDomain() const
+  ShaderDomains& ShaderUniformDeclaration::GetDomains()
   {
-    return m_domain;
+    return m_domains;
   }
 
   int32_t ShaderUniformDeclaration::GetLocation() const
@@ -404,13 +409,27 @@ namespace Engine
     m_offset = a_offset;
   }
 
+  bool operator==(ShaderUniformDeclaration const& a_uniform_0, ShaderUniformDeclaration const& a_uniform_1)
+  {
+    bool result = a_uniform_0.m_name == a_uniform_1.m_name;
+    result = result && (a_uniform_0.m_type == a_uniform_1.m_type);
+    result = result && (a_uniform_0.m_count == a_uniform_1.m_count);
+    return result;
+  }
+
   //---------------------------------------------------------------------------------------------------
   // ShaderUniformDeclarationBuffer
   //---------------------------------------------------------------------------------------------------
-  ShaderUniformDeclarationBuffer::ShaderUniformDeclarationBuffer(std::string a_name, 
-                                                                 ShaderDomain a_domain)
-    : m_domain(a_domain)
-    , m_name(a_name)
+  ShaderUniformDeclarationBuffer::ShaderUniformDeclarationBuffer()
+    : m_name("")
+    , m_register(0)
+    , m_size(0)
+  {
+
+  }
+  
+  ShaderUniformDeclarationBuffer::ShaderUniformDeclarationBuffer(std::string a_name)
+    : m_name(a_name)
     , m_register(0)
     , m_size(0)
   {
@@ -420,8 +439,8 @@ namespace Engine
   void ShaderUniformDeclarationBuffer::Log(int a_indent)
   {
     std::string indent(size_t(a_indent)  * 2, ' ');
-    LOG_DEBUG("{}UNIFORM DECL BUFFER - name: {}, register: {}, size: {}, domain: {}",
-      indent.c_str(), m_name.c_str(), m_register, m_size, static_cast<uint32_t>(m_domain));
+    LOG_DEBUG("{}UNIFORM DECL BUFFER - name: {}, register: {}, size: {}",
+      indent.c_str(), m_name.c_str(), m_register, m_size);
     for (auto ptr : m_uniforms)
       ptr->Log(a_indent + 1);
     LOG_DEBUG("{}END UNIFORM DECL BUFFER - name: {}", indent.c_str(), m_name.c_str());
@@ -455,12 +474,12 @@ namespace Engine
     return m_size;
   }
 
-  ShaderDomain ShaderUniformDeclarationBuffer::GetDomain() const
+  ShaderUniformList& ShaderUniformDeclarationBuffer::GetUniformDeclarations()
   {
-    return m_domain;
+    return m_uniforms;
   }
 
-  const ShaderUniformList& ShaderUniformDeclarationBuffer::GetUniformDeclarations() const
+  ShaderUniformList const & ShaderUniformDeclarationBuffer::GetUniformDeclarations() const
   {
     return m_uniforms;
   }
@@ -473,6 +492,14 @@ namespace Engine
         return uniform;
     }
     return nullptr;
+  }
+
+  void ShaderUniformDeclarationBuffer::Clear()
+  {
+    for (auto ptr : m_uniforms)
+      delete ptr;
+
+    return m_uniforms.clear();
   }
 
   //---------------------------------------------------------------------------------------------------

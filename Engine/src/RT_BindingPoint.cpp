@@ -8,7 +8,7 @@
 
 namespace Engine
 {
-  RT_BindingPoint::Domain RT_BindingPoint::s_addresses[SBT32(COUNT)][SD32(COUNT)];
+  RT_BindingPoint::Domain RT_BindingPoint::s_addresses[ShaderDomain_COUNT][ShaderDomain_COUNT];
 
   //------------------------------------------------------------------------------------------------
   // BindingPointID
@@ -50,7 +50,6 @@ namespace Engine
                            uint32_t a_index)
   {
     BSR_ASSERT(a_index < 0xFFFF, "Index to high!");
-    BSR_ASSERT(a_domain != ShaderDomain::COUNT, "Invalid Domain!");
     BSR_ASSERT(a_type != StorageBlockType::COUNT, "Invalid Storage block type!");
 
     m_data = a_index;
@@ -64,7 +63,7 @@ namespace Engine
 
   void RT_BindingPoint::Init()
   {
-    int values[SBT32(COUNT)][SD32(COUNT)];
+    int values[ShaderDomain_COUNT][ShaderDomain_COUNT];
 
     glGetIntegerv(GL_MAX_VERTEX_UNIFORM_BLOCKS, &values[SBT32(Uniform)][SD32(Vertex)]);
     glGetIntegerv(GL_MAX_GEOMETRY_UNIFORM_BLOCKS, &values[SBT32(Uniform)][SD32(Geometry)]);
@@ -77,7 +76,7 @@ namespace Engine
     for (int i = 0; i < SBT32(COUNT); i++)
     {
       uint16_t begin = 0;
-      for (int j = 0; j < SD32(COUNT); j++)
+      for (int j = 0; j < ShaderDomain_COUNT; j++)
       {
         s_addresses[i][j].begin = begin;
         s_addresses[i][j].count = values[i][j];

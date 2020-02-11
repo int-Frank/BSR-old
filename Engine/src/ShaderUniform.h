@@ -37,21 +37,25 @@ namespace Engine
   {
   public:
 
-    ShaderStruct(std::string const &);
+    ShaderStruct(std::string const &, ShaderDomain);
 
     //DEBUG
     void Log(int a_indent = 0);
+
+    friend bool operator==(ShaderStruct const &, ShaderStruct const &);
 
     void AddField(ShaderUniformDeclaration*);
     void SetOffset(uint32_t);
     std::string const & GetName() const;
     uint32_t GetSize() const;
     uint32_t GetOffset() const;
+    ShaderDomain GetDomain() const;
     Dg::DynamicArray<ShaderUniformDeclaration*> const & GetFields() const;
 
   private:
     std::string m_name;
     Dg::DynamicArray<ShaderUniformDeclaration*> m_fields;
+    ShaderDomain m_domain;
     uint32_t m_size;
     uint32_t m_offset; //offset in the buffer to where the uniform is kept
   };
@@ -157,15 +161,17 @@ namespace Engine
     //DEBUG
     void Log(int a_indent = 0);
 
-    ShaderUniformDeclaration(ShaderDomain, ShaderDataType, std::string name, uint32_t count = 1);
-    ShaderUniformDeclaration(ShaderDomain, ShaderStruct*, std::string name, uint32_t count = 1);
+    ShaderUniformDeclaration(ShaderDataType, std::string name, uint32_t count = 1);
+    ShaderUniformDeclaration(ShaderStruct*, std::string name, uint32_t count = 1);
+
+    friend bool operator==(ShaderUniformDeclaration const&, ShaderUniformDeclaration const&);
 
     std::string GetName() const;
     uint32_t GetSize() const;
     uint32_t GetCount() const;
     uint32_t GetOffset() const;
     uint32_t GetAbsoluteOffset() const;
-    ShaderDomain GetDomain() const;
+    ShaderDomains & GetDomains();
     int32_t GetLocation() const;
     ShaderDataType GetType() const;
     bool IsArray() const;
@@ -183,7 +189,7 @@ namespace Engine
     uint32_t m_size;
     uint32_t m_count;
     uint32_t m_offset;
-    ShaderDomain m_domain;
+    ShaderDomains m_domains;
 
     ShaderDataType m_type;
 
@@ -196,15 +202,17 @@ namespace Engine
   class ShaderUniformDeclarationBuffer
   {
   public:
-    ShaderUniformDeclarationBuffer(std::string name, ShaderDomain);
+    ShaderUniformDeclarationBuffer(std::string name);
+    ShaderUniformDeclarationBuffer();
 
     void PushUniform(ShaderUniformDeclaration*);
 
+    void Clear();
     std::string GetName() const;
     uint32_t GetRegister() const;
     uint32_t GetSize() const;
-    ShaderDomain GetDomain() const;
-    const ShaderUniformList& GetUniformDeclarations() const;
+    ShaderUniformList& GetUniformDeclarations();
+    ShaderUniformList const & GetUniformDeclarations() const;
 
     //DEBUG
     void Log(int a_indent = 0);
@@ -216,7 +224,6 @@ namespace Engine
     ShaderUniformList m_uniforms;
     uint32_t m_register;
     uint32_t m_size;
-    ShaderDomain m_domain;
   };
 
   typedef Dg::DynamicArray<ShaderUniformDeclarationBuffer*> ShaderUniformBufferList;

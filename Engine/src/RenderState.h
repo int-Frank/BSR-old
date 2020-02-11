@@ -115,6 +115,7 @@ namespace Engine
         RendererProgramDestroy,
         RendererProgramBind,
         RendererProgramUnbind,
+        RendererProgramUploadUniform,
       };
     };
 

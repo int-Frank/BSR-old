@@ -58,7 +58,7 @@ namespace Engine
       uint16_t count;
     };
 
-    static Domain s_addresses[SBT32(COUNT)][SD32(COUNT)];
+    static Domain s_addresses[ShaderDomain_COUNT][ShaderDomain_COUNT];
 
   private:
     BindingPointID  m_bindingIndex;

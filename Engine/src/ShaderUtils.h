@@ -21,23 +21,17 @@ namespace Engine
 
     BOOL,
     INT, UINT,
-    FLOAT, DOUBLE,
+    FLOAT,
 
     BVEC2, BVEC3, BVEC4,
     IVEC2, IVEC3, IVEC4,
     UVEC2, UVEC3, UVEC4,
     VEC2, VEC3, VEC4,
-    DVEC2, DVEC3, DVEC4,
 
     MAT2, MAT2x2, MAT3, MAT3x3, MAT4, MAT4x4,
     MAT2x3, MAT2x4,
     MAT3x2, MAT3x4,
     MAT4x2, MAT4x3,
-
-    DMAT2, DMAT2x2, DMAT3, DMAT3x3, DMAT4, DMAT4x4,
-    DMAT2x3, DMAT2x4,
-    DMAT3x2, DMAT3x4,
-    DMAT4x2, DMAT4x3,
 
     STRUCT
   };
@@ -63,8 +57,7 @@ namespace Engine
     Bool,
     Int,
     UInt,
-    Float,
-    Double
+    Float
   };
 
   enum class ShaderResourceType : uint32_t
@@ -74,13 +67,12 @@ namespace Engine
     TEXTURECUBE
   };
 
+#define ShaderDomain_COUNT 3
   enum class ShaderDomain : uint32_t
   {
-    INVALID    = 0xFFFFFFFF,
     Vertex     = 0,
     Fragment   = 1,
-    Geometry   = 2,
-    COUNT
+    Geometry   = 2
   };
 
   enum class StorageBlockType : uint32_t
@@ -90,6 +82,21 @@ namespace Engine
     COUNT
   };
 
+  class ShaderDomains
+  {
+  public:
+
+    ShaderDomains();
+
+    void AddDomains(ShaderDomains const);
+    void AddDomain(ShaderDomain);
+    void RemoveDomain(ShaderDomain);
+
+    bool IsDomain(ShaderDomain);
+
+  private:
+    uint32_t m_data;
+  };
 
   ShaderDataType StringToShaderDataType(std::string const&);
   std::string ShaderDataTypeToString(ShaderDataType);

@@ -110,7 +110,6 @@ namespace Engine
 
   RT_RendererProgram::RT_RendererProgram()
     : m_rendererID(0)
-    , m_uniformBuffers{nullptr, nullptr, nullptr}
     , m_loaded(false)
   {
 
@@ -128,12 +127,7 @@ namespace Engine
       glDeleteProgram(m_rendererID);
       m_rendererID = 0;
 
-      for (int i = 0; i < SD32(COUNT); i++)
-      {
-        delete m_uniformBuffers[i];
-        m_uniformBuffers[i] = nullptr;
-      }
-
+      m_uniformBuffer.Clear();
       m_shaderSource.Clear();
 
       for (auto ptr : m_resources)
@@ -176,10 +170,7 @@ namespace Engine
     SetShaderSource(a_source);
     Parse();
 
-    if (m_uniformBuffers[0])
-      m_uniformBuffers[0]->Log();
-    if (m_uniformBuffers[1])
-      m_uniformBuffers[1]->Log();
+    m_uniformBuffer.Log();
 
     for (auto ptr : m_structs)
       ptr->Log();
@@ -196,7 +187,7 @@ namespace Engine
 
   void RT_RendererProgram::Parse()
   {
-    for (int i = 0; i < SD32(COUNT); i++)
+    for (int i = 0; i < ShaderDomain_COUNT; i++)
     {
       ExtractStructs(ShaderDomain(i));
       ExtractUniforms(ShaderDomain(i));
@@ -212,7 +203,7 @@ namespace Engine
     std::regex r(STRUCT_EXPRESSION);
     while (regex_search(subject, match, r))
     {
-      ShaderStruct* newStruct = new ShaderStruct(match.str(1));
+      ShaderStruct* newStruct = new ShaderStruct(match.str(1), a_domain);
       varDeclList vars = FindDecls(match.str(2));
 
       for (auto const & var : vars)
@@ -221,9 +212,9 @@ namespace Engine
         ShaderDataType dataType = StringToShaderDataType(var.type);
         if (dataType == ShaderDataType::NONE) //might be a previously defined struct
         {
-          ShaderStruct* pStruct = FindStruct(var.type);
+          ShaderStruct* pStruct = FindStruct(var.type, a_domain);
           if (pStruct)
-            field = new ShaderUniformDeclaration(a_domain, pStruct, var.name, var.count);
+            field = new ShaderUniformDeclaration(pStruct, var.name, var.count);
           else
           {
             LOG_WARN("Unrecognised field '{}' in struct '{}' while parsing glsl struct.", var.type.c_str(), match.str(1).c_str());
@@ -231,7 +222,7 @@ namespace Engine
           }
         }
         else
-          field = new ShaderUniformDeclaration(a_domain, dataType, var.name, var.count);
+          field = new ShaderUniformDeclaration(dataType, var.name, var.count);
         newStruct->AddField(field);
       }
       m_structs.push_back(newStruct);
@@ -260,37 +251,48 @@ namespace Engine
     {
       if (IsTypeStringResource(var.type))
       {
-        ShaderResourceDeclaration* declaration = new ShaderResourceDeclaration(StringToShaderResourceType(var.type), var.name, var.count);
-        m_resources.push_back(declaration);
+        ShaderResourceDeclaration* pDecl = new ShaderResourceDeclaration(StringToShaderResourceType(var.type), var.name, var.count);
+        m_resources.push_back(pDecl);
       }
       else
       {
         ShaderDataType t = StringToShaderDataType(var.type);
-        ShaderUniformDeclaration* declaration = nullptr;
+        ShaderUniformDeclaration* pDecl = nullptr;
 
         if (t == ShaderDataType::NONE)
         {
-          ShaderStruct* pStruct = FindStruct(var.type);
+          ShaderStruct* pStruct = FindStruct(var.type, a_domain);
           BSR_ASSERT(pStruct, "Undefined struct!");
-          declaration = new ShaderUniformDeclaration(a_domain, pStruct, var.name, var.count);
+          pDecl = new ShaderUniformDeclaration(pStruct, var.name, var.count);
         }
         else
-          declaration = new ShaderUniformDeclaration(a_domain, t, var.name, var.count);
+          pDecl = new ShaderUniformDeclaration(t, var.name, var.count);
+        pDecl->GetDomains().AddDomain(a_domain);
 
-        uint32_t ind = static_cast<uint32_t>(a_domain);
-
-        if (m_uniformBuffers[ind] == nullptr)
-          m_uniformBuffers[ind] = new ShaderUniformDeclarationBuffer("", a_domain);
-        m_uniformBuffers[ind]->PushUniform(declaration);
+        PushUniform(pDecl);
       }
     }
   }
 
-  ShaderStruct * RT_RendererProgram::FindStruct(std::string const& a_name)
+  void RT_RendererProgram::PushUniform(ShaderUniformDeclaration * a_pDecl)
+  {
+    ShaderUniformList & uniforms = m_uniformBuffer.GetUniformDeclarations();
+    for (ShaderUniformDeclaration* pDecl: m_uniformBuffer.GetUniformDeclarations())
+    {
+      if (*a_pDecl == *pDecl)
+      {
+        pDecl->GetDomains().AddDomains(a_pDecl->GetDomains());
+        return;
+      }
+    }
+    m_uniformBuffer.PushUniform(a_pDecl);
+  }
+
+  ShaderStruct * RT_RendererProgram::FindStruct(std::string const& a_name, ShaderDomain a_domain)
   {
     for (ShaderStruct * ptr : m_structs)
     {
-      if (a_name == ptr->GetName())
+      if (a_name == ptr->GetName() && a_domain == ptr->GetDomain())
         return ptr;
     }
     return nullptr;
@@ -302,7 +304,7 @@ namespace Engine
     Dg::DynamicArray<GLuint> shaderRendererIDs;
 
     GLuint program = glCreateProgram();
-    for (int i = 0; i < SD32(COUNT); i++)
+    for (int i = 0; i < ShaderDomain_COUNT; i++)
     {
       GLenum type = ShaderDomainToOpenGLType(ShaderDomain(i));
       ShaderDomain domain = static_cast<ShaderDomain>(i);
@@ -380,29 +382,20 @@ namespace Engine
   {
     glUseProgram(m_rendererID);
 
-    for (int i = 0; i < SD32(COUNT); i++)
+    for (ShaderUniformDeclaration* pUniform: m_uniformBuffer.GetUniformDeclarations())
     {
-      ShaderUniformDeclarationBuffer * decl = m_uniformBuffers[i];
-      if (decl)
+      if (pUniform->GetType() == ShaderDataType::STRUCT)
       {
-        ShaderUniformList const & uniforms = decl->GetUniformDeclarations();
-        for (size_t j = 0; j < uniforms.size(); j++)
+        ShaderStruct const & s = pUniform->GetShaderUniformStruct();
+        Dg::DynamicArray<ShaderUniformDeclaration*> const & fields = s.GetFields();
+        for (size_t k = 0; k < fields.size(); k++)
         {
-          ShaderUniformDeclaration * uniform = uniforms[j];
-          if (uniform->GetType() == ShaderDataType::STRUCT)
-          {
-            ShaderStruct const & s = uniform->GetShaderUniformStruct();
-            Dg::DynamicArray<ShaderUniformDeclaration*> const & fields = s.GetFields();
-            for (size_t k = 0; k < fields.size(); k++)
-            {
-              ShaderUniformDeclaration * field = fields[k];
-              field->SetLocation(GetUniformLocation(uniform->GetName() + "." + field->GetName()));
-            }
-          }
-          else
-            uniform->SetLocation(GetUniformLocation(uniform->GetName()));
+          ShaderUniformDeclaration * field = fields[k];
+          field->SetLocation(GetUniformLocation(pUniform->GetName() + "." + field->GetName()));
         }
       }
+      else
+        pUniform->SetLocation(GetUniformLocation(pUniform->GetName()));
     }
 
     /*uint32_t sampler = 0;
@@ -432,13 +425,48 @@ namespace Engine
     }*/
   }
 
-  int32_t RT_RendererProgram::GetUniformLocation(std::string const & name) const
+  int32_t RT_RendererProgram::GetUniformLocation(std::string const & a_name) const
   {
-    int32_t result = glGetUniformLocation(m_rendererID, name.c_str());
+    int32_t result = glGetUniformLocation(m_rendererID, a_name.c_str());
     if (result == -1)
-      LOG_WARN("Could not find uniform '{0}' in shader", name);
-
+      LOG_WARN("Could not find uniform '{0}' in shader", a_name.c_str());
     return result;
+  }
+
+  ShaderUniformDeclaration * RT_RendererProgram::FindUniform(std::string const& a_name)
+  {
+    for (auto pUniform : m_uniformBuffer.GetUniformDeclarations())
+    {
+      if (pUniform->GetName() == a_name)
+        return pUniform;
+    }
+    return nullptr;
+  }
+
+  void RT_RendererProgram::UploadUniform(std::string const & a_name, void * a_pbuf)
+  {
+    ShaderUniformDeclaration * pdecl = FindUniform(a_name);
+    if (pdecl == nullptr)
+    {
+      LOG_WARN("Failed to find Uniform '{}'", a_name.c_str());
+      return;
+    }
+
+    if (pdecl->GetCount() == 0)
+      return;
+
+    glUseProgram(m_rendererID);
+
+    switch (pdecl->GetType())
+    {
+      case ShaderDataType::BOOL:
+      {
+        if (pdecl->GetCount() == 1)
+          glUniform1i(pdecl->GetLocation(), *static_cast<int*>(a_pbuf));
+        else
+          glUniform1iv(pdecl->GetLocation(), pdecl->GetCount(), static_cast<int*>(a_pbuf));
+      }
+    }
   }
 
   void RT_RendererProgram::ValidateUniforms()

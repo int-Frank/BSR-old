@@ -50,9 +50,7 @@ namespace Engine
     //void SetVSMaterialUniformBuffer(MemBufferDynamic const& buffer);
     //void SetPSMaterialUniformBuffer(MemBufferDynamic const& buffer);
 
-    //void SetFloat(std::string const & name, float);
-    //void SetMat4(std::string const& name, const mat4& value);
-    //void SetMat4FromRenderThread(std::string const& name, const mat4& value);
+    void UploadUniform(std::string const & name, void * data);
 
     //const std::string& GetName() const;
   private:
@@ -68,10 +66,12 @@ namespace Engine
     bool CompileAndUploadShader();
     void ResolveUniforms();
     void ValidateUniforms();
+    void PushUniform(ShaderUniformDeclaration*);
 
     //bool Bind(ShaderDomain, std::string const & name, RT_BindingPoint const &);
 
-    ShaderStruct* FindStruct(std::string const & name);
+    ShaderUniformDeclaration * FindUniform(std::string const &);
+    ShaderStruct* FindStruct(std::string const & name, ShaderDomain);
     int32_t GetUniformLocation(std::string const & name) const;
 
     //void ResolveAndSetUniforms(ShaderUniformDeclarationBuffer* decl, MemBufferDynamic buffer);
@@ -114,9 +114,9 @@ namespace Engine
     std::string m_name;
     ShaderSource m_shaderSource;
 
-    ShaderUniformDeclarationBuffer * m_uniformBuffers[static_cast<uint32_t>(ShaderDomain::COUNT)];
-    ShaderResourceList m_resources;
     ShaderStructList m_structs;
+    ShaderUniformDeclarationBuffer m_uniformBuffer;
+    ShaderResourceList m_resources;
 
     //std::vector<ShaderReloadedCallback> m_ShaderReloadedCallbacks;
 

@@ -4,6 +4,7 @@
 #include "RT_RendererProgram.h"
 #include "Renderer.h"
 #include  "core_Log.h"
+#include "Serialize.h"
 #include "RenderThreadData.h"
 
 namespace Engine
@@ -125,6 +126,32 @@ namespace Engine
         return;
       }
       pRP->Unbind();
+    });
+  }
+
+  void RendererProgram::UploadUniform_bool(std::string const& a_name, bool a_val)
+  {
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::RendererProgramUploadUniform);
+
+    uint32_t sze = Core::SerializedSize(a_name);
+    void * buf = RENDER_ALLOCATE(sze);
+    Core::Serialize(buf, &a_name);
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), buf = buf, val = a_val]()
+    {
+      RT_RendererProgram* pRP = RenderThreadData::Instance()->rendererPrograms.at(resID);
+      if (pRP == nullptr)
+      {
+        LOG_WARN("RendererProgram::Bind: RefID '{}' does not exist!", resID);
+        return;
+      }
+      std::string name;
+
+      int i = val ? 1 : 0;
+      Core::Deserialize(buf, &name, 1);
+      pRP->UploadUniform(name, &i);
     });
   }
 }

@@ -24,13 +24,9 @@ namespace Engine
   };
 
 #define S1 4
-#define DS1 8
 #define V2 8
 #define V3 12
 #define V4 16
-#define DV2 16
-#define DV3 24
-#define DV4 32
 
 #define CR(c, r) (((c) << 16) | (r))
 #define COLUMN(i) (i >> 16)
@@ -48,7 +44,6 @@ namespace Engine
     {ShaderDataType::INT,     ShaderDataClass::Scalar,  ShaderDataBaseType::Int,      "int",          GL_INT,               1,  ShaderDataType::NONE,   ShaderDataType::NONE,   S1,  V4,  S1,                   V4},
     {ShaderDataType::UINT,    ShaderDataClass::Scalar,  ShaderDataBaseType::UInt,     "uint",         GL_UNSIGNED_INT,      1,  ShaderDataType::NONE,   ShaderDataType::NONE,   S1,  V4,  S1,                   V4},
     {ShaderDataType::FLOAT,   ShaderDataClass::Scalar,  ShaderDataBaseType::Float,    "float",        GL_FLOAT,             1,  ShaderDataType::NONE,   ShaderDataType::NONE,   S1,  V4,  S1,                   V4},
-    {ShaderDataType::DOUBLE,  ShaderDataClass::Scalar,  ShaderDataBaseType::Double,   "double",       GL_DOUBLE,            1,  ShaderDataType::NONE,   ShaderDataType::NONE,   DS1, V4,  DS1,                  V4},
     {ShaderDataType::BVEC2,   ShaderDataClass::Vector,  ShaderDataBaseType::Bool,     "bvec2",        GL_BOOL_VEC2,         2,  ShaderDataType::NONE,   ShaderDataType::NONE,   V2,  V4,  V2,                   V4},
     {ShaderDataType::BVEC3,   ShaderDataClass::Vector,  ShaderDataBaseType::Bool,     "bvec3",        GL_BOOL_VEC3,         3,  ShaderDataType::NONE,   ShaderDataType::NONE,   V4,  V4,  V3,                   V4},
     {ShaderDataType::BVEC4,   ShaderDataClass::Vector,  ShaderDataBaseType::Bool,     "bvec4",        GL_BOOL_VEC4,         4,  ShaderDataType::NONE,   ShaderDataType::NONE,   V4,  V4,  V4,                   V4},
@@ -61,9 +56,6 @@ namespace Engine
     {ShaderDataType::VEC2,    ShaderDataClass::Vector,  ShaderDataBaseType::Float,    "vec2",         GL_FLOAT_VEC2,        2,  ShaderDataType::NONE,   ShaderDataType::NONE,   V2,  V4,  V2,                   V4},
     {ShaderDataType::VEC3,    ShaderDataClass::Vector,  ShaderDataBaseType::Float,    "vec3",         GL_FLOAT_VEC3,        3,  ShaderDataType::NONE,   ShaderDataType::NONE,   V4,  V4,  V3,                   V4},
     {ShaderDataType::VEC4,    ShaderDataClass::Vector,  ShaderDataBaseType::Float,    "vec4",         GL_FLOAT_VEC4,        4,  ShaderDataType::NONE,   ShaderDataType::NONE,   V4,  V4,  V4,                   V4},
-    {ShaderDataType::DVEC2,   ShaderDataClass::Vector,  ShaderDataBaseType::Double,   "dvec2",        GL_DOUBLE_VEC2,       2,  ShaderDataType::NONE,   ShaderDataType::NONE,   DV2, V4,  DV2,                  V4},
-    {ShaderDataType::DVEC3,   ShaderDataClass::Vector,  ShaderDataBaseType::Double,   "dvec3",        GL_DOUBLE_VEC3,       3,  ShaderDataType::NONE,   ShaderDataType::NONE,   DV4, DV4, DV3,                  DV4},
-    {ShaderDataType::DVEC4,   ShaderDataClass::Vector,  ShaderDataBaseType::Double,   "dvec4",        GL_DOUBLE_VEC4,       4,  ShaderDataType::NONE,   ShaderDataType::NONE,   DV4, DV4, DV4,                  DV4},
     {ShaderDataType::MAT2,    ShaderDataClass::Matrix,  ShaderDataBaseType::Float,    "mat2",         GL_FLOAT_MAT2,        4,  ShaderDataType::VEC2,   ShaderDataType::VEC2,   V4,  V4,  CR(V4 * 2, V4 * 2),   CR(V4 * 2, V4 * 2)},
     {ShaderDataType::MAT2x2,  ShaderDataClass::Matrix,  ShaderDataBaseType::Float,    "mat2x2",       GL_FLOAT_MAT2,        4,  ShaderDataType::VEC2,   ShaderDataType::VEC2,   V4,  V4,  CR(V4 * 2, V4 * 2),   CR(V4 * 2, V4 * 2)},
     {ShaderDataType::MAT3,    ShaderDataClass::Matrix,  ShaderDataBaseType::Float,    "mat3",         GL_FLOAT_MAT3,        9,  ShaderDataType::VEC3,   ShaderDataType::VEC3,   V4,  V4,  CR(V4 * 3, V4 * 3),   CR(V4 * 3, V4 * 3)},
@@ -76,19 +68,6 @@ namespace Engine
     {ShaderDataType::MAT3x4,  ShaderDataClass::Matrix,  ShaderDataBaseType::Float,    "mat3x4",       GL_FLOAT_MAT3x4,      12, ShaderDataType::VEC3,   ShaderDataType::VEC4,   V4,  V4,  CR(V4 * 4, V4 * 4),   CR(V4 * 4, V4 * 4)},
     {ShaderDataType::MAT4x2,  ShaderDataClass::Matrix,  ShaderDataBaseType::Float,    "mat4x2",       GL_FLOAT_MAT4x2,      8,  ShaderDataType::VEC4,   ShaderDataType::VEC2,   V4,  V4,  CR(V4 * 4, V4 * 2),   CR(V4 * 4, V4 * 2)},
     {ShaderDataType::MAT4x3,  ShaderDataClass::Matrix,  ShaderDataBaseType::Float,    "mat4x3",       GL_FLOAT_MAT4x3,      12, ShaderDataType::VEC4,   ShaderDataType::VEC3,   V4,  V4,  CR(V4 * 4, V4 * 3),   CR(V4 * 4, V4 * 3)},
-    {ShaderDataType::DMAT2,   ShaderDataClass::Matrix,  ShaderDataBaseType::Double,   "dmat2",        GL_DOUBLE_MAT2,       4,  ShaderDataType::DVEC2,  ShaderDataType::DVEC2,  DV4, DV4, CR(DV4 * 2, DV4 * 2), CR(DV4 * 2, DV4 * 2)},
-    {ShaderDataType::DMAT2x2, ShaderDataClass::Matrix,  ShaderDataBaseType::Double,   "dmat2x2",      GL_DOUBLE_MAT2,       4,  ShaderDataType::DVEC2,  ShaderDataType::DVEC2,  DV4, DV4, CR(DV4 * 2, DV4 * 2), CR(DV4 * 2, DV4 * 2)},
-    {ShaderDataType::DMAT3,   ShaderDataClass::Matrix,  ShaderDataBaseType::Double,   "dmat3",        GL_DOUBLE_MAT3,       9,  ShaderDataType::DVEC3,  ShaderDataType::DVEC3,  DV4, DV4, CR(DV4 * 3, DV4 * 3), CR(DV4 * 3, DV4 * 3)},
-    {ShaderDataType::DMAT3x3, ShaderDataClass::Matrix,  ShaderDataBaseType::Double,   "dmat3x3",      GL_DOUBLE_MAT3,       9,  ShaderDataType::DVEC3,  ShaderDataType::DVEC3,  DV4, DV4, CR(DV4 * 3, DV4 * 3), CR(DV4 * 3, DV4 * 3)},
-    {ShaderDataType::DMAT4,   ShaderDataClass::Matrix,  ShaderDataBaseType::Double,   "dmat4",        GL_DOUBLE_MAT4,       16, ShaderDataType::DVEC4,  ShaderDataType::DVEC4,  DV4, DV4, CR(DV4 * 4, DV4 * 4), CR(DV4 * 4, DV4 * 4)},
-    {ShaderDataType::DMAT4x4, ShaderDataClass::Matrix,  ShaderDataBaseType::Double,   "dmat4x4",      GL_DOUBLE_MAT4,       16, ShaderDataType::DVEC4,  ShaderDataType::DVEC4,  DV4, DV4, CR(DV4 * 4, DV4 * 4), CR(DV4 * 4, DV4 * 4)},
-    {ShaderDataType::DMAT2x3, ShaderDataClass::Matrix,  ShaderDataBaseType::Double,   "dmat2x3",      GL_DOUBLE_MAT2x3,     6,  ShaderDataType::DVEC2,  ShaderDataType::DVEC3,  DV4, DV4, CR(DV4 * 2, DV4 * 3), CR(DV4 * 2, DV4 * 3)},
-    {ShaderDataType::DMAT2x4, ShaderDataClass::Matrix,  ShaderDataBaseType::Double,   "dmat2x4",      GL_DOUBLE_MAT2x4,     8,  ShaderDataType::DVEC2,  ShaderDataType::DVEC4,  DV4, DV4, CR(DV4 * 2, DV4 * 4), CR(DV4 * 2, DV4 * 4)},
-    {ShaderDataType::DMAT3x2, ShaderDataClass::Matrix,  ShaderDataBaseType::Double,   "dmat3x2",      GL_DOUBLE_MAT3x2,     6,  ShaderDataType::DVEC3,  ShaderDataType::DVEC2,  DV4, DV4, CR(DV4 * 3, DV4 * 2), CR(DV4 * 3, DV4 * 2)},
-    {ShaderDataType::DMAT3x4, ShaderDataClass::Matrix,  ShaderDataBaseType::Double,   "dmat3x4",      GL_DOUBLE_MAT3x4,     12, ShaderDataType::DVEC3,  ShaderDataType::DVEC4,  DV4, DV4, CR(DV4 * 3, DV4 * 4), CR(DV4 * 3, DV4 * 4)},
-    {ShaderDataType::DMAT4x2, ShaderDataClass::Matrix,  ShaderDataBaseType::Double,   "dmat4x2",      GL_DOUBLE_MAT4x2,     8,  ShaderDataType::DVEC4,  ShaderDataType::DVEC2,  DV4, DV4, CR(DV4 * 4, DV4 * 2), CR(DV4 * 4, DV4 * 2)},
-    {ShaderDataType::DMAT4x3, ShaderDataClass::Matrix,  ShaderDataBaseType::Double,   "dmat4x3",      GL_DOUBLE_MAT4x3,     12, ShaderDataType::DVEC4,  ShaderDataType::DVEC3,  DV4, DV4, CR(DV4 * 4, DV4 * 3), CR(DV4 * 4, DV4 * 3)},
-    {ShaderDataType::STRUCT,  ShaderDataClass::Struct,  ShaderDataBaseType::Double,   "struct",       GL_INVALID_ENUM,      0,  ShaderDataType::NONE,   ShaderDataType::NONE,   0,   0,   0,                    0},
   };
 
   static char const * ShaderResourceType_strings[] = 
@@ -96,6 +75,32 @@ namespace Engine
     "Invalid Type",
     "sampler2D", "samplerCube"
   };
+
+  ShaderDomains::ShaderDomains()
+    : m_data(0)
+  {
+
+  }
+
+  void ShaderDomains::AddDomain(ShaderDomain a_domain)
+  {
+    m_data |= (1 << static_cast<uint32_t>(a_domain));
+  }
+
+  void ShaderDomains::AddDomains(ShaderDomains const a_domains)
+  {
+    m_data |= a_domains.m_data;
+  }
+
+  void ShaderDomains::RemoveDomain(ShaderDomain a_domain)
+  {
+    m_data &= ~(1 << static_cast<uint32_t>(a_domain));
+  }
+
+  bool ShaderDomains::IsDomain(ShaderDomain a_domain)
+  {
+    return ((1 << static_cast<uint32_t>(a_domain)) & m_data) != 0;
+  }
 
   ShaderDataType StringToShaderDataType(std::string const& a_type)
   {
@@ -239,9 +244,6 @@ namespace Engine
   {
     switch (a_type)
     {
-      case ShaderDomain::INVALID:
-      case ShaderDomain::COUNT:
-        return GL_INVALID_ENUM;
       case ShaderDomain::Vertex:
         return GL_VERTEX_SHADER;
       case ShaderDomain::Fragment:

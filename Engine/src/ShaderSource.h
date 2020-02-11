@@ -36,7 +36,7 @@ namespace Engine
 
   private:
 
-    std::string m_src[SD32(COUNT)];
+    std::string m_src[ShaderDomain_COUNT];
   };
 
 }

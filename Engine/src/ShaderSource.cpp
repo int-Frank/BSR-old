@@ -68,7 +68,7 @@ namespace Engine
   }
 
   ShaderSourceElement::ShaderSourceElement()
-    : domain(ShaderDomain::INVALID)
+    : domain(ShaderDomain::Vertex)
     , strType(StrType::Source)
   {
 
@@ -89,18 +89,6 @@ namespace Engine
 
     for (auto const & ele : a_list)
     {
-      if (ele.domain == ShaderDomain::INVALID)
-      {
-        LOG_WARN("'INVALID' passed to ShaderSource::ShaderSource()");
-        continue;
-      }
-
-      if (ele.domain == ShaderDomain::COUNT)
-      {
-        LOG_WARN("'COUNT' passed to ShaderSource::ShaderSource()");
-        continue;
-      }
-
       if (ele.strType == StrType::Source)
         m_src[static_cast<uint32_t>(ele.domain)] = RemoveComments(ele.str);
       else
@@ -121,24 +109,12 @@ namespace Engine
 
   std::string const& ShaderSource::Get(ShaderDomain a_domain) const
   {
-    if (a_domain == ShaderDomain::INVALID)
-    {
-      LOG_WARN("'INVALID' passed to ShaderSource::Get()");
-      return std::string();
-    }
-
-    if (a_domain == ShaderDomain::COUNT)
-    {
-      LOG_WARN("'COUNT' passed to ShaderSource::Get()");
-      return std::string();
-    }
-
     return m_src[static_cast<uint32_t>(a_domain)];
   }
 
   void ShaderSource::Clear()
   {
-    for (uint32_t i = 0; i < SD32(COUNT); i++)
+    for (uint32_t i = 0; i < ShaderDomain_COUNT; i++)
       m_src[i].clear();
   }
 }

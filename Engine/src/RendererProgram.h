@@ -24,6 +24,8 @@ namespace Engine
     void Init(ShaderSource const &);
     void Destroy();
 
+    void UploadUniform_bool(std::string const& name, bool);
+
     //void Reload(); 
     //void AddShaderReloadedCallback(const ShaderReloadedCallback& callback);
 
