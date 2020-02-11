@@ -18,7 +18,7 @@ namespace Engine
   {
     Application,
     Console,
-    ImGUI,
+    UI,
     InputHandler,
     Window,
   };

@@ -20,7 +20,7 @@
 #include "Layer_Console.h"
 #include "Layer_InputHandler.h"
 #include "Layer_Window.h"
-#include "Layer_ImGui.h"
+#include "Layer_UI.h"
 #include "Layer_Application.h"
 
 namespace Engine
@@ -106,7 +106,7 @@ namespace Engine
     m_pimpl->layerStack.PushLayer(new Layer_InputHandler(), Layer_InputHandler::GetStaticID());
     m_pimpl->layerStack.PushLayer(new Layer_Window(m_pimpl->pWindow), Layer_Window::GetStaticID());
     m_pimpl->layerStack.PushLayer(new Layer_Console(), Layer_Console::GetStaticID());
-    m_pimpl->layerStack.PushLayer(new Layer_imgui(), Layer_imgui::GetStaticID());
+    m_pimpl->layerStack.PushLayer(new Layer_UI(), Layer_UI::GetStaticID());
 
     LOG_TRACE("Application initialised!");
   }
@@ -158,7 +158,7 @@ namespace Engine
       for (auto it = m_pimpl->layerStack.begin(); it != m_pimpl->layerStack.end(); it++)
         it->second->Update(dt);
 
-      //Layer_imgui * imguiLayer = static_cast<Layer_imgui*>(m_pimpl->layerStack.GetLayer(Layer_imgui::GetID()));
+      //Layer_UI * imguiLayer = static_cast<Layer_UI*>(m_pimpl->layerStack.GetLayer(Layer_UI::GetID()));
       //imguiLayer->NewFrame();
       //for (auto it = m_pimpl->layerStack.begin(); it != m_pimpl->layerStack.end(); it++)
       //  it->second->DoImGui();
