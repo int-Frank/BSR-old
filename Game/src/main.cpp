@@ -9,7 +9,7 @@
 #include "VertexArray.h"
 #include "RendererProgram.h"
 
-#include "imgui.h"
+#include "Canvas.h"
 
 class GameLayer : public Engine::Layer
 {
@@ -60,6 +60,14 @@ public:
     int vals[3] = {1, 0, 1};
 
     m_prog->UploadUniform("u_bool", vals, 4 * 3);
+
+    Engine::UICanvas canvas;
+    Engine::UIGroup* pg0 = new Engine::UIGroup("g0", vec3(0.5f, 0.5f, 0.0f), vec3(0.5f, 0.5f, 0.0f));
+    Engine::UIGroup* pg1 = new Engine::UIGroup("g1", vec3(0.4f, 0.4f, 0.0f), vec3(0.4f, 0.2f, 0.0f));
+    pg0->Add(pg1);
+    LOG_WARN("Added to canvas");
+    canvas.Add(pg0);
+
   }
 
   void OnDetach() override

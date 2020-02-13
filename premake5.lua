@@ -175,7 +175,6 @@ project "Engine"
   {
     "DgLib",
     "Glad",
-    "imgui",
     "Core",
     "Vendor/SDL2-2.0.9/lib/x64/SDL2.lib",
     "Vendor/SDL2-2.0.9/lib/x64/SDL2main.lib"
@@ -187,8 +186,7 @@ project "Engine"
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.DgLib}",
 		"%{IncludeDir.Glad}",
-		"%{IncludeDir.SDL2}",
-		"%{IncludeDir.imgui}"
+		"%{IncludeDir.SDL2}"
   }
   
   include "Engine/Engine_vpaths.lua"
@@ -362,8 +360,7 @@ project "Converter"
       "%{wks.location}/Engine/src",
       "%{wks.location}/Engine/src/Engine",
       "%{IncludeDir.spdlog}",
-      "%{IncludeDir.DgLib}",
-      "%{IncludeDir.imgui}"
+      "%{IncludeDir.DgLib}"
     }
     
     links

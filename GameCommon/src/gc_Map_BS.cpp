@@ -85,7 +85,7 @@ namespace GC
       Dg::IO::ReturnType result = reader.SetPosition(s_header.headeroffsets[a_index]);
       if (result.error != Dg::ErrorCode::None)
       {
-        LOG_ERROR("Failed to seek the map file: {}", Dg::ErrorCode::ErrorCodeStrings[result.error]);
+        LOG_ERROR("Failed to seek the map file: {}", Dg::ErrorCodeToString(result.error));
         isGood = false; 
         break;
       }
@@ -94,7 +94,7 @@ namespace GC
       result = reader.Read<uint32_t>(gameMapHeader.planeOffsets, 3);
       if (result.error != Dg::ErrorCode::None || result.value != 3)
       {
-        LOG_ERROR("Failed to load plane offsets for map {}: {}", a_index, Dg::ErrorCode::ErrorCodeStrings[result.error]);
+        LOG_ERROR("Failed to load plane offsets for map {}: {}", a_index, Dg::ErrorCodeToString(result.error));
         isGood = false; 
         break;
       }
@@ -102,7 +102,7 @@ namespace GC
       result = reader.Read<uint16_t>(gameMapHeader.planeSizes, 3);
       if (result.error != Dg::ErrorCode::None || result.value != 3)
       {
-        LOG_ERROR("Failed to load plane sizes for map {}: {}", a_index, Dg::ErrorCode::ErrorCodeStrings[result.error]);
+        LOG_ERROR("Failed to load plane sizes for map {}: {}", a_index, Dg::ErrorCodeToString(result.error));
         isGood = false; 
         break;
       }
@@ -110,7 +110,7 @@ namespace GC
       result = reader.Read<uint16_t>(&gameMapHeader.mapWidth, 1);
       if (result.error != Dg::ErrorCode::None || result.value != 1)
       {
-        LOG_ERROR("Failed to load map width for map {}: {}", a_index, Dg::ErrorCode::ErrorCodeStrings[result.error]);
+        LOG_ERROR("Failed to load map width for map {}: {}", a_index, Dg::ErrorCodeToString(result.error));
         isGood = false; 
         break;
       }
@@ -118,7 +118,7 @@ namespace GC
       result = reader.Read<uint16_t>(&gameMapHeader.mapHeight, 1);
       if (result.error != Dg::ErrorCode::None || result.value != 1)
       {
-        LOG_ERROR("Failed to load map height for map {}: {}", a_index, Dg::ErrorCode::ErrorCodeStrings[result.error]);
+        LOG_ERROR("Failed to load map height for map {}: {}", a_index, Dg::ErrorCodeToString(result.error));
         isGood = false; 
         break;
       }
@@ -126,7 +126,7 @@ namespace GC
       result = reader.Read<char>(name, 16);
       if (result.error != Dg::ErrorCode::None || result.value != 16)
       {
-        LOG_ERROR("Failed to load map name for map {}: {}", a_index, Dg::ErrorCode::ErrorCodeStrings[result.error]);
+        LOG_ERROR("Failed to load map name for map {}: {}", a_index, Dg::ErrorCodeToString(result.error));
         isGood = false; 
         break;
       }
@@ -137,7 +137,7 @@ namespace GC
       result = reader.SetPosition(gameMapHeader.planeOffsets[0]);
       if (result.error != Dg::ErrorCode::None)
       {
-        LOG_ERROR("Failed to seek the map file for map {}: {}", a_index, Dg::ErrorCode::ErrorCodeStrings[result.error]);
+        LOG_ERROR("Failed to seek the map file for map {}: {}", a_index, Dg::ErrorCodeToString(result.error));
         isGood = false; 
         break;
       }
@@ -145,7 +145,7 @@ namespace GC
       result = reader.Read<char>(plane_0_data, gameMapHeader.planeSizes[0]);
       if (result.error != Dg::ErrorCode::None || result.value != 16)
       {
-        LOG_ERROR("Failed to load plane 0 data for map {}: {}", a_index, Dg::ErrorCode::ErrorCodeStrings[result.error]);
+        LOG_ERROR("Failed to load plane 0 data for map {}: {}", a_index, Dg::ErrorCodeToString(result.error));
         isGood = false; 
         break;
       }
@@ -153,7 +153,7 @@ namespace GC
       result = reader.SetPosition(gameMapHeader.planeOffsets[1]);
       if (result.error != Dg::ErrorCode::None)
       {
-        LOG_ERROR("Failed to seek the map file for map {}: {}", a_index, Dg::ErrorCode::ErrorCodeStrings[result.error]);
+        LOG_ERROR("Failed to seek the map file for map {}: {}", a_index, Dg::ErrorCodeToString(result.error));
         isGood = false; 
         break;
       }
@@ -161,7 +161,7 @@ namespace GC
       result = reader.Read<char>(plane_1_data, gameMapHeader.planeSizes[1]);
       if (result.error != Dg::ErrorCode::None || result.value != 16)
       {
-        LOG_ERROR("Failed to load plane 1 data for map {}: {}", a_index, Dg::ErrorCode::ErrorCodeStrings[result.error]);
+        LOG_ERROR("Failed to load plane 1 data for map {}: {}", a_index, Dg::ErrorCodeToString(result.error));
         isGood = false; 
         break;
       }

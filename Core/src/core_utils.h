@@ -19,6 +19,7 @@ typedef Dg::R2::Vector_cartesian<float> vec2;
 typedef Dg::R3::Vector<float>           vec4;
 typedef Dg::R2::Matrix<float>           mat3;
 typedef Dg::R3::Matrix<float>           mat4;
+typedef Dg::Matrix<1, 4, uint8_t>       RGBA;
 
 //--- Types ------------------------------------------------------------------
 
