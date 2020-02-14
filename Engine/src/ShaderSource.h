@@ -4,7 +4,7 @@
 #define SHADERSOURCE_H
 
 #include <string>
-#include "ShaderUniform.h"
+#include "ShaderUtils.h"
 
 namespace Engine
 {

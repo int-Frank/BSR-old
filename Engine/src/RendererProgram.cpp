@@ -142,7 +142,7 @@ namespace Engine
     void* buf_data = RENDER_ALLOCATE(a_size);
     memcpy(buf_data, a_buf, a_size);
 
-    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), buf_name = buf_name, buf_data = buf_data]()
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), size = a_size, buf_name = buf_name, buf_data = buf_data]()
     {
       RT_RendererProgram* pRP = RenderThreadData::Instance()->rendererPrograms.at(resID);
       if (pRP == nullptr)
@@ -153,7 +153,7 @@ namespace Engine
       std::string name;
 
       Core::Deserialize(buf_name, &name, 1);
-      pRP->UploadUniform(name, buf_data);
+      pRP->UploadUniform(name, buf_data, size);
     });
   }
 
@@ -167,7 +167,7 @@ namespace Engine
     void* buf_name = RENDER_ALLOCATE(sze_name);
     Core::Serialize(buf_name, &a_name);
 
-    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), buf_name = buf_name, buf_data = a_buf]()
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), size = a_size, buf_name = buf_name, buf_data = a_buf]()
     {
       RT_RendererProgram* pRP = RenderThreadData::Instance()->rendererPrograms.at(resID);
       if (pRP == nullptr)
@@ -178,7 +178,7 @@ namespace Engine
       std::string name;
 
       Core::Deserialize(buf_name, &name, 1);
-      pRP->UploadUniform(name, buf_data);
+      pRP->UploadUniform(name, buf_data, size);
     });
   }
 }

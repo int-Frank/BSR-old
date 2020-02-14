@@ -26,6 +26,7 @@
 #include "Memory.h"
 #include "Resource.h"
 #include "ShaderUtils.h"
+#include "ShaderSource.h"
 
 #define BIT(x) (1 << x)
 
@@ -167,7 +168,6 @@ namespace Engine
     int32_t GetLocation() const;
     ShaderDataType GetType() const;
     bool IsArray() const;
-    const ShaderStruct& GetShaderUniformStruct() const;
     ShaderStruct * GetShaderUniformStructPtr() const;
 
     void SetLocation(int32_t);
@@ -177,6 +177,10 @@ namespace Engine
     void SetOffset(uint32_t offset);
 
   private:
+
+    uint32_t m_dataOffset;
+    uint32_t m_dataSize;
+
     std::string m_name;
     uint32_t m_count;
     ShaderDomains m_domains;
@@ -217,6 +221,28 @@ namespace Engine
   typedef Dg::DynamicArray<ShaderUniformDeclarationBuffer*> ShaderUniformBufferList;
   typedef Dg::DynamicArray<ShaderResourceDeclaration*> ShaderResourceList;
   typedef Dg::DynamicArray<ShaderStruct*> ShaderStructList;
+
+  class ShaderData
+  {
+  public:
+
+    void Load(ShaderSource const &);
+    void Clear();
+    ShaderUniformDeclaration* FindUniform(std::string const&);
+
+  public:
+    ShaderStructList                structs;
+    ShaderUniformDeclarationBuffer  uniformBuffer;
+    ShaderResourceList              resources;
+  private:
+    void Parse();
+    void ExtractStructs(ShaderDomain);
+    void ExtractUniforms(ShaderDomain);
+    ShaderStruct* FindStruct(std::string const& name, ShaderDomain);
+    void PushUniform(ShaderUniformDeclaration*);
+  private:
+    ShaderSource const * m_pSrc;
+  };
 
   class BindingPoint : public Resource
   {

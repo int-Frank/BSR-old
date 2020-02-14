@@ -44,6 +44,12 @@ namespace Core
   void const * AdvancePtr(void const *, size_t);
 
   std::string ImportTextFile(std::string const & path);
+
+  //Compare a std::string to a serialized string
+  bool CompareStrings(std::string const&, void const*);
+
+  //Compare two serialized strings
+  bool CompareStrings(void const *, void const *);
 }
 
 #endif

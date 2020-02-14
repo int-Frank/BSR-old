@@ -1,3 +1,5 @@
+//@group UI
+
 #include "Canvas.h"
 #include "DgR2QueryPointAABB.h"
 #include "MessageBus.h"
@@ -217,8 +219,7 @@ namespace Engine
 
     m_T_Global_to_Local = T_Local_to_Global.GetInverse();
 
-    //TODO do we need to call some virtual method here so groupls can propergate
-    //transform down to childern?
+    NewTransform();
   }
 
   void UIWidget::SetParent(UIWidget* a_pParent)

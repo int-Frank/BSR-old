@@ -5,6 +5,7 @@
 
 #include "Resource.h"
 #include "ShaderSource.h"
+#include "Memory.h"
 
 namespace Engine
 {

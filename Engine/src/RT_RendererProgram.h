@@ -50,28 +50,19 @@ namespace Engine
     //void SetVSMaterialUniformBuffer(MemBufferDynamic const& buffer);
     //void SetPSMaterialUniformBuffer(MemBufferDynamic const& buffer);
 
-    void UploadUniform(std::string const & name, void const * data);
+    void UploadUniform(std::string const& name, void const* data, uint32_t size);
 
     //const std::string& GetName() const;
   private:
 
     bool Load(ShaderSource const &);
     void SetShaderSource(ShaderSource const &);
-    void Parse();
-
-    void ExtractStructs(ShaderDomain);
-    void ExtractUniforms(ShaderDomain);
-    void ExtractUniformBlocks(ShaderDomain);
 
     bool CompileAndUploadShader();
     void ResolveUniforms();
-    void ValidateUniforms();
-    void PushUniform(ShaderUniformDeclaration*);
 
     //bool Bind(ShaderDomain, std::string const & name, RT_BindingPoint const &);
 
-    ShaderUniformDeclaration * FindUniform(std::string const &);
-    ShaderStruct* FindStruct(std::string const & name, ShaderDomain);
     int32_t GetUniformLocation(std::string const & name) const;
 
     //void ResolveAndSetUniforms(ShaderUniformDeclarationBuffer* decl, MemBufferDynamic buffer);
@@ -114,9 +105,7 @@ namespace Engine
     std::string m_name;
     ShaderSource m_shaderSource;
 
-    ShaderStructList m_structs;
-    ShaderUniformDeclarationBuffer m_uniformBuffer;
-    ShaderResourceList m_resources;
+    ShaderData m_shaderData;
 
     //std::vector<ShaderReloadedCallback> m_ShaderReloadedCallbacks;
 
