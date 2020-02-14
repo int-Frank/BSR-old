@@ -47,6 +47,8 @@ namespace Engine
     void Run();
     void RequestQuit();
 
+    bool NormalizeWindowCoords(int x, int y, float & x_out, float & y_out);
+
   private:
 
     Application(Application const &) = delete;

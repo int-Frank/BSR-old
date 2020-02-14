@@ -36,10 +36,10 @@ namespace Engine
     
     }
 
-    bool shouldQuit;
-    Ref<IWindow> pWindow;
+    bool          shouldQuit;
+    Ref<IWindow>  pWindow;
 
-    LayerStack        layerStack;
+    LayerStack    layerStack;
   };
 
   //------------------------------------------------------------------------------------
@@ -177,5 +177,16 @@ namespace Engine
   void Application::RequestQuit()
   {
     m_pimpl->shouldQuit = true;
+  }
+
+  bool Application::NormalizeWindowCoords(int a_x, int a_y, float& a_x_out, float& a_y_out)
+  {
+    if (m_pimpl->pWindow.IsNull())
+      return false;
+    int w(0), h(0);
+    m_pimpl->pWindow->GetDimensions(w, h);
+    a_x_out = float(a_x) / float(w);
+    a_y_out = float(a_y) / float(h);
+    return true;
   }
 }

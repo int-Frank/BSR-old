@@ -1,5 +1,6 @@
 #include "Canvas.h"
 #include "DgR2QueryPointAABB.h"
+#include "MessageBus.h"
 
 namespace Engine
 {
@@ -66,9 +67,7 @@ namespace Engine
   void UICanvas::Activate()
   {
     if (m_pFocus)
-    {
-      m_pFocus->Activate();
-    }
+      m_pFocus->DoAction(UIWidget::Action::Activate);
   }
 
   //------------------------------------------------------------------------------------
@@ -166,6 +165,16 @@ namespace Engine
       m_pParent->DepthHasChanged(this);
   }
 
+  vec3 UIWidget::GetTranslation() const
+  {
+    return m_translation;
+  }
+
+  vec3 UIWidget::GetScale() const
+  {
+    return m_scale;
+  }
+
   int UIWidget::GetDepth() const
   {
     return m_depth;
@@ -182,11 +191,6 @@ namespace Engine
     mt.Translation(m_translation);
     ms.Scaling(m_scale);
     return ms * mt;
-  }
-
-  AABB const & UIWidget::GetInteractiveAABB() const
-  {
-    return m_interactiveAABB;
   }
 
   bool UIWidget::IsInteractive() const
@@ -212,6 +216,9 @@ namespace Engine
       T_Local_to_Global = T_Local_to_Parent;
 
     m_T_Global_to_Local = T_Local_to_Global.GetInverse();
+
+    //TODO do we need to call some virtual method here so groupls can propergate
+    //transform down to childern?
   }
 
   void UIWidget::SetParent(UIWidget* a_pParent)
@@ -234,30 +241,61 @@ namespace Engine
     Clear();
   }
 
+  bool UIGroup::IsInside(float a_x, float a_y)
+  {
+    vec3 point(a_x, a_y, 1.0f);
+    point = point * m_T_Global_to_Interactive;
+
+    bool result = point.x() > 0.0f;
+    result = result && point.x() < 1.0f;
+    result = result && point.y() > 0.0f;
+    result = result && point.y() < 1.0f;
+
+    return result;
+  }
+
   bool UIGroup::HandleNewCursonPostion(float a_x, float a_y)
   {
-    if (!IsInside(a_x, a_y))
-      return false;
+    UIWidget* focus = nullptr;
 
-    if (m_pFocus)
-      m_pFocus->HoverOff();
-    m_pFocus = nullptr;
+    if (!IsInside(a_x, a_y))
+      goto epilogue;
 
     for (UIWidget * wgt : m_children)
     {
       if (wgt->HandleNewCursonPostion(a_x, a_y))
       {
-        m_pFocus = wgt;
-        return true;
+        focus = wgt;
+        break;
       }
     }
-    return false;
+
+    epilogue:
+
+    if (focus != m_pFocus)
+    {
+      if (m_pFocus)
+        m_pFocus->DoAction(Action::HoverOff);
+
+      m_pFocus = focus;
+
+      if (m_pFocus)
+        m_pFocus->DoAction(Action::HoverOn);
+    }
+
+    return focus != nullptr;
   }
 
-  void UIGroup::Activate()
+  void UIGroup::DoAction(Action a_action)
   {
-    if (m_pFocus)
-      m_pFocus->Activate();
+    switch (a_action)
+    {
+      case Action::Activate:
+      {
+        if (m_pFocus)
+          m_pFocus->DoAction(Action::Activate);
+      }
+    }
   }
 
   void UIGroup::Render()
@@ -272,7 +310,7 @@ namespace Engine
       delete child;
     m_children.clear();
     m_pFocus = nullptr;
-    SetInteractiveAABB();
+    SetInteractiveSpace();
   }
 
   void UIGroup::Add(UIWidget* a_pWgt)
@@ -281,7 +319,7 @@ namespace Engine
     a_pWgt->SetParent(this);
     a_pWgt->SetGlobalToLocal();
     a_pWgt->NewTransform();
-    SetInteractiveAABB();
+    SetInteractiveSpace();
   }
 
   bool UIGroup::Remove(UIWidget* a_pWgt)
@@ -291,7 +329,7 @@ namespace Engine
       if ((*it) == a_pWgt)
       {
         m_children.erase(it);
-        SetInteractiveAABB();
+        SetInteractiveSpace();
         return true;
       }
     }
@@ -310,16 +348,21 @@ namespace Engine
       child->SetGlobalToLocal();
   }
 
-  void UIGroup::SetInteractiveAABB()
+  void UIGroup::SetInteractiveSpace()
   {
     m_isInteractive = false;
     Dg::DoublyLinkedList<UIWidget*>::iterator it = m_children.begin();
+
+    vec3 minPoint;
+    vec3 maxPoint;
+
     for (; it != m_children.end(); it++)
     {
       if ((*it)->IsInteractive())
       {
         m_isInteractive = true;
-        m_interactiveAABB = (*it)->GetInteractiveAABB();
+        minPoint = (*it)->GetTranslation();
+        maxPoint = minPoint + (*it)->GetScale();
         it++;
         break;
       }
@@ -328,7 +371,29 @@ namespace Engine
     for (; it != m_children.end(); it++)
     {
       if ((*it)->IsInteractive())
-        m_interactiveAABB += (*it)->GetInteractiveAABB();
+      {
+        vec3 newMinPoint = (*it)->GetTranslation();
+        vec3 newMaxPoint = minPoint + (*it)->GetScale();
+        for (int i = 0; i < 2; i++)
+        {
+          if (newMinPoint[i] < minPoint[i])
+            minPoint[i] = newMinPoint[i];
+          if (newMaxPoint[i] > maxPoint[i])
+            maxPoint[i] = newMaxPoint[i];
+        }
+      }
+    }
+
+    if (m_isInteractive)
+    {
+      mat3 mt, ms;
+      vec3 scale = maxPoint - minPoint;
+      scale[2] = 1.0f;
+      mt.Translation(minPoint);
+      ms.Scaling(scale);
+      mat3 T_Interactive_to_Local = ms * mt;
+      mat3 T_Local_to_Interactive = T_Interactive_to_Local.GetInverse();
+      m_T_Global_to_Interactive = m_T_Global_to_Local * T_Local_to_Interactive;
     }
   }
 
@@ -354,15 +419,35 @@ namespace Engine
     return false;
   }
 
-  void UIButton::Activate()
+  void UIButton::DoAction(Action a_action)
   {
+    int index = static_cast<int>(a_action);
+
+    switch (a_action)
+    {
+      case Action::Activate:
+      {
+        LOG_ERROR("ACTIVATE");
+        break;
+      }
+      case Action::HoverOn:
+      {
+        LOG_WARN("HOVER ON");
+        break;
+      }
+      case Action::HoverOff:
+      {
+        LOG_DEBUG("HOVER OFF");
+        break;
+      }
+    }
+
+    if (m_bindings[index])
+      MessageBus::Instance()->Register(m_bindings[index]->CloneAsTRef());
   }
 
-  void UIButton::HoverOn()
+  void UIButton::Render()
   {
-  }
 
-  void UIButton::HoverOff()
-  {
   }
 }

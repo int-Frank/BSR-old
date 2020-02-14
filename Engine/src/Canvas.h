@@ -5,15 +5,12 @@
 
 //UI specific
 #include <string>
-#include "DgR2AABB.h"
 #include "DgDoublyLinkedList.h"
 #include "Message.h"
 
 namespace Engine
 {
   class UIWidget;
-
-  typedef Dg::R2::AABB<float> AABB;
 
   class UICanvas
   {
@@ -42,7 +39,7 @@ namespace Engine
     {
       HoverOn,
       HoverOff,
-      Activate,
+      Activate
     };
 
     static int const ACTION_COUNT = 3;
@@ -53,13 +50,11 @@ namespace Engine
     );
     virtual ~UIWidget();
 
-    bool IsInside(float x, float y);
+    virtual bool IsInside(float x, float y);
 
     //return: handled
     virtual bool HandleNewCursonPostion(float x, float y);
-    virtual void Activate() {} //Enter
-    virtual void HoverOn() {}
-    virtual void HoverOff() {}
+    virtual void DoAction(Action) {}
 
     //Takes ownership of message
     void Bind(Action, Message *);
@@ -75,6 +70,9 @@ namespace Engine
     void SetTranslation(float xMin, float yMin);
     void SetScale(float sx, float sy);
     void SetDepth(int);
+    
+    vec3 GetTranslation() const;
+    vec3 GetScale() const;
     int GetDepth() const;
 
     virtual void DepthHasChanged(UIWidget * child) {}
@@ -82,7 +80,6 @@ namespace Engine
     void SetGlobalToLocal();
     mat3 GetGlobalToLocal() const;
     mat3 GetLocalToParent() const;
-    AABB const & GetInteractiveAABB() const;
     bool IsInteractive() const;
     void SetIsInteractive(bool);
     void SetParent(UIWidget *);
@@ -93,7 +90,6 @@ namespace Engine
     std::string m_name;
     Message * m_bindings[3];
     bool m_isInteractive;
-    AABB m_interactiveAABB;
     UIWidget* m_pParent;
     vec3 m_translation;
     vec3 m_scale;
@@ -110,8 +106,8 @@ namespace Engine
     ~UIGroup();
 
     bool HandleNewCursonPostion(float x, float y) override;
-    void Activate() override;
-
+    void DoAction(Action) override;
+    bool IsInside(float x, float y) override;
     virtual void Render();
 
     void Clear();
@@ -122,10 +118,11 @@ namespace Engine
 
   private:
 
-    void SetInteractiveAABB();
+    void SetInteractiveSpace();
     void NewTransform();
 
   private:
+    mat3 m_T_Global_to_Interactive;
     Dg::DoublyLinkedList<UIWidget*> m_children;
     UIWidget * m_pFocus;
   };
@@ -138,9 +135,9 @@ namespace Engine
     ~UIButton();
 
     bool HandleNewCursonPostion(float x, float y) override;
-    void Activate() override;
-    void HoverOn() override;
-    void HoverOff() override;
+    void DoAction(Action) override;
+
+    void Render() override;
 
     void SetText(std::string const& text);
     void SetTextSize(int);

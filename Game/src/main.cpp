@@ -10,6 +10,7 @@
 #include "RendererProgram.h"
 
 #include "Canvas.h"
+#include "EngineMessages.h"
 
 class GameLayer : public Engine::Layer
 {
@@ -27,12 +28,13 @@ public:
 
     float verts[] = 
     {
-      0.0f, 0.5f,
-      0.5f, -0.5f,
-      -0.5f, -0.5f  
+      -0.5f, 0.5f,
+      0.5f, 0.5f,
+      0.5f, 0.0f,
+      -0.5f, 0.0f
     };
 
-    int indices[] = {0, 1, 2};
+    int indices[] = {0, 1, 2, 0, 2, 3};
 
     m_vb = Engine::VertexBuffer::Create(verts, SIZEOF32(verts));
     m_vb->SetLayout(
@@ -41,7 +43,6 @@ public:
       });
 
     m_ib = Engine::IndexBuffer::Create(indices, SIZEOF32(indices));
-    //LOG_DEBUG("VertexBuffer: Ref ID: {}", m_vb->GetRefID().GetID());
     m_va = Engine::VertexArray::Create();
 
     m_va->AddVertexBuffer(m_vb);
@@ -61,13 +62,40 @@ public:
 
     m_prog->UploadUniform("u_bool", vals, 4 * 3);
 
-    Engine::UICanvas canvas;
-    Engine::UIGroup* pg0 = new Engine::UIGroup("g0", vec3(0.5f, 0.5f, 0.0f), vec3(0.5f, 0.5f, 0.0f));
-    Engine::UIGroup* pg1 = new Engine::UIGroup("g1", vec3(0.4f, 0.4f, 0.0f), vec3(0.4f, 0.2f, 0.0f));
-    pg0->Add(pg1);
-    LOG_WARN("Added to canvas");
-    canvas.Add(pg0);
+    Engine::UIGroup* pg0 = new Engine::UIGroup("g0", vec3(0.25f, 0.25f, 0.0f), vec3(0.5f, 0.5f, 0.0f));
+    Engine::UIButton* btn0 = new Engine::UIButton("btn0", vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.5f, 0.0f));
+    //btn0->Bind(Engine::UIWidget::Action::HoverOn);
+    pg0->Add(btn0);
+    m_canvas.Add(pg0);
 
+  }
+
+  void HandleMessage(Engine::Message* a_pMsg) override
+  {
+    DISPATCH_MESSAGE(Engine::Message_GUI_MouseMove);
+    DISPATCH_MESSAGE(Engine::Message_GUI_MouseButtonDown);
+  }
+
+  void HandleMessage(Engine::Message_GUI_MouseMove* a_pMsg)
+  {
+    float x, y;
+    if (Engine::Application::Instance()->NormalizeWindowCoords(a_pMsg->x, a_pMsg->y, x, y))
+    {
+      m_canvas.HandleNewCursonPostion(x, y);
+    }
+  }
+
+  void HandleMessage(Engine::Message_GUI_MouseButtonDown* a_pMsg)
+  {
+    if (a_pMsg->button != Engine::InputCode::IC_MOUSE_BUTTON_LEFT)
+      return;
+
+    float x, y;
+    if (Engine::Application::Instance()->NormalizeWindowCoords(a_pMsg->x, a_pMsg->y, x, y))
+    {
+      m_canvas.HandleNewCursonPostion(x, y);
+      m_canvas.Activate();
+    }
   }
 
   void OnDetach() override
@@ -88,7 +116,7 @@ public:
     m_prog->Bind();
     m_va->Bind();
 
-    Engine::Renderer::DrawIndexed(3, false);
+    Engine::Renderer::DrawIndexed(6, false);
 
   }
 
@@ -98,6 +126,7 @@ private:
   Engine::Ref<Engine::IndexBuffer>      m_ib;
   Engine::Ref<Engine::VertexArray>      m_va;
   Engine::Ref<Engine::RendererProgram>  m_prog;
+  Engine::UICanvas                      m_canvas;
 };
 
 class Game : public Engine::Application
