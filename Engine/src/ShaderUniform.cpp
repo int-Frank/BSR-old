@@ -554,32 +554,40 @@ namespace Engine
   //---------------------------------------------------------------------------------------------------
   // ShaderData
   //---------------------------------------------------------------------------------------------------
-  void ShaderData::Load(ShaderSource const & a_src)
+  Ref<ShaderData> ShaderData::Create(std::initializer_list<ShaderSourceElement> const& a_src)
+  {
+    return Ref<ShaderData>(new ShaderData(a_src));
+  }
+  
+  ShaderData::ShaderData()
+  {
+
+  }
+
+  ShaderData::ShaderData(std::initializer_list<ShaderSourceElement> const& a_data)
+  {
+    Init(a_data);
+  }
+
+  void ShaderData::Init(std::initializer_list<ShaderSourceElement> const& a_data)
   {
     Clear();
-    m_pSrc = &a_src;
+    m_source.Init(a_data);
     Parse();
-
-    uniformBuffer.Log();
-
-    for (auto ptr : structs)
-      ptr->Log();
-    m_pSrc = nullptr;
   }
 
   void ShaderData::Clear()
   {
-    uniformBuffer.Clear();
+    m_uniformBuffer.Clear();
 
-    for (auto ptr : resources)
+    for (auto ptr : m_resources)
       delete ptr;
 
-    for (auto ptr : structs)
+    for (auto ptr : m_structs)
       delete ptr;
 
-    resources.clear();
-    structs.clear();
-    m_pSrc = nullptr;
+    m_resources.clear();
+    m_structs.clear();
   }
 
   void ShaderData::Parse()
@@ -594,7 +602,7 @@ namespace Engine
 
   void ShaderData::ExtractStructs(ShaderDomain a_domain)
   {
-    std::string subject = m_pSrc->Get(a_domain);
+    std::string subject = m_source.Get(a_domain);
 
     std::smatch match;
     std::regex r(STRUCT_EXPRESSION);
@@ -622,14 +630,14 @@ namespace Engine
           field = new ShaderUniformDeclaration(dataType, var.name, var.count);
         newStruct->AddField(field);
       }
-      structs.push_back(newStruct);
+      m_structs.push_back(newStruct);
       subject = match.suffix().str();
     }
   }
 
   void ShaderData::ExtractUniforms(ShaderDomain a_domain)
   {
-    std::string subject = m_pSrc->Get(a_domain);
+    std::string subject = m_source.Get(a_domain);
     varDeclList vars = FindUniformDecls(subject);
 
     for (auto const& var : vars)
@@ -637,7 +645,7 @@ namespace Engine
       if (IsTypeStringResource(var.type))
       {
         ShaderResourceDeclaration* pDecl = new ShaderResourceDeclaration(StringToShaderResourceType(var.type), var.name, var.count);
-        resources.push_back(pDecl);
+        m_resources.push_back(pDecl);
       }
       else
       {
@@ -661,8 +669,8 @@ namespace Engine
 
   void ShaderData::PushUniform(ShaderUniformDeclaration* a_pDecl)
   {
-    ShaderUniformList& uniforms = uniformBuffer.GetUniformDeclarations();
-    for (ShaderUniformDeclaration* pDecl: uniformBuffer.GetUniformDeclarations())
+    ShaderUniformList& uniforms = m_uniformBuffer.GetUniformDeclarations();
+    for (ShaderUniformDeclaration* pDecl: m_uniformBuffer.GetUniformDeclarations())
     {
       if (*a_pDecl == *pDecl)
       {
@@ -670,12 +678,12 @@ namespace Engine
         return;
       }
     }
-    uniformBuffer.PushUniform(a_pDecl);
+    m_uniformBuffer.PushUniform(a_pDecl);
   }
 
   ShaderStruct* ShaderData::FindStruct(std::string const& a_name, ShaderDomain a_domain)
   {
-    for (ShaderStruct* ptr : structs)
+    for (ShaderStruct* ptr : m_structs)
     {
       if (a_name == ptr->GetName() && a_domain == ptr->GetDomain())
         return ptr;
@@ -685,11 +693,26 @@ namespace Engine
 
   ShaderUniformDeclaration* ShaderData::FindUniform(std::string const& a_name)
   {
-    for (auto pUniform : uniformBuffer.GetUniformDeclarations())
+    for (auto pUniform : m_uniformBuffer.GetUniformDeclarations())
     {
       if (pUniform->GetName() == a_name)
         return pUniform;
     }
     return nullptr;
+  }
+
+  ShaderSource const& ShaderData::GetShaderSource() const
+  {
+    return m_source;
+  }
+
+  ShaderUniformDeclarationBuffer const& ShaderData::GetUniforms() const
+  {
+    return m_uniformBuffer;
+  }
+
+  ShaderUniformDeclarationBuffer& ShaderData::GetUniforms()
+  {
+    return m_uniformBuffer;
   }
 }

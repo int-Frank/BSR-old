@@ -36,9 +36,10 @@ namespace Engine
   public:
 
     RT_RendererProgram();
+    RT_RendererProgram(impl::ResourceID64);
     ~RT_RendererProgram();
 
-    bool Init(ShaderSource const &);
+    bool Init(impl::ResourceID64);
     void Destroy();
 
     //void Reload(); 
@@ -54,9 +55,6 @@ namespace Engine
 
     //const std::string& GetName() const;
   private:
-
-    bool Load(ShaderSource const &);
-    void SetShaderSource(ShaderSource const &);
 
     bool CompileAndUploadShader();
     void ResolveUniforms();
@@ -103,9 +101,7 @@ namespace Engine
     bool m_loaded;
 
     std::string m_name;
-    ShaderSource m_shaderSource;
-
-    ShaderData m_shaderData;
+    Ref<ShaderData> m_shaderData; //TODO this needs to be const
 
     //std::vector<ShaderReloadedCallback> m_ShaderReloadedCallbacks;
 

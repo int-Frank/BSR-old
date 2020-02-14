@@ -29,16 +29,6 @@
 
 namespace Engine
 {
-  
-
-  
-
-  //--------------------------------------------------------------------------------------------------
-  // Helper functions
-  //--------------------------------------------------------------------------------------------------
-
-  
-
   //--------------------------------------------------------------------------------------------------
   // RT_RendererProgram
   //--------------------------------------------------------------------------------------------------
@@ -48,6 +38,13 @@ namespace Engine
     , m_loaded(false)
   {
 
+  }
+
+  RT_RendererProgram::RT_RendererProgram(impl::ResourceID64 a_id)
+    : m_rendererID(0)
+    , m_loaded(false)
+  {
+    Init(a_id);
   }
 
   RT_RendererProgram::~RT_RendererProgram()
@@ -62,8 +59,7 @@ namespace Engine
       glDeleteProgram(m_rendererID);
       m_rendererID = 0;
 
-      m_shaderData.Clear();
-      m_shaderSource.Clear();
+      m_shaderData = Ref<ShaderData>();
 
       m_loaded = false;
     }
@@ -80,27 +76,20 @@ namespace Engine
     glUseProgram(0);
   }
 
-  bool RT_RendererProgram::Init(ShaderSource const & a_source)
-  {
-    return Load(a_source);
-  }
-
-  void RT_RendererProgram::SetShaderSource(ShaderSource const & a_source)
-  {
-    m_shaderSource = a_source;
-  }
-
-  bool RT_RendererProgram::Load(ShaderSource const & a_source)
+  bool RT_RendererProgram::Init(impl::ResourceID64 a_id)
   {
     Destroy();
-    SetShaderSource(a_source);
-    m_shaderData.Load(m_shaderSource);
+    m_shaderData = Ref<ShaderData>(a_id);
+    if (m_shaderData.IsNull())
+    {
+      LOG_WARN("RT_RendererProgram failed to find shader data resource!");
+      return false;
+    }
 
     if (!CompileAndUploadShader())
       return false;
 
     ResolveUniforms();
-    //ValidateUniforms();
 
     m_loaded = true;
     return m_loaded;
@@ -108,6 +97,9 @@ namespace Engine
 
   bool RT_RendererProgram::CompileAndUploadShader()
   {
+    if (m_shaderData.IsNull())
+      return false;
+
     bool result = true;
     Dg::DynamicArray<GLuint> shaderRendererIDs;
 
@@ -116,7 +108,7 @@ namespace Engine
     {
       GLenum type = ShaderDomainToOpenGLType(ShaderDomain(i));
       ShaderDomain domain = static_cast<ShaderDomain>(i);
-      std::string const & source = m_shaderSource.Get(domain);
+      std::string const & source = m_shaderData->GetShaderSource().Get(domain);
 
       if (source.empty())
         continue;
@@ -188,9 +180,12 @@ namespace Engine
 
   void RT_RendererProgram::ResolveUniforms()
   {
+    if (m_shaderData.IsNull())
+      return;
+
     glUseProgram(m_rendererID);
 
-    for (ShaderUniformDeclaration* pUniform: m_shaderData.uniformBuffer.GetUniformDeclarations())
+    for (ShaderUniformDeclaration * pUniform : m_shaderData->GetUniforms().GetUniformDeclarations())
     {
       if (pUniform->GetType() == ShaderDataType::STRUCT)
       {
@@ -244,7 +239,10 @@ namespace Engine
 
   void RT_RendererProgram::UploadUniform(std::string const& a_name, void const* a_pbuf, uint32_t a_size)
   {
-    ShaderUniformDeclaration* pdecl = m_shaderData.FindUniform(a_name);
+    if (m_shaderData.IsNull())
+      return;
+
+    ShaderUniformDeclaration* pdecl = m_shaderData->FindUniform(a_name);
     if (pdecl == nullptr)
     {
       LOG_WARN("Failed to find Uniform '{}'", a_name.c_str());

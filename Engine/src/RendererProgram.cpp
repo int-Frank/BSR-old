@@ -9,15 +9,17 @@
 
 namespace Engine
 {
-  void RendererProgram::Init()
+  void RendererProgram::Init(std::initializer_list<ShaderSourceElement> const& a_src)
   {
+    m_shaderData = ShaderData::Create(a_src);
+
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
     state.Set<RenderState::Attr::Command>(RenderState::Command::RendererProgramCreate);
 
-    RENDER_SUBMIT(state, [resID = GetRefID().GetID()]()
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), shaderDataID = m_shaderData->GetRefID()]()
     {
-      RT_RendererProgram rp;
+      RT_RendererProgram rp(shaderDataID);
       RenderThreadData::Instance()->rendererPrograms.insert(resID, rp);
     });
   }
@@ -27,11 +29,11 @@ namespace Engine
   
   }
 
-  Ref<RendererProgram> RendererProgram::Create()
+  Ref<RendererProgram> RendererProgram::Create(std::initializer_list<ShaderSourceElement> const& a_src)
   {
     RendererProgram* pRP = new RendererProgram();
-    Ref<RendererProgram> ref(pRP); // Need to do it this way to give the object a resource ID
-    pRP->Init();
+    Ref<RendererProgram> ref(pRP);
+    pRP->Init(a_src);
     return ref;
   }
 
@@ -54,7 +56,7 @@ namespace Engine
     });
   }
 
-  void RendererProgram::Init(ShaderSource const & a_src)
+  /*void RendererProgram::Init(ShaderSource const & a_src)
   {
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
@@ -73,7 +75,7 @@ namespace Engine
         LOG_WARN("RendererProgram::Init: Failed! RefID: {}", resID);
       delete ptr;
     });
-  }
+  }*/
 
   void RendererProgram::Destroy()
   {

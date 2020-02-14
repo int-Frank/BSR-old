@@ -30,6 +30,7 @@ namespace Engine
 
     ShaderSource();
     ShaderSource(std::initializer_list<ShaderSourceElement> const&);
+    void Init(std::initializer_list<ShaderSourceElement> const&);
     std::string const& Get(ShaderDomain) const;
 
     void Clear();

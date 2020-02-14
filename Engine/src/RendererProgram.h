@@ -4,25 +4,24 @@
 #define RENDERERPROGRAM_H
 
 #include "Resource.h"
-#include "ShaderSource.h"
+#include "ShaderUniform.h"
 #include "Memory.h"
 
 namespace Engine
 {
   class RendererProgram : public Resource
   {
-    void Init();
+    void Init(std::initializer_list<ShaderSourceElement> const&);
     RendererProgram();
 
     RendererProgram(RendererProgram const&) = delete;
     RendererProgram& operator=(RendererProgram const&) = delete;
   public:
 
-    static Ref<RendererProgram> Create();
+    static Ref<RendererProgram> Create(std::initializer_list<ShaderSourceElement> const&);
 
     ~RendererProgram();
 
-    void Init(ShaderSource const &);
     void Destroy();
 
     void UploadUniform(std::string const& name, void const * buf, uint32_t size);
@@ -37,7 +36,10 @@ namespace Engine
     void Unbind();
 
   private:
-
+    //TODO this needs to be Ref<ShaderData const>
+    // Now that we have access to the uniform data, we can create a buffer to transform
+    // uniforms over to the render thread
+    Ref<ShaderData> m_shaderData;
   };
 }
 

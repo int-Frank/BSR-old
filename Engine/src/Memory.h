@@ -172,6 +172,9 @@ namespace Engine
       m_id.SetID(impl::ResourceManager::Instance()->GenerateUnique32());
       impl::ResourceManager::Instance()->RegisterResource(m_id, new impl::ResourceWrapper<T>(m_pObject));
       impl::ResourceManager::Instance()->RegisterUser(m_id);
+
+      //TODO If T is const, we need to cast to Resource const *
+      //TODO Once const is supported, search for and replace Refs that should be const
       dynamic_cast<Resource*>(m_pObject)->SetRefID(m_id);
     }
 
@@ -189,8 +192,10 @@ namespace Engine
     void reset();
     void reset(T *);
 
-    T* operator->() const noexcept;
-    T& operator*() const noexcept;
+    T* operator->() noexcept;
+    T& operator*() noexcept;
+    T const * operator->() const noexcept;
+    T const & operator*() const noexcept;
 
     bool IsNull() const;
 
@@ -270,13 +275,25 @@ namespace Engine
   }
 
   template<typename T>
-  T* Ref<T>::operator->() const noexcept
+  T const * Ref<T>::operator->() const noexcept
   {
     return m_pObject;
   }
 
   template<typename T>
-  T& Ref<T>::operator*() const noexcept
+  T const & Ref<T>::operator*() const noexcept
+  {
+    return *m_pObject;
+  }
+
+  template<typename T>
+  T* Ref<T>::operator->() noexcept
+  {
+    return m_pObject;
+  }
+
+  template<typename T>
+  T& Ref<T>::operator*() noexcept
   {
     return *m_pObject;
   }

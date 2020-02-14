@@ -48,8 +48,7 @@ public:
     m_va->AddVertexBuffer(m_vb);
     m_va->SetIndexBuffer(m_ib);
 
-    m_prog = Engine::RendererProgram::Create();
-    m_prog->Init(
+    m_prog = Engine::RendererProgram::Create(
       {
         { Engine::ShaderDomain::Vertex, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/vs.glsl" },
         { Engine::ShaderDomain::Fragment, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/fs.glsl" }

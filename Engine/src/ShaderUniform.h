@@ -222,26 +222,36 @@ namespace Engine
   typedef Dg::DynamicArray<ShaderResourceDeclaration*> ShaderResourceList;
   typedef Dg::DynamicArray<ShaderStruct*> ShaderStructList;
 
-  class ShaderData
+  class ShaderData : public Resource
   {
   public:
 
-    void Load(ShaderSource const &);
+    ShaderData();
+    ShaderData(std::initializer_list<ShaderSourceElement> const&);
+
+    static Ref<ShaderData> Create(std::initializer_list<ShaderSourceElement> const&);
+
+    void Init(std::initializer_list<ShaderSourceElement> const&);
+
     void Clear();
     ShaderUniformDeclaration* FindUniform(std::string const&);
 
-  public:
-    ShaderStructList                structs;
-    ShaderUniformDeclarationBuffer  uniformBuffer;
-    ShaderResourceList              resources;
+    ShaderSource const & GetShaderSource() const;
+    ShaderUniformDeclarationBuffer const & GetUniforms() const;
+    ShaderUniformDeclarationBuffer & GetUniforms();
+
   private:
     void Parse();
     void ExtractStructs(ShaderDomain);
     void ExtractUniforms(ShaderDomain);
     ShaderStruct* FindStruct(std::string const& name, ShaderDomain);
     void PushUniform(ShaderUniformDeclaration*);
+
   private:
-    ShaderSource const * m_pSrc;
+    ShaderSource                    m_source;
+    ShaderStructList                m_structs;
+    ShaderUniformDeclarationBuffer  m_uniformBuffer;
+    ShaderResourceList              m_resources;
   };
 
   class BindingPoint : public Resource

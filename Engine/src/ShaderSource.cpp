@@ -84,11 +84,11 @@ namespace Engine
   
   }
 
-  ShaderSource::ShaderSource(std::initializer_list<ShaderSourceElement> const & a_list)
+  void ShaderSource::Init(std::initializer_list<ShaderSourceElement> const& a_list)
   {
     Clear();
 
-    for (auto const & ele : a_list)
+    for (auto const& ele : a_list)
     {
       if (ele.strType == StrType::Source)
         m_src[static_cast<uint32_t>(ele.domain)] = RemoveComments(ele.str);
@@ -102,10 +102,15 @@ namespace Engine
         }
 
         std::string content((std::istreambuf_iterator<char>(ifs)),
-                            (std::istreambuf_iterator<char>()));
+          (std::istreambuf_iterator<char>()));
         m_src[static_cast<uint32_t>(ele.domain)] = RemoveComments(content);
       }
     }
+  }
+
+  ShaderSource::ShaderSource(std::initializer_list<ShaderSourceElement> const& a_list)
+  {
+    Init(a_list);
   }
 
   std::string const& ShaderSource::Get(ShaderDomain a_domain) const
