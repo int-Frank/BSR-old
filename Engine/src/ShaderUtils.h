@@ -92,7 +92,7 @@ namespace Engine
     void AddDomain(ShaderDomain);
     void RemoveDomain(ShaderDomain);
 
-    bool IsDomain(ShaderDomain);
+    bool IsDomain(ShaderDomain) const;
 
   private:
     uint32_t m_data;

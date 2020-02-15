@@ -52,6 +52,7 @@ public:
       {
         { Engine::ShaderDomain::Vertex, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/vs.glsl" },
         { Engine::ShaderDomain::Fragment, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/fs.glsl" }
+        //{ Engine::ShaderDomain::Fragment, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/test_shader.glsl" }
       });
 
     int t = 1;
@@ -59,7 +60,7 @@ public:
 
     int vals[3] = {1, 0, 1};
 
-    m_prog->UploadUniform("u_bool", vals, 4 * 3);
+    m_prog->UploadUniform("u_myStruct.myBool", vals, 4 * 3);
 
     Engine::UIGroup* pg0 = new Engine::UIGroup("g0", vec3(0.25f, 0.25f, 0.0f), vec3(0.5f, 0.5f, 0.0f));
     Engine::UIButton* btn0 = new Engine::UIButton("btn0", vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.5f, 0.0f));

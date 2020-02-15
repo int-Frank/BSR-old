@@ -7,7 +7,6 @@ uniform bool u_bool;
 uniform int u_int;
 uniform uint u_uint;
 uniform float u_float;
-uniform double u_double;
 
 //Vectors
 uniform vec2 u_vec2;
@@ -26,10 +25,6 @@ uniform uvec2 u_uvec2;
 uniform uvec3 u_uvec3;
 uniform uvec4 u_uvec4;
 
-uniform dvec2 u_dvec2;
-uniform dvec3 u_dvec3;
-uniform dvec4 u_dvec4;
-
 //Matrices - single precision
 uniform mat2 u_mat2;
 uniform mat3 u_mat3;
@@ -47,40 +42,20 @@ uniform mat4x2 u_mat4x2;
 uniform mat4x3 u_mat4x3;
 uniform mat4x4 u_mat4x4;
 
-//Matrices - double precision
-uniform dmat2 u_dmat2;
-uniform dmat3 u_dmat3;
-uniform dmat4 u_dmat4;
-
-uniform dmat2x2 u_dmat2x2;
-uniform dmat2x3 u_dmat2x3;
-uniform dmat2x4 u_dmat2x4;
-
-uniform dmat3x2 u_dmat3x2;
-uniform dmat3x3 u_dmat3x3;
-uniform dmat3x4 u_dmat3x4;
-
-uniform dmat4x2 u_dmat4x2;
-uniform dmat4x3 u_dmat4x3;
-uniform dmat4x4 u_dmat4x4;
-
 //Arrays
 uniform float my_float_array_16[16];
-uniform dmat3x4 my_dmat3x4_array_7[7];
 
 //Struct uniforms
 struct MyStruct1
 {
-  //This
   float s1_float;
-  //That
-  int s1_int;
+  int   s1_int;
 };
 
 struct MyStruct2
 {
   float s2_float;
-  int s2_int;
+  int   s2_int;
 };
 
 uniform MyStruct1 mys1;

@@ -185,22 +185,8 @@ namespace Engine
 
     glUseProgram(m_rendererID);
 
-    for (ShaderUniformDeclaration * pUniform : m_shaderData->GetUniforms().GetUniformDeclarations())
-    {
-      if (pUniform->GetType() == ShaderDataType::STRUCT)
-      {
-        ShaderStruct const * s = pUniform->GetShaderUniformStructPtr();
-        BSR_ASSERT(s, "");
-        Dg::DynamicArray<ShaderUniformDeclaration*> const & fields = s->GetFields();
-        for (size_t k = 0; k < fields.size(); k++)
-        {
-          ShaderUniformDeclaration * field = fields[k];
-          field->SetLocation(GetUniformLocation(pUniform->GetName() + "." + field->GetName()));
-        }
-      }
-      else
-        pUniform->SetLocation(GetUniformLocation(pUniform->GetName()));
-    }
+    for (ShaderUniformDeclaration & uniform : m_shaderData->GetUniforms().GetUniformDeclarations())
+       uniform.SetLocation(GetUniformLocation(uniform.GetName()));
 
     /*uint32_t sampler = 0;
     for (size_t i = 0; i < m_resources.size(); i++)

@@ -32,30 +32,6 @@
 
 namespace Engine
 {
-  class ShaderUniformDeclaration;
-
-  class ShaderStruct
-  {
-  public:
-
-    ShaderStruct(std::string const &, ShaderDomain);
-
-    //DEBUG
-    void Log(int a_indent = 0);
-
-    friend bool operator==(ShaderStruct const &, ShaderStruct const &);
-
-    void AddField(ShaderUniformDeclaration*);
-    std::string const & GetName() const;
-    ShaderDomain GetDomain() const;
-    Dg::DynamicArray<ShaderUniformDeclaration*> const & GetFields() const;
-
-  private:
-    std::string m_name;
-    Dg::DynamicArray<ShaderUniformDeclaration*> m_fields;
-    ShaderDomain m_domain;
-  };
-
   //A data type of STRUCT will just be padding. This can be used 
   //to pad out the front and back of a struct.
   class std140ItemDeclaration
@@ -150,15 +126,12 @@ namespace Engine
 
   class ShaderUniformDeclaration
   {
-    friend class ShaderStruct;
-    friend class ShaderUniformDeclarationBuffer;
   public:
 
     //DEBUG
-    void Log(int a_indent = 0);
+    void Log(int a_indent = 0) const;
 
     ShaderUniformDeclaration(ShaderDataType, std::string name, uint32_t count = 1);
-    ShaderUniformDeclaration(ShaderStruct*, std::string name, uint32_t count = 1);
 
     friend bool operator==(ShaderUniformDeclaration const&, ShaderUniformDeclaration const&);
 
@@ -168,7 +141,6 @@ namespace Engine
     int32_t GetLocation() const;
     ShaderDataType GetType() const;
     bool IsArray() const;
-    ShaderStruct * GetShaderUniformStructPtr() const;
 
     void SetLocation(int32_t);
 
@@ -184,14 +156,13 @@ namespace Engine
     std::string m_name;
     uint32_t m_count;
     ShaderDomains m_domains;
-
     ShaderDataType m_type;
 
-    ShaderStruct* m_pStruct;
+    //TODO remove this and store in render thread memory arena
     mutable int32_t m_location; //The OpenGL location
   };
 
-  typedef Dg::DynamicArray<ShaderUniformDeclaration*> ShaderUniformList;
+  typedef Dg::DynamicArray<ShaderUniformDeclaration> ShaderUniformList;
 
   class ShaderUniformDeclarationBuffer
   {
@@ -199,7 +170,7 @@ namespace Engine
     ShaderUniformDeclarationBuffer(std::string name);
     ShaderUniformDeclarationBuffer();
 
-    void PushUniform(ShaderUniformDeclaration*);
+    void PushUniform(ShaderUniformDeclaration const &);
 
     void Clear();
     std::string GetName() const;
@@ -210,7 +181,7 @@ namespace Engine
     //DEBUG
     void Log(int a_indent = 0);
 
-    ShaderUniformDeclaration* FindUniform(std::string);
+    ShaderUniformDeclaration* FindUniform(std::string const &);
 
   private:
     std::string m_name;
@@ -218,9 +189,8 @@ namespace Engine
     uint32_t m_register;
   };
 
-  typedef Dg::DynamicArray<ShaderUniformDeclarationBuffer*> ShaderUniformBufferList;
+  //typedef Dg::DynamicArray<ShaderUniformDeclarationBuffer*> ShaderUniformBufferList;
   typedef Dg::DynamicArray<ShaderResourceDeclaration*> ShaderResourceList;
-  typedef Dg::DynamicArray<ShaderStruct*> ShaderStructList;
 
   class ShaderData : public Resource
   {
@@ -241,15 +211,17 @@ namespace Engine
     ShaderUniformDeclarationBuffer & GetUniforms();
 
   private:
-    void Parse();
-    void ExtractStructs(ShaderDomain);
-    void ExtractUniforms(ShaderDomain);
-    ShaderStruct* FindStruct(std::string const& name, ShaderDomain);
-    void PushUniform(ShaderUniformDeclaration*);
 
+    struct ShaderStructList;
+    static size_t const INVALID_STRUCT_INDEX = -1;
+
+    void Parse();
+    void ExtractStructs(ShaderDomain, ShaderStructList &);
+    void ExtractUniforms(ShaderDomain, ShaderStructList const &);
+    static size_t FindStruct(std::string const &, ShaderStructList const &);
+    void PushUniform(ShaderUniformDeclaration);
   private:
     ShaderSource                    m_source;
-    ShaderStructList                m_structs;
     ShaderUniformDeclarationBuffer  m_uniformBuffer;
     ShaderResourceList              m_resources;
   };

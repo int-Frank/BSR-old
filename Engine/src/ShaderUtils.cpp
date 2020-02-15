@@ -97,7 +97,7 @@ namespace Engine
     m_data &= ~(1 << static_cast<uint32_t>(a_domain));
   }
 
-  bool ShaderDomains::IsDomain(ShaderDomain a_domain)
+  bool ShaderDomains::IsDomain(ShaderDomain a_domain) const
   {
     return ((1 << static_cast<uint32_t>(a_domain)) & m_data) != 0;
   }
