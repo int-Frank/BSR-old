@@ -131,7 +131,7 @@ namespace Engine
     //DEBUG
     void Log() const;
 
-    ShaderUniformDeclaration(ShaderDataType, std::string name, uint32_t count = 1);
+    ShaderUniformDeclaration(ShaderDataType, std::string name, bool isArray, uint32_t count);
 
     friend bool operator==(ShaderUniformDeclaration const&, ShaderUniformDeclaration const&);
 
@@ -143,6 +143,7 @@ namespace Engine
 
     uint32_t GetDataSize() const;
     void SetDataOffset(uint32_t offset);
+    uint32_t GetDataOffset() const;
 
   public:
     //Each upload in the upload buffer will be preceeded with a 
@@ -155,6 +156,7 @@ namespace Engine
     uint32_t m_dataOffset;
     uint32_t m_dataSize;
 
+    bool m_isArray;
     std::string m_name;
     uint32_t m_count;
     ShaderDomains m_domains;
@@ -179,6 +181,7 @@ namespace Engine
     ShaderUniformDeclaration* FindUniform(std::string const&);
     uint32_t FindUniformIndex(std::string const&);
 
+    uint32_t GetUniformDataSize() const;
     ShaderSource const & GetShaderSource() const;
     ShaderUniformList const & GetUniforms() const;
     ShaderUniformList & GetUniforms();

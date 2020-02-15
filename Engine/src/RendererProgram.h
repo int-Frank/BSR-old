@@ -6,6 +6,7 @@
 #include "Resource.h"
 #include "ShaderUniform.h"
 #include "Memory.h"
+#include "core_utils.h"
 
 namespace Engine
 {
@@ -24,13 +25,12 @@ namespace Engine
 
     void Destroy();
 
+    void UploadUniformBuffer(byte const *);
+
     void UploadUniform(std::string const& name, void const * buf, uint32_t size);
 
     //Use if buf is already on the renderer memory arena
-    void UploadUniformNoCopy(std::string const& name, void const * buf, uint32_t size);
-
-    //void Reload(); 
-    //void AddShaderReloadedCallback(const ShaderReloadedCallback& callback);
+    //void UploadUniformNoCopy(std::string const& name, void const * buf, uint32_t size);
 
     void Bind();
     void Unbind();

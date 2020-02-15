@@ -22,6 +22,7 @@
 #include "RT_RendererProgram.h"
 #include "core_ErrorCodes.h"
 #include "core_Log.h"
+#include "core_utils.h"
 #include "core_Assert.h"
 #include "DgStringFunctions.h"
 
@@ -224,9 +225,77 @@ namespace Engine
     return result;
   }
 
+  void RT_RendererProgram::UploadUniformBuffer(byte const* a_pbuf)
+  {
+    if (m_shaderData.IsNull() || a_pbuf == nullptr)
+      return;
+
+    //TODO should this be here, or do we leave it up to the user to bind before uploading uniforms?
+    Bind();
+
+    for (size_t i = 0; i < m_shaderData->GetUniforms().size(); i++)
+    {
+      ShaderUniformDeclaration const * pdecl = &m_shaderData->GetUniforms()[i];
+      uint32_t offset = pdecl->GetDataOffset();
+      uint32_t count = *static_cast<uint32_t const *>(Core::AdvancePtr(a_pbuf, offset));
+
+      if (count == 0)
+        continue;
+
+      void const * buf = Core::AdvancePtr(a_pbuf, offset + sizeof(uint32_t));
+      UploadUniform(uint32_t(i), buf, count);
+    }
+  }
+
+  void RT_RendererProgram::UploadUniformSingle(int a_location, ShaderDataType a_type,  void const* a_pbuf)
+  {
+    switch (a_type)
+    {
+      case ShaderDataType::BOOL:
+      {
+        glUniform1i(a_location, *static_cast<int const*>(a_pbuf));
+        break;
+      }
+      case ShaderDataType::FLOAT:
+      {
+        glUniform1f(a_location, *static_cast<float const*>(a_pbuf));
+        break;
+      }
+    }
+  }
+
+  void RT_RendererProgram::UploadUniformArray(int a_location, ShaderDataType a_type,
+                                              void const* a_pbuf, uint32_t a_count)
+  {
+    switch (a_type)
+    {
+      case ShaderDataType::BOOL:
+      {
+        glUniform1iv(a_location, a_count, static_cast<int const*>(a_pbuf));
+        break;
+      }
+      case ShaderDataType::FLOAT:
+      {
+        glUniform1fv(a_location, a_count, static_cast<float const*>(a_pbuf));
+        break;
+      }
+    }
+  }
+
+  void RT_RendererProgram::UploadUniform(uint32_t a_index, void const * a_pbuf, uint32_t a_count)
+  {
+    ShaderUniformDeclaration const* pdecl = &m_shaderData->GetUniforms()[a_index];
+    BSR_ASSERT(a_count <= pdecl->GetCount());
+
+    if (pdecl->IsArray())
+      UploadUniformArray(m_uniformLocations[a_index], pdecl->GetType(), a_pbuf, a_count);
+    else
+      UploadUniformSingle(m_uniformLocations[a_index], pdecl->GetType(), a_pbuf);
+  }
+
   void RT_RendererProgram::UploadUniform(std::string const& a_name, void const* a_pbuf, uint32_t a_size)
   {
-    if (m_shaderData.IsNull())
+    if (m_shaderData.IsNull() || a_pbuf == nullptr)
       return;
 
     uint32_t index = m_shaderData->FindUniformIndex(a_name);
@@ -240,29 +309,9 @@ namespace Engine
     uint32_t elementSize = SizeOfShaderDataType(pdecl->GetType());
     uint32_t count = a_size / elementSize;
 
-    //BSR_ASSERT((pdecl->GetCount() != 0)); //This should be picked up earlier
-    BSR_ASSERT(count <= pdecl->GetCount());
+    //TODO should this be here, or do we leave it up to the user to bind before uploading uniforms?
+    Bind();
 
-    glUseProgram(m_rendererID);
-
-    switch (pdecl->GetType())
-    {
-      case ShaderDataType::BOOL:
-      {
-        if (pdecl->GetCount() == 1)
-          glUniform1i(m_uniformLocations[index], *static_cast<int const*>(a_pbuf));
-        else
-          glUniform1iv(m_uniformLocations[index], count, static_cast<int const*>(a_pbuf));
-        break;
-      }
-      case ShaderDataType::FLOAT:
-      {
-        if (pdecl->GetCount() == 1)
-          glUniform1f(m_uniformLocations[index], *static_cast<float const*>(a_pbuf));
-        else
-          glUniform1fv(m_uniformLocations[index], count, static_cast<float const*>(a_pbuf));
-        break;
-      }
-    }
+    UploadUniform(index, a_pbuf, count);
   }
 }

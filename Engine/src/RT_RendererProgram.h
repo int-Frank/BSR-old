@@ -52,6 +52,7 @@ namespace Engine
     //void SetPSMaterialUniformBuffer(MemBufferDynamic const& buffer);
 
     void UploadUniform(std::string const& name, void const* data, uint32_t size);
+    void UploadUniformBuffer(byte const* data);
 
     //const std::string& GetName() const;
   private:
@@ -62,6 +63,9 @@ namespace Engine
     //bool Bind(ShaderDomain, std::string const & name, RT_BindingPoint const &);
 
     int32_t GetUniformLocation(std::string const & name) const;
+    void UploadUniform(uint32_t index, void const* buf, uint32_t count);
+    void UploadUniformSingle(int location, ShaderDataType, void const* buf);
+    void UploadUniformArray(int location, ShaderDataType, void const* buf, uint32_t count);
 
     //void ResolveAndSetUniforms(ShaderUniformDeclarationBuffer* decl, MemBufferDynamic buffer);
     //void ResolveAndSetUniform(ShaderUniformDeclaration* uniform, MemBufferDynamic buffer);

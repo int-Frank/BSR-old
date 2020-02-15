@@ -301,11 +301,13 @@ namespace Engine
   // ShaderUniformDeclaration
   //---------------------------------------------------------------------------------------------------
   ShaderUniformDeclaration::ShaderUniformDeclaration(ShaderDataType a_type, 
-                                                     std::string a_name, 
+                                                     std::string a_name,
+                                                     bool a_isArray,
                                                      uint32_t a_count)
     : m_type(a_type)
     , m_name(a_name)
     , m_count(a_count)
+    , m_isArray(a_isArray)
     , m_dataOffset(0)
     , m_dataSize(0)
   {
@@ -355,6 +357,11 @@ namespace Engine
   void ShaderUniformDeclaration::SetDataOffset(uint32_t a_offset)
   {
     m_dataOffset = a_offset;
+  }
+
+  uint32_t ShaderUniformDeclaration::GetDataOffset() const
+  {
+    return m_dataOffset;
   }
 
   bool operator==(ShaderUniformDeclaration const& a_uniform_0, ShaderUniformDeclaration const& a_uniform_1)
@@ -424,6 +431,7 @@ namespace Engine
   {
     std::string type;
     std::string name;
+    bool        isArray;
     uint32_t    count;
   };
 
@@ -439,9 +447,13 @@ namespace Engine
     while (regex_search(subject, match, r))
     {
       uint32_t count(1);
+      bool isArray = false;
       if (match.str(3) != "")
+      {
         BSR_ASSERT(Dg::StringToNumber<uint32_t>(count, match.str(3), std::dec), "");
-      result.push_back(varDecl{match.str(1), match.str(2), count});
+        isArray = true;
+      }
+      result.push_back(varDecl{match.str(1), match.str(2), isArray, count});
       subject = match.suffix().str();
     }
     return result;
@@ -557,7 +569,7 @@ namespace Engine
             {
               ShaderUniformDeclaration const * pUniform = &pStruct->GetFields()[i];
               std::string name = var.name + "." + pUniform->GetName();
-              newStruct.AddField(ShaderUniformDeclaration(pUniform->GetType(), name, var.count));
+              newStruct.AddField(ShaderUniformDeclaration(pUniform->GetType(), name, var.isArray, var.count));
             }
           }
           else
@@ -567,7 +579,7 @@ namespace Engine
           }
         }
         else
-          newStruct.AddField(ShaderUniformDeclaration(dataType, var.name, var.count));
+          newStruct.AddField(ShaderUniformDeclaration(dataType, var.name, var.isArray, var.count));
       }
       a_out.data.push_back(newStruct);
       subject = match.suffix().str();
@@ -599,14 +611,14 @@ namespace Engine
           {
             ShaderUniformDeclaration const* pUniform = &pStruct->GetFields()[i];
             std::string name = var.name + "." + pUniform->GetName();
-            ShaderUniformDeclaration decl(pUniform->GetType(), name, pUniform->GetCount());
+            ShaderUniformDeclaration decl(pUniform->GetType(), name, pUniform->IsArray(), pUniform->GetCount());
             decl.GetDomains().AddDomain(a_domain);
             PushUniform(decl);
           }
         }
         else
         {
-          ShaderUniformDeclaration decl(t, var.name, var.count);
+          ShaderUniformDeclaration decl(t, var.name, var.isArray, var.count);
           decl.GetDomains().AddDomain(a_domain);
           PushUniform(decl);
         }
@@ -655,6 +667,11 @@ namespace Engine
         return i;
     }
     return INVALID_INDEX;
+  }
+
+  uint32_t ShaderData::GetUniformDataSize() const
+  {
+    return m_dataSize;
   }
 
   ShaderSource const& ShaderData::GetShaderSource() const

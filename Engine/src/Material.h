@@ -65,8 +65,8 @@ namespace Engine
     Ref<RendererProgram> m_shader;
     Dg::Set_AVL<MaterialInstance*> m_materialInstances;
 
-    void* m_pbufBegin;
-    void* m_pbufCurrent;
+    uint32_t m_bufSize;
+    byte * a_pBuf;
 
     //std::vector<Ref<Texture>> m_Textures;
 

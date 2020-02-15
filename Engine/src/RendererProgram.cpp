@@ -131,6 +131,27 @@ namespace Engine
     });
   }
 
+  void RendererProgram::UploadUniformBuffer(byte const * a_buf)
+  {
+    RenderState state = RenderState::Create();
+    state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
+    state.Set<RenderState::Attr::Command>(RenderState::Command::RendererProgramUploadUniform);
+
+    byte * buf_data = (byte*)RENDER_ALLOCATE(m_shaderData->GetUniformDataSize());
+    memcpy(buf_data, a_buf, m_shaderData->GetUniformDataSize());
+
+    RENDER_SUBMIT(state, [resID = GetRefID().GetID(), buf = buf_data]()
+    {
+      RT_RendererProgram* pRP = RenderThreadData::Instance()->rendererPrograms.at(resID);
+      if (pRP == nullptr)
+      {
+        LOG_WARN("RendererProgram::Bind: RefID '{}' does not exist!", resID);
+        return;
+      }
+      pRP->UploadUniformBuffer(buf);
+    });
+  }
+
   void RendererProgram::UploadUniform(std::string const& a_name, void const* a_buf, uint32_t a_size)
   {
     RenderState state = RenderState::Create();
@@ -159,7 +180,7 @@ namespace Engine
     });
   }
 
-  void RendererProgram::UploadUniformNoCopy(std::string const& a_name, void const* a_buf, uint32_t a_size)
+  /*void RendererProgram::UploadUniformNoCopy(std::string const& a_name, void const* a_buf, uint32_t a_size)
   {
     RenderState state = RenderState::Create();
     state.Set<RenderState::Attr::Type>(RenderState::Type::Command);
@@ -182,5 +203,5 @@ namespace Engine
       Core::Deserialize(buf_name, &name, 1);
       pRP->UploadUniform(name, buf_data, size);
     });
-  }
+  }*/
 }
