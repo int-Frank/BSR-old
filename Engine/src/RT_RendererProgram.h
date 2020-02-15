@@ -102,6 +102,7 @@ namespace Engine
 
     std::string m_name;
     Ref<ShaderData> m_shaderData; //TODO this needs to be const
+    Dg::DynamicArray<int32_t> m_uniformLocations;
 
     //std::vector<ShaderReloadedCallback> m_ShaderReloadedCallbacks;
 

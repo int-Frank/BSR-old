@@ -60,6 +60,7 @@ namespace Engine
       m_rendererID = 0;
 
       m_shaderData = Ref<ShaderData>();
+      m_uniformLocations.clear();
 
       m_loaded = false;
     }
@@ -185,8 +186,8 @@ namespace Engine
 
     glUseProgram(m_rendererID);
 
-    for (ShaderUniformDeclaration & uniform : m_shaderData->GetUniforms().GetUniformDeclarations())
-       uniform.SetLocation(GetUniformLocation(uniform.GetName()));
+    for (ShaderUniformDeclaration & uniform : m_shaderData->GetUniforms())
+       m_uniformLocations.push_back(GetUniformLocation(uniform.GetName()));
 
     /*uint32_t sampler = 0;
     for (size_t i = 0; i < m_resources.size(); i++)
@@ -228,13 +229,14 @@ namespace Engine
     if (m_shaderData.IsNull())
       return;
 
-    ShaderUniformDeclaration* pdecl = m_shaderData->FindUniform(a_name);
-    if (pdecl == nullptr)
+    uint32_t index = m_shaderData->FindUniformIndex(a_name);
+    if (index == INVALID_INDEX)
     {
       LOG_WARN("Failed to find Uniform '{}'", a_name.c_str());
       return;
     }
 
+    ShaderUniformDeclaration * pdecl = &m_shaderData->GetUniforms()[index];
     uint32_t elementSize = SizeOfShaderDataType(pdecl->GetType());
     uint32_t count = a_size / elementSize;
 
@@ -248,9 +250,9 @@ namespace Engine
       case ShaderDataType::BOOL:
       {
         if (pdecl->GetCount() == 1)
-          glUniform1i(pdecl->GetLocation(), *static_cast<int const*>(a_pbuf));
+          glUniform1i(m_uniformLocations[index], *static_cast<int const*>(a_pbuf));
         else
-          glUniform1iv(pdecl->GetLocation(), count, static_cast<int const*>(a_pbuf));
+          glUniform1iv(m_uniformLocations[index], count, static_cast<int const*>(a_pbuf));
         break;
       }
     }

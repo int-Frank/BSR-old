@@ -62,9 +62,6 @@ namespace Engine
 
     ShaderStruct(std::string const&);
 
-    //DEBUG
-    void Log(int a_indent = 0);
-
     friend bool operator==(ShaderStruct const&, ShaderStruct const&);
 
     void AddField(ShaderUniformDeclaration const&);
@@ -87,16 +84,6 @@ namespace Engine
 
   }
   
-  void ShaderStruct::Log(int a_indent)
-  {
-    std::string indent(size_t(a_indent) * 2, ' ');
-    LOG_DEBUG("{}STRUCT - name: {}", indent.c_str(), m_name.c_str());
-    LOG_DEBUG("{}[", indent.c_str());
-    for (auto const & field : m_fields)
-      field.Log(a_indent + 1);
-    LOG_DEBUG("{}]", indent.c_str());
-  }
-
   void ShaderStruct::AddField(ShaderUniformDeclaration const & a_field)
   {
     m_fields.push_back(a_field);
@@ -319,16 +306,14 @@ namespace Engine
     : m_type(a_type)
     , m_name(a_name)
     , m_count(a_count)
-    , m_location(-1)
   {
     BSR_ASSERT(a_type != ShaderDataType::STRUCT);
   }
   
-  void ShaderUniformDeclaration::Log(int a_indent) const
+  void ShaderUniformDeclaration::Log() const
   {
-    std::string indent(size_t(a_indent)  * 2, ' ');
-    LOG_DEBUG("{}UNIFORM - name: {}, count: {}, type: {}, IsVS: {}, IsFS: {}, IsGS: {}",
-      indent.c_str(), m_name.c_str(), m_count, ShaderDataTypeToString(m_type).c_str(), 
+    LOG_DEBUG("UNIFORM - name: {}, count: {}, type: {}, IsVS: {}, IsFS: {}, IsGS: {}",
+      m_name.c_str(), m_count, ShaderDataTypeToString(m_type).c_str(), 
       m_domains.IsDomain(ShaderDomain::Vertex), 
       m_domains.IsDomain(ShaderDomain::Fragment), 
       m_domains.IsDomain(ShaderDomain::Geometry));
@@ -349,11 +334,6 @@ namespace Engine
     return m_domains;
   }
 
-  int32_t ShaderUniformDeclaration::GetLocation() const
-  {
-    return m_location;
-  }
-
   ShaderDataType ShaderUniformDeclaration::GetType() const
   {
     return m_type;
@@ -364,84 +344,12 @@ namespace Engine
     return m_count > 1;
   }
 
-  void ShaderUniformDeclaration::SetLocation(int32_t a_loc)
-  {
-    m_location = a_loc;
-  }
-
   bool operator==(ShaderUniformDeclaration const& a_uniform_0, ShaderUniformDeclaration const& a_uniform_1)
   {
     bool result = a_uniform_0.m_name == a_uniform_1.m_name;
     result = result && (a_uniform_0.m_type == a_uniform_1.m_type);
     result = result && (a_uniform_0.m_count == a_uniform_1.m_count);
     return result;
-  }
-
-  //---------------------------------------------------------------------------------------------------
-  // ShaderUniformDeclarationBuffer
-  //---------------------------------------------------------------------------------------------------
-  ShaderUniformDeclarationBuffer::ShaderUniformDeclarationBuffer()
-    : m_name("")
-    , m_register(0)
-  {
-
-  }
-  
-  ShaderUniformDeclarationBuffer::ShaderUniformDeclarationBuffer(std::string a_name)
-    : m_name(a_name)
-    , m_register(0)
-  {
-
-  }
-
-  void ShaderUniformDeclarationBuffer::Log(int a_indent)
-  {
-    std::string indent(size_t(a_indent)  * 2, ' ');
-    LOG_DEBUG("{}UNIFORM DECL BUFFER - name: {}, register: {}",
-      indent.c_str(), m_name.c_str(), m_register);
-    for (auto & un : m_uniforms)
-      un.Log(a_indent + 1);
-    LOG_DEBUG("{}END UNIFORM DECL BUFFER - name: {}", indent.c_str(), m_name.c_str());
-  }
-
-  void ShaderUniformDeclarationBuffer::PushUniform(ShaderUniformDeclaration const & a_pUniform)
-  {
-    m_uniforms.push_back(a_pUniform);
-  }
-
-  std::string ShaderUniformDeclarationBuffer::GetName() const
-  {
-    return m_name;
-  }
-
-  uint32_t ShaderUniformDeclarationBuffer::GetRegister() const
-  {
-    return m_register;
-  }
-
-  ShaderUniformList& ShaderUniformDeclarationBuffer::GetUniformDeclarations()
-  {
-    return m_uniforms;
-  }
-
-  ShaderUniformList const & ShaderUniformDeclarationBuffer::GetUniformDeclarations() const
-  {
-    return m_uniforms;
-  }
-
-  ShaderUniformDeclaration* ShaderUniformDeclarationBuffer::FindUniform(std::string const & a_name)
-  {
-    for (ShaderUniformDeclaration & uniform : m_uniforms)
-    {
-      if (uniform.GetName() == a_name)
-        return &uniform;
-    }
-    return nullptr;
-  }
-
-  void ShaderUniformDeclarationBuffer::Clear()
-  {
-    return m_uniforms.clear();
   }
 
   //---------------------------------------------------------------------------------------------------
@@ -569,12 +477,18 @@ namespace Engine
     m_source.Init(a_data);
     Parse();
 
-    m_uniformBuffer.Log();
+    Log();
+  }
+
+  void ShaderData::Log()
+  {
+    for (auto& un : m_uniforms)
+      un.Log();
   }
 
   void ShaderData::Clear()
   {
-    m_uniformBuffer.Clear();
+    m_uniforms.clear();
 
     for (auto ptr : m_resources)
       delete ptr;
@@ -610,7 +524,7 @@ namespace Engine
         if (dataType == ShaderDataType::NONE) //might be a previously defined struct
         {
           size_t structIndex = FindStruct(var.type, a_out);
-          if (structIndex != INVALID_STRUCT_INDEX)
+          if (structIndex != INVALID_INDEX)
           {
             ShaderStruct * pStruct = &a_out.data[structIndex];
             for (size_t i = 0; i < pStruct->GetFields().size(); i++)
@@ -653,7 +567,7 @@ namespace Engine
         if (t == ShaderDataType::NONE)
         {
           size_t structIndex = FindStruct(var.type, a_structs);
-          BSR_ASSERT(structIndex != INVALID_STRUCT_INDEX, "Undefined struct!");
+          BSR_ASSERT(structIndex != INVALID_INDEX, "Undefined struct!");
           ShaderStruct const * pStruct = &a_structs.data[structIndex];
           for (size_t i = 0; i < pStruct->GetFields().size(); i++)
           {
@@ -681,13 +595,12 @@ namespace Engine
       if (a_name == a_structs.data[i].GetName())
         return i;
     }
-    return INVALID_STRUCT_INDEX;
+    return INVALID_INDEX;
   }
 
   void ShaderData::PushUniform(ShaderUniformDeclaration a_decl)
   {
-    ShaderUniformList& uniforms = m_uniformBuffer.GetUniformDeclarations();
-    for (ShaderUniformDeclaration & decl: m_uniformBuffer.GetUniformDeclarations())
+    for (ShaderUniformDeclaration & decl: m_uniforms)
     {
       if (a_decl == decl)
       {
@@ -695,17 +608,27 @@ namespace Engine
         return;
       }
     }
-    m_uniformBuffer.PushUniform(a_decl);
+    m_uniforms.push_back(a_decl);
   }
 
   ShaderUniformDeclaration* ShaderData::FindUniform(std::string const& a_name)
   {
-    for (auto & pUniform : m_uniformBuffer.GetUniformDeclarations())
+    for (ShaderUniformDeclaration& uniform : m_uniforms)
     {
-      if (pUniform.GetName() == a_name)
-        return &pUniform;
+      if (uniform.GetName() == a_name)
+        return &uniform;
     }
     return nullptr;
+  }
+
+  uint32_t ShaderData::FindUniformIndex(std::string const& a_name)
+  {
+    for (uint32_t i = 0; i < uint32_t(m_uniforms.size()); i++)
+    {
+      if (m_uniforms[i].GetName() == a_name)
+        return i;
+    }
+    return INVALID_INDEX;
   }
 
   ShaderSource const& ShaderData::GetShaderSource() const
@@ -713,13 +636,13 @@ namespace Engine
     return m_source;
   }
 
-  ShaderUniformDeclarationBuffer const& ShaderData::GetUniforms() const
+  ShaderUniformList const & ShaderData::GetUniforms() const
   {
-    return m_uniformBuffer;
+    return m_uniforms;
   }
 
-  ShaderUniformDeclarationBuffer& ShaderData::GetUniforms()
+  ShaderUniformList & ShaderData::GetUniforms()
   {
-    return m_uniformBuffer;
+    return m_uniforms;
   }
 }
