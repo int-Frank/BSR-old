@@ -141,9 +141,14 @@ namespace Engine
     ShaderDataType GetType() const;
     bool IsArray() const;
 
-  protected:
+    uint32_t GetDataSize() const;
+    void SetDataOffset(uint32_t offset);
 
-    void SetOffset(uint32_t offset);
+  public:
+    //Each upload in the upload buffer will be preceeded with a 
+    //header. This will be the number of elements to be uploaded.
+    //'0' indicates no data to upload.
+    static uint32_t const DATA_HEADER_SIZE = sizeof(uint32_t);
 
   private:
 
@@ -186,11 +191,14 @@ namespace Engine
     struct ShaderStructList;
 
     void Parse();
+    void PostProcess();
     void ExtractStructs(ShaderDomain, ShaderStructList &);
     void ExtractUniforms(ShaderDomain, ShaderStructList const &);
     static size_t FindStruct(std::string const &, ShaderStructList const &);
     void PushUniform(ShaderUniformDeclaration);
   private:
+    uint32_t            m_dataSize;
+
     ShaderSource        m_source;
     ShaderUniformList   m_uniforms;
     ShaderResourceList  m_resources;

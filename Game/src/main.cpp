@@ -59,8 +59,10 @@ public:
     int f = 0;
 
     int vals[3] = {1, 0, 1};
+    float fval = 3.0f;
 
     m_prog->UploadUniform("u_myStruct.myBool", vals, 4 * 3);
+    m_prog->UploadUniform("u_float", &fval, 4);
 
     Engine::UIGroup* pg0 = new Engine::UIGroup("g0", vec3(0.25f, 0.25f, 0.0f), vec3(0.5f, 0.5f, 0.0f));
     Engine::UIButton* btn0 = new Engine::UIButton("btn0", vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.5f, 0.0f));

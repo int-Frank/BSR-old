@@ -306,8 +306,11 @@ namespace Engine
     : m_type(a_type)
     , m_name(a_name)
     , m_count(a_count)
+    , m_dataOffset(0)
+    , m_dataSize(0)
   {
     BSR_ASSERT(a_type != ShaderDataType::STRUCT);
+    m_dataSize = SizeOfShaderDataType(m_type) * m_count + DATA_HEADER_SIZE;
   }
   
   void ShaderUniformDeclaration::Log() const
@@ -342,6 +345,16 @@ namespace Engine
   bool ShaderUniformDeclaration::IsArray() const
   {
     return m_count > 1;
+  }
+
+  uint32_t ShaderUniformDeclaration::GetDataSize() const
+  {
+    return m_dataSize;
+  }
+
+  void ShaderUniformDeclaration::SetDataOffset(uint32_t a_offset)
+  {
+    m_dataOffset = a_offset;
   }
 
   bool operator==(ShaderUniformDeclaration const& a_uniform_0, ShaderUniformDeclaration const& a_uniform_1)
@@ -462,11 +475,13 @@ namespace Engine
   }
   
   ShaderData::ShaderData()
+    : m_dataSize(0)
   {
 
   }
 
   ShaderData::ShaderData(std::initializer_list<ShaderSourceElement> const& a_data)
+    : m_dataSize(0)
   {
     Init(a_data);
   }
@@ -476,7 +491,7 @@ namespace Engine
     Clear();
     m_source.Init(a_data);
     Parse();
-
+    PostProcess();
     Log();
   }
 
@@ -505,6 +520,17 @@ namespace Engine
       ExtractUniforms(ShaderDomain(i), structList);
       //ExtractUniformBlocks(ShaderDomain(i));
     }
+  }
+
+  void ShaderData::PostProcess()
+  {
+    uint32_t offset = 0;
+    for (auto & uniform : m_uniforms)
+    {
+      uniform.SetDataOffset(offset);
+      offset += uniform.GetDataSize();
+    }
+    m_dataSize = offset;
   }
 
   void ShaderData::ExtractStructs(ShaderDomain a_domain, ShaderStructList & a_out)

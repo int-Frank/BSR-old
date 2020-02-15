@@ -255,6 +255,14 @@ namespace Engine
           glUniform1iv(m_uniformLocations[index], count, static_cast<int const*>(a_pbuf));
         break;
       }
+      case ShaderDataType::FLOAT:
+      {
+        if (pdecl->GetCount() == 1)
+          glUniform1f(m_uniformLocations[index], *static_cast<float const*>(a_pbuf));
+        else
+          glUniform1fv(m_uniformLocations[index], count, static_cast<float const*>(a_pbuf));
+        break;
+      }
     }
   }
 }
