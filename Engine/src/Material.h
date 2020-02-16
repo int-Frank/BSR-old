@@ -32,45 +32,26 @@ namespace Engine
 {
   class Material
   {
-    friend class MaterialInstance;
-    void Init(Ref<RendererProgram> const&);
+    void Init(Ref<RendererProgram> &);
     Material();
   public:
     virtual ~Material();
 
-    static Ref<Material> Create(Ref<RendererProgram> const&);
-    void Bind() const;
+    static Ref<Material> Create(Ref<RendererProgram> &);
+    void Bind();
 
-    void Set(std::string const& uniform, void const* data, uint32_t size);
-   //{
-   //  auto decl = FindUniformDeclaration(name);
-   //  BSR_ASSERT(decl, "Could not find uniform with name {}", a_uniform.c_str());
-   //  auto& buffer = GetUniformBufferTarget(decl);
-   //  buffer.Write((byte*)&a_value, decl->GetSize(), decl->GetOffset());
-   //
-   //  for (auto mi : m_MaterialInstances)
-   //    mi->OnMaterialValueUpdated(decl);
-   //}
-
-    //void Set(std::string, const Ref<Texture>& texture)
-    //{
-    //  auto decl = FindResourceDeclaration(name);
-    //  uint32_t slot = decl->GetRegister();
-    //  if (m_Textures.size() <= slot)
-    //    m_Textures.resize((size_t)slot + 1);
-    //  m_Textures[slot] = texture;
-    //}
+    void SetUniform(std::string const& uniform, void const * data, uint32_t size);
 
   private:
-    Ref<RendererProgram> m_shader;
-    Dg::Set_AVL<MaterialInstance*> m_materialInstances;
+    Ref<RendererProgram> m_prog;
+    //Dg::Set_AVL<MaterialInstance*> m_materialInstances;
 
     uint32_t m_bufSize;
-    byte * a_pBuf;
+    byte * m_pBuf;
 
     //std::vector<Ref<Texture>> m_Textures;
 
-    uint32_t m_renderFlags = 0;
+    uint32_t m_renderFlags;
   };
 
   class MaterialInstance

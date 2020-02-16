@@ -8,6 +8,7 @@
 #include "Buffer.h"
 #include "VertexArray.h"
 #include "RendererProgram.h"
+#include "Material.h"
 
 #include "Canvas.h"
 #include "EngineMessages.h"
@@ -48,12 +49,15 @@ public:
     m_va->AddVertexBuffer(m_vb);
     m_va->SetIndexBuffer(m_ib);
 
-    m_prog = Engine::RendererProgram::Create(
+    Engine::Ref<Engine::RendererProgram> refProg;
+    refProg = Engine::RendererProgram::Create(
       {
         { Engine::ShaderDomain::Vertex, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/vs.glsl" },
         { Engine::ShaderDomain::Fragment, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/fs.glsl" }
         //{ Engine::ShaderDomain::Fragment, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/test_shader.glsl" }
       });
+
+    m_material = Engine::Material::Create(refProg);
 
     int t = 1;
     int f = 0;
@@ -61,8 +65,10 @@ public:
     int vals[3] = {1, 0, 1};
     float fval = 3.0f;
 
-    m_prog->UploadUniform("u_myStruct.myBool", vals, 4 * 3);
-    m_prog->UploadUniform("u_float", &fval, 4);
+    m_material->SetUniform("u_myStruct.myBool", vals, 4 * 3);
+    m_material->SetUniform("u_float", &fval, 4);
+
+    m_material->Bind();
 
     Engine::UIGroup* pg0 = new Engine::UIGroup("g0", vec3(0.25f, 0.25f, 0.0f), vec3(0.5f, 0.5f, 0.0f));
     Engine::UIButton* btn0 = new Engine::UIButton("btn0", vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.5f, 0.0f));
@@ -115,7 +121,7 @@ public:
   {
     Engine::Renderer::Clear(1.0f, 0.0f, 1.0f);
 
-    m_prog->Bind();
+    m_material->Bind();
     m_va->Bind();
 
     Engine::Renderer::DrawIndexed(6, false);
@@ -127,7 +133,7 @@ private:
   Engine::Ref<Engine::VertexBuffer>     m_vb;
   Engine::Ref<Engine::IndexBuffer>      m_ib;
   Engine::Ref<Engine::VertexArray>      m_va;
-  Engine::Ref<Engine::RendererProgram>  m_prog;
+  Engine::Ref<Engine::Material>         m_material;
   Engine::UICanvas                      m_canvas;
 };
 

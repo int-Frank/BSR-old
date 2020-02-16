@@ -116,6 +116,8 @@ namespace Engine
         RendererProgramBind,
         RendererProgramUnbind,
         RendererProgramUploadUniform,
+
+        MaterialBind,
       };
     };
 

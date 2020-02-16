@@ -56,6 +56,11 @@ namespace Engine
     });
   }
 
+  uint32_t RendererProgram::UniformBufferSize() const
+  {
+    return m_shaderData->GetUniformDataSize();
+  }
+
   /*void RendererProgram::Init(ShaderSource const & a_src)
   {
     RenderState state = RenderState::Create();
@@ -150,6 +155,17 @@ namespace Engine
       }
       pRP->UploadUniformBuffer(buf);
     });
+  }
+
+  ShaderUniformDeclaration const* RendererProgram::FindUniformDeclaration(std::string const& a_name) const
+  {
+    for (size_t i = 0; i < m_shaderData->GetUniforms().size(); i++)
+    {
+      ShaderUniformDeclaration const * pdecl = &m_shaderData->GetUniforms()[i];
+      if (pdecl->GetName() == a_name)
+        return pdecl;
+    }
+    return nullptr;
   }
 
   void RendererProgram::UploadUniform(std::string const& a_name, void const* a_buf, uint32_t a_size)
