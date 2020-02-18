@@ -30,6 +30,7 @@
 #include "core_utils.h"
 #include "Serialize.h"
 #include "core_Assert.h"
+#include "DgBit.h"
 
 #define ALIGN Dg::ForwardAlign<uint32_t>
 
@@ -53,6 +54,41 @@
 
 namespace Engine
 {
+  //---------------------------------------------------------------------------------------------------
+  // UniformBufferElementHeader
+  //---------------------------------------------------------------------------------------------------
+  UniformBufferElementHeader::UniformBufferElementHeader()
+    : data(0)
+  {
+  
+  }
+
+  UniformBufferElementHeader::UniformBufferElementHeader(IntType a_data)
+    : data(a_data)
+  {
+
+  }
+
+  void UniformBufferElementHeader::SetCount(uint32_t a_count)
+  {
+    data = Dg::SetSubInt<uint32_t, 0, 24>(data, a_count);
+  }
+
+  void UniformBufferElementHeader::SetFlag(Flag a_flag)
+  {
+    data = Dg::SetSubInt<uint32_t>(data, 1, (1 << a_flag), 1);
+  }
+
+  uint32_t UniformBufferElementHeader::GetCount() const
+  {
+    return Dg::GetSubInt<uint32_t, 0, 24>(data);
+  }
+
+  bool UniformBufferElementHeader::Is(Flag a_flag) const
+  {
+    return Dg::GetSubInt<uint32_t>(data, (1 << a_flag), 1) != 0;
+  }
+
   //---------------------------------------------------------------------------------------------------
   // ShaderStruct
   //---------------------------------------------------------------------------------------------------
@@ -312,7 +348,7 @@ namespace Engine
     , m_dataSize(0)
   {
     BSR_ASSERT(a_type != ShaderDataType::STRUCT);
-    m_dataSize = SizeOfShaderDataType(m_type) * m_count + DATA_HEADER_SIZE;
+    m_dataSize = SizeOfShaderDataType(m_type) * m_count + UniformBufferElementHeader::SIZE;
   }
   
   void ShaderUniformDeclaration::Log() const

@@ -52,6 +52,10 @@ namespace Engine
     //void SetPSMaterialUniformBuffer(MemBufferDynamic const& buffer);
 
     void UploadUniform(std::string const& name, void const* data, uint32_t size);
+
+    /* Each entry in the buffer will be preceded with header, containing data
+       such as number of elements to upload and a series of flags.
+    */
     void UploadUniformBuffer(byte const* data);
 
     //const std::string& GetName() const;

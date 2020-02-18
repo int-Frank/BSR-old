@@ -84,8 +84,15 @@ namespace Engine
     BSR_ASSERT(pdecl->GetCount() >= count);
 
     uint32_t offset = pdecl->GetDataOffset();
+
+    UniformBufferElementHeader header;
+    header.SetCount(count);
+
+    //Check for overflow
+    BSR_ASSERT(count <= header.GetCount());
+
     void * buf = (void*)(m_pBuf + offset);
-    buf = Core::Serialize<uint32_t>(buf, &count, 1);
+    buf = Core::Serialize<UniformBufferElementHeader::IntType>(buf, &header.data, 1);
     memcpy(buf, a_pbuf, a_size);
   }
 

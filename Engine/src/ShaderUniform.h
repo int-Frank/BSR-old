@@ -32,6 +32,30 @@
 #define INVALID_INDEX -1
 namespace Engine
 {
+  class UniformBufferElementHeader
+  {
+  public:
+
+    typedef uint32_t IntType;
+    static uint32_t const SIZE = uint32_t(sizeof(IntType));
+
+    enum Flag
+    {
+      MaterialOverride
+    };
+
+    UniformBufferElementHeader();
+    UniformBufferElementHeader(IntType);
+
+    void SetCount(uint32_t);
+    void SetFlag(Flag);
+
+    uint32_t GetCount() const;
+    bool Is(Flag) const;
+
+    IntType data;
+  };
+
   //A data type of STRUCT will just be padding. This can be used 
   //to pad out the front and back of a struct.
   class std140ItemDeclaration
@@ -144,12 +168,6 @@ namespace Engine
     uint32_t GetDataSize() const;
     void SetDataOffset(uint32_t offset);
     uint32_t GetDataOffset() const;
-
-  public:
-    //Each upload in the upload buffer will be preceeded with a 
-    //header. This will be the number of elements to be uploaded.
-    //'0' indicates no data to upload.
-    static uint32_t const DATA_HEADER_SIZE = sizeof(uint32_t);
 
   private:
 
