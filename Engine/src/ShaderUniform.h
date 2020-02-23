@@ -37,20 +37,26 @@ namespace Engine
   public:
 
     typedef uint32_t IntType;
-    static uint32_t const SIZE = uint32_t(sizeof(IntType));
 
-    enum Flag
+    enum Flag : IntType
     {
-      MaterialOverride
+      ElementLocked = 0,
+      Unused_1,
+      Unused_2,
+      Unused_3,
+      Unused_4,
+      Unused_5,
+      Unused_6,
+      Unused_7
     };
 
     UniformBufferElementHeader();
     UniformBufferElementHeader(IntType);
 
-    void SetCount(uint32_t);
-    void SetFlag(Flag);
+    void SetSize(uint32_t);
+    void SetFlag(Flag, bool);
 
-    uint32_t GetCount() const;
+    uint32_t GetSize() const;
     bool Is(Flag) const;
 
     IntType data;

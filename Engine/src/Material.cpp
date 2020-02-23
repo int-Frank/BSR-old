@@ -24,222 +24,169 @@
 namespace Engine
 {
   //-----------------------------------------------------------------------------------------------
+  // MaterialData
+  //-----------------------------------------------------------------------------------------------
+  namespace impl
+  {
+    MaterialData::MaterialData(Ref<RendererProgram> a_prog)
+      : m_prog(a_prog)
+    {
+
+    }
+
+    MaterialData::~MaterialData()
+    {
+
+    }
+
+    Ref<MaterialData> MaterialData::Create(Ref<RendererProgram> a_prog)
+    {
+      return Ref<MaterialData>(new MaterialData(a_prog));
+    }
+
+    //-----------------------------------------------------------------------------------------------
+    // MaterialBase
+    //-----------------------------------------------------------------------------------------------
+    MaterialBase::MaterialBase(Ref<impl::MaterialData> a_materialData)
+      : m_pBuf(nullptr)
+      , m_bufSize(0)
+      , m_materialData(a_materialData)
+    {
+      BSR_ASSERT(!m_materialData.IsNull());
+      BSR_ASSERT(!m_materialData->m_prog.IsNull());
+
+      m_bufSize = m_materialData->m_prog->UniformBufferSize();
+      m_pBuf = new byte[m_bufSize]{};
+    }
+
+    MaterialBase::~MaterialBase()
+    {
+       delete[] m_pBuf;
+    }
+
+    void MaterialBase::Bind()
+    {
+      BSR_ASSERT(!m_materialData.IsNull());
+      BSR_ASSERT(!m_materialData->m_prog.IsNull());
+
+      m_materialData->m_prog->Bind();
+      m_materialData->m_prog->UploadUniformBuffer(m_pBuf);
+    }
+
+    ShaderUniformDeclaration const* MaterialBase::FindUniform(std::string const& a_name)
+    {
+      BSR_ASSERT(!m_materialData.IsNull());
+      BSR_ASSERT(!m_materialData->m_prog.IsNull());
+
+      ShaderUniformDeclaration const* pdecl = m_materialData->m_prog->FindUniformDeclaration(a_name);
+      BSR_ASSERT(pdecl);
+      
+      return pdecl;
+    }
+
+    UniformBufferElementHeader MaterialBase::CreateHeader(ShaderUniformDeclaration const * a_pdecl, uint32_t a_size)
+    {
+      uint32_t count = a_size / SizeOfShaderDataType(a_pdecl->GetType());
+      BSR_ASSERT(a_pdecl->GetCount() >= count);
+      UniformBufferElementHeader header;
+      header.SetSize(a_size);
+      return header;
+    }
+
+    void MaterialBase::WriteToBuffer(uint32_t a_offset, UniformBufferElementHeader a_header, void const * a_pBuf)
+    {
+      void* buf = (void*)(m_pBuf + a_offset);
+      buf = Core::Serialize<UniformBufferElementHeader::IntType>(buf, &a_header.data, 1);
+      memcpy(buf, a_pBuf, a_header.GetSize());
+    }
+  }
+
+  //-----------------------------------------------------------------------------------------------
   // Material
   //-----------------------------------------------------------------------------------------------
 
-  void Material::Init(Ref<RendererProgram> & a_prog)
-  {
-    if (a_prog.IsNull())
-      LOG_WARN("Material created with a null renderer program");
-    m_prog = a_prog;
-    m_bufSize = a_prog->UniformBufferSize();
-    m_pBuf = new byte[m_bufSize];
-  }
-
-  Ref<Material> Material::Create(Ref<RendererProgram> & a_prog)
-  {
-    Material * pmat = new Material();
-    Ref<Material> refMat(pmat);
-    pmat->Init(a_prog);
-    return refMat;
-  }
-
-  void Material::Bind()
-  {
-    if (m_prog.IsNull())
-    {
-      LOG_WARN("Material::Bind(): Material has a null renderer program");
-      return;
-    }
-
-    m_prog->Bind();
-    m_prog->UploadUniformBuffer(m_pBuf);
-  }
-
-  Material::Material()
-    : m_pBuf(nullptr)
-    , m_bufSize(0)
+  Material::Material(Ref<impl::MaterialData> a_data)
+    : impl::MaterialBase(a_data)
     , m_renderFlags(0)
   {
-    
+
   }
 
   Material::~Material()
   {
-    delete[] m_pBuf;
+
   }
 
-  void Material::SetUniform(std::string const& a_name, void const* a_pbuf, uint32_t a_size)
+  Ref<Material> Material::Create(Ref<RendererProgram> a_prog)
   {
-    if (m_prog.IsNull())
-    {
-      LOG_WARN("Material::Set(): Material has a null renderer program");
-      return;
-    }
+    BSR_ASSERT(!a_prog.IsNull());
+    return Ref<Material>(new Material(impl::MaterialData::Create(a_prog)));
+  }
 
-    ShaderUniformDeclaration const * pdecl = m_prog->FindUniformDeclaration(a_name);
-    uint32_t count = a_size / SizeOfShaderDataType(pdecl->GetType());
+  Ref<MaterialInstance> Material::SpawnInstance()
+  {
+    BSR_ASSERT(!m_materialData.IsNull());
+    BSR_ASSERT(!m_materialData->m_prog.IsNull());
 
-    BSR_ASSERT(pdecl);
-    BSR_ASSERT(pdecl->GetCount() >= count);
+    Ref<MaterialInstance> inst(new MaterialInstance(m_materialData));
+    inst->InitBuffer(m_pBuf);
+    m_materialInstances.push_back(inst);
+    return inst;
+  }
+
+  void Material::SetUniform(std::string const& a_name, void const* a_pBuf, uint32_t a_size)
+  {
+    ShaderUniformDeclaration const * pdecl = FindUniform(a_name);
+    UniformBufferElementHeader header = CreateHeader(pdecl, a_size);
 
     uint32_t offset = pdecl->GetDataOffset();
+    WriteToBuffer(offset, header, a_pBuf);
 
-    UniformBufferElementHeader header;
-    header.SetCount(count);
-
-    //Check for overflow
-    BSR_ASSERT(count <= header.GetCount());
-
-    void * buf = (void*)(m_pBuf + offset);
-    buf = Core::Serialize<UniformBufferElementHeader::IntType>(buf, &header.data, 1);
-    memcpy(buf, a_pbuf, a_size);
+    for (auto pInst : m_materialInstances)
+      pInst->SetUniform(offset, a_pBuf, a_size);
   }
 
-  //ShaderUniformDeclaration* Material::FindUniformDeclaration(const std::string& name)
-  //{
-  //  if (m_VSUniformStorageBuffer)
-  //  {
-  //    auto& declarations = m_Shader->GetVSMaterialUniformBuffer().GetUniformDeclarations();
-  //    for (ShaderUniformDeclaration* uniform : declarations)
-  //    {
-  //      if (uniform->GetName() == name)
-  //        return uniform;
-  //    }
-  //  }
+  //-----------------------------------------------------------------------------------------------
+  // MaterialInstance
+  //-----------------------------------------------------------------------------------------------
 
-  //  if (m_PSUniformStorageBuffer)
-  //  {
-  //    auto& declarations = m_Shader->GetPSMaterialUniformBuffer().GetUniformDeclarations();
-  //    for (ShaderUniformDeclaration* uniform : declarations)
-  //    {
-  //      if (uniform->GetName() == name)
-  //        return uniform;
-  //    }
-  //  }
-  //  return nullptr;
-  //}
+  MaterialInstance::MaterialInstance(Ref<impl::MaterialData> a_materialData)
+    : impl::MaterialBase(a_materialData)
+  {
 
-  //ShaderResourceDeclaration* Material::FindResourceDeclaration(const std::string& name)
-  //{
-  //  auto& resources = m_Shader->GetResources();
-  //  for (ShaderResourceDeclaration* resource : resources)
-  //  {
-  //    if (resource->GetName() == name)
-  //      return resource;
-  //  }
-  //  return nullptr;
-  //}
+  }
 
-  //Buffer& Material::GetUniformBufferTarget(ShaderUniformDeclaration* uniformDeclaration)
-  //{
-  //  switch (uniformDeclaration->GetDomain())
-  //  {
-  //    case ShaderDomain::Vertex:    return m_VSUniformStorageBuffer;
-  //    case ShaderDomain::Pixel:     return m_PSUniformStorageBuffer;
-  //  }
+  void MaterialInstance::InitBuffer(byte const* a_pBuf)
+  {
+    memcpy(m_pBuf, a_pBuf, m_bufSize);
+  }
 
-  //  HZ_CORE_ASSERT(false, "Invalid uniform declaration domain! Material does not support this shader type.");
-  //  return m_VSUniformStorageBuffer;
-  //}
+  MaterialInstance::~MaterialInstance()
+  {
 
-  //void Material::Bind() const
-  //{
-  //  m_Shader->Bind();
+  }
 
-  //  if (m_VSUniformStorageBuffer)
-  //    m_Shader->SetVSMaterialUniformBuffer(m_VSUniformStorageBuffer);
+  void MaterialInstance::SetUniform(std::string const& a_name, void const* a_pBuf, uint32_t a_size)
+  {
+    ShaderUniformDeclaration const* pdecl = FindUniform(a_name);
+    UniformBufferElementHeader header = CreateHeader(pdecl, a_size);
+    header.SetFlag(UniformBufferElementHeader::ElementLocked, true);
 
-  //  if (m_PSUniformStorageBuffer)
-  //    m_Shader->SetPSMaterialUniformBuffer(m_PSUniformStorageBuffer);
+    uint32_t offset = pdecl->GetDataOffset();
+    WriteToBuffer(offset, header, a_pBuf);
+  }
 
-  //  BindTextures();
-  //}
+  void MaterialInstance::SetUniform(uint32_t a_offset, void const* a_pBuf, uint32_t a_size)
+  {
+    UniformBufferElementHeader header;
+    Core::Deserialize<UniformBufferElementHeader::IntType>(Core::AdvancePtr(a_pBuf, a_offset),
+                                                           &header.data,
+                                                           sizeof(UniformBufferElementHeader::IntType));
 
-  //void Material::BindTextures() const
-  //{
-  //  for (size_t i = 0; i < m_Textures.size(); i++)
-  //  {
-  //    auto& texture = m_Textures[i];
-  //    if (texture)
-  //      texture->Bind(i);
-  //  }
-  //}
+    if (header.Is(UniformBufferElementHeader::ElementLocked))
+      return;
 
-  ////////////////////////////////////////////////////////////////////////////////////
-  //// MaterialInstance
-  ////////////////////////////////////////////////////////////////////////////////////
-
-  //Ref<MaterialInstance> MaterialInstance::Create(const Ref<Material>& material)
-  //{
-  //  return std::make_shared<MaterialInstance>(material);
-  //}
-
-  //MaterialInstance::MaterialInstance(const Ref<Material>& material)
-  //  : m_Material(material)
-  //{
-  //  m_Material->m_MaterialInstances.insert(this);
-  //  AllocateStorage();
-  //}
-
-  //MaterialInstance::~MaterialInstance()
-  //{
-  //  m_Material->m_MaterialInstances.erase(this);
-  //}
-
-  //void MaterialInstance::OnShaderReloaded()
-  //{
-  //  AllocateStorage();
-  //  m_OverriddenValues.clear();
-  //}
-
-  //void MaterialInstance::AllocateStorage()
-  //{
-  //  const auto& vsBuffer = m_Material->m_Shader->GetVSMaterialUniformBuffer();
-  //  m_VSUniformStorageBuffer.Allocate(vsBuffer.GetSize());
-  //  memcpy(m_VSUniformStorageBuffer.Data, m_Material->m_VSUniformStorageBuffer.Data, vsBuffer.GetSize());
-
-  //  const auto& psBuffer = m_Material->m_Shader->GetPSMaterialUniformBuffer();
-  //  m_PSUniformStorageBuffer.Allocate(psBuffer.GetSize());
-  //  memcpy(m_PSUniformStorageBuffer.Data, m_Material->m_PSUniformStorageBuffer.Data, psBuffer.GetSize());
-  //}
-
-  //void MaterialInstance::OnMaterialValueUpdated(ShaderUniformDeclaration* decl)
-  //{
-  //  if (m_OverriddenValues.find(decl->GetName()) == m_OverriddenValues.end())
-  //  {
-  //    auto& buffer = GetUniformBufferTarget(decl);
-  //    auto& materialBuffer = m_Material->GetUniformBufferTarget(decl);
-  //    buffer.Write(materialBuffer.Data + decl->GetOffset(), decl->GetSize(), decl->GetOffset());
-  //  }
-  //}
-
-  //Buffer& MaterialInstance::GetUniformBufferTarget(ShaderUniformDeclaration* uniformDeclaration)
-  //{
-  //  switch (uniformDeclaration->GetDomain())
-  //  {
-  //    case ShaderDomain::Vertex:    return m_VSUniformStorageBuffer;
-  //    case ShaderDomain::Pixel:     return m_PSUniformStorageBuffer;
-  //  }
-
-  //  HZ_CORE_ASSERT(false, "Invalid uniform declaration domain! Material does not support this shader type.");
-  //  return m_VSUniformStorageBuffer;
-  //}
-
-  //void MaterialInstance::Bind() const
-  //{
-  //  if (m_VSUniformStorageBuffer)
-  //    m_Material->m_Shader->SetVSMaterialUniformBuffer(m_VSUniformStorageBuffer);
-
-  //  if (m_PSUniformStorageBuffer)
-  //    m_Material->m_Shader->SetPSMaterialUniformBuffer(m_PSUniformStorageBuffer);
-
-  //  m_Material->BindTextures();
-  //  for (size_t i = 0; i < m_Textures.size(); i++)
-  //  {
-  //    auto& texture = m_Textures[i];
-  //    if (texture)
-  //      texture->Bind(i);
-  //  }
-  //}
+    header.SetSize(a_size);
+    WriteToBuffer(a_offset, header, a_pBuf);
+  }
 }

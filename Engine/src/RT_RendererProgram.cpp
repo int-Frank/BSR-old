@@ -240,11 +240,12 @@ namespace Engine
       UniformBufferElementHeader::IntType headerData = 
         *static_cast<UniformBufferElementHeader::IntType const *>(Core::AdvancePtr(a_pbuf, offset));
       UniformBufferElementHeader header(headerData);
-      if (header.GetCount() == 0)
+      if (header.GetSize() == 0)
         continue;
 
       void const * buf = Core::AdvancePtr(a_pbuf, offset + sizeof(UniformBufferElementHeader::IntType));
-      UploadUniform(uint32_t(i), buf, header.GetCount());
+      uint32_t count = header.GetSize() / SizeOfShaderDataType(pdecl->GetType());
+      UploadUniform(uint32_t(i), buf, count);
     }
   }
 

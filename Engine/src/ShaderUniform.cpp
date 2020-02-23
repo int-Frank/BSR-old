@@ -57,6 +57,24 @@ namespace Engine
   //---------------------------------------------------------------------------------------------------
   // UniformBufferElementHeader
   //---------------------------------------------------------------------------------------------------
+  namespace impl_UniformBufferElementHeader
+  {
+
+    enum class Size : uint32_t
+    {
+      Size          = 24,
+      Flags         = 8
+    };
+
+    enum class Begin : uint32_t
+    {
+      Size         = 0,
+      Flags         = Size + static_cast<uint32_t>(Size::Size)
+    };
+
+    static uint32_t const INTSIZE = uint32_t(sizeof(UniformBufferElementHeader::IntType));
+  }
+
   UniformBufferElementHeader::UniformBufferElementHeader()
     : data(0)
   {
@@ -69,24 +87,35 @@ namespace Engine
 
   }
 
-  void UniformBufferElementHeader::SetCount(uint32_t a_count)
+  void UniformBufferElementHeader::SetSize(uint32_t a_count)
   {
-    data = Dg::SetSubInt<uint32_t, 0, 24>(data, a_count);
+    BSR_ASSERT(a_count <= IntType(Dg::Mask<IntType,
+      static_cast<uint32_t>(impl_UniformBufferElementHeader::Begin::Size),
+      static_cast<uint32_t>(impl_UniformBufferElementHeader::Size::Size)>::value));
+    
+    data = Dg::SetSubInt<IntType,
+      static_cast<uint32_t>(impl_UniformBufferElementHeader::Begin::Size),
+      static_cast<uint32_t>(impl_UniformBufferElementHeader::Size::Size)>(data, a_count);
   }
 
-  void UniformBufferElementHeader::SetFlag(Flag a_flag)
+  void UniformBufferElementHeader::SetFlag(Flag a_flag, bool a_val)
   {
-    data = Dg::SetSubInt<uint32_t>(data, 1, (1 << a_flag), 1);
+    IntType val = a_val ? 1 : 0;
+    uint32_t shft = a_flag + static_cast<uint32_t>(impl_UniformBufferElementHeader::Begin::Flags);
+    data = Dg::SetSubInt<IntType>(data, val, (1 << shft), 1);
   }
 
-  uint32_t UniformBufferElementHeader::GetCount() const
+  uint32_t UniformBufferElementHeader::GetSize() const
   {
-    return Dg::GetSubInt<uint32_t, 0, 24>(data);
+    return Dg::GetSubInt<IntType,
+      static_cast<uint32_t>(impl_UniformBufferElementHeader::Begin::Size),
+      static_cast<uint32_t>(impl_UniformBufferElementHeader::Size::Size)>(data);
   }
 
   bool UniformBufferElementHeader::Is(Flag a_flag) const
   {
-    return Dg::GetSubInt<uint32_t>(data, (1 << a_flag), 1) != 0;
+    uint32_t shft = a_flag + static_cast<uint32_t>(impl_UniformBufferElementHeader::Begin::Flags);
+    return Dg::GetSubInt<uint32_t>(data, (1 << shft), 1) != 0;
   }
 
   //---------------------------------------------------------------------------------------------------
@@ -348,7 +377,7 @@ namespace Engine
     , m_dataSize(0)
   {
     BSR_ASSERT(a_type != ShaderDataType::STRUCT);
-    m_dataSize = SizeOfShaderDataType(m_type) * m_count + UniformBufferElementHeader::SIZE;
+    m_dataSize = SizeOfShaderDataType(m_type) * m_count + impl_UniformBufferElementHeader::INTSIZE;
   }
   
   void ShaderUniformDeclaration::Log() const
