@@ -10,7 +10,9 @@
 #include "RendererProgram.h"
 #include "Material.h"
 
-#include "Canvas.h"
+#include "UICanvas.h"
+#include "UIGroup.h"
+#include "UIButton.h"
 #include "EngineMessages.h"
 
 class GameLayer : public Engine::Layer
