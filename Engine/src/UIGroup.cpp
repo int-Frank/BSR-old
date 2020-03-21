@@ -52,27 +52,21 @@ namespace Engine
     if (focus != m_pFocus)
     {
       if (m_pFocus)
-        m_pFocus->DoAction(Action::HoverOff);
+        m_pFocus->DoEventLoseFocus();
 
       m_pFocus = focus;
 
       if (m_pFocus)
-        m_pFocus->DoAction(Action::HoverOn);
+        m_pFocus->DoEventGainFocus();
     }
 
     return focus != nullptr;
   }
 
-  void UIGroup::DoAction(Action a_action)
+  void UIGroup::DoEventActivate()
   {
-    switch (a_action)
-    {
-      case Action::Activate:
-      {
-        if (m_pFocus)
-          m_pFocus->DoAction(Action::Activate);
-      }
-    }
+    if (m_pFocus)
+      m_pFocus->DoEventActivate();
   }
 
   void UIGroup::Render()

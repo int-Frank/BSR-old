@@ -35,6 +35,7 @@ namespace Engine
 
     int maxSamples;
     float maxAnisotropy;
+    int maxTextureUnits;
 
     int maxVertexUniformBlocks;
     int maxFragmentUniformBlocks;

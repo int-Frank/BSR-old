@@ -20,11 +20,14 @@
 #include "glad/glad.h"
 
 #include "RT_RendererProgram.h"
+#include "RT_Texture.h"
+#include "RenderThreadData.h"
 #include "core_ErrorCodes.h"
 #include "core_Log.h"
 #include "core_utils.h"
 #include "core_Assert.h"
 #include "DgStringFunctions.h"
+#include "Serialize.h"
 
 //TODO Parse uniform blocks, shader storage blocks
 
@@ -187,37 +190,41 @@ namespace Engine
 
     glUseProgram(m_rendererID);
 
+    uint32_t sampler = 0;
+    Index ind = 0;
     for (ShaderUniformDeclaration & uniform : m_shaderData->GetUniforms())
-       m_uniformLocations.push_back(GetUniformLocation(uniform.GetName()));
-
-    /*uint32_t sampler = 0;
-    for (size_t i = 0; i < m_resources.size(); i++)
     {
-      ShaderResourceDeclaration* resource = m_resources[i];
-      int32_t location = GetUniformLocation(resource->GetName());
-
-      if (resource->GetCount() == 1)
+      if (uniform.GetType() == ShaderDataType::TEXTURE2D)
       {
-        resource->SetRegister(sampler);
-        if (location != -1)
-          UploadUniformInt(location, sampler);
+        int32_t location = GetUniformLocation(uniform.GetName());
+        m_textureBindingPoints.insert(ind, sampler);
 
-        sampler++;
+        if (uniform.GetCount() == 1)
+        {
+          if (location != -1)
+            UploadUniformSingle(location, ShaderDataType::INT, &sampler);
+
+          sampler++;
+        }
+        else if (uniform.GetCount() > 1)
+        {
+          uint32_t count = uniform.GetCount();
+          int * samplers = new int[count];
+          for (uint32_t s = 0; s < count; s++, sampler++)
+            samplers[s] = sampler;
+          UploadUniformArray(location, ShaderDataType::INT, samplers, count);
+          delete[] samplers;
+        }
       }
-      else if (resource->GetCount() > 1)
+      else
       {
-        resource->SetRegister(0);
-        uint32_t count = resource->GetCount();
-        int* samplers = new int[count];
-        for (uint32_t s = 0; s < count; s++)
-          samplers[s] = s;
-        UploadUniformIntArray(resource->GetName(), samplers, count);
-        delete[] samplers;
+        m_uniformLocations.push_back(GetUniformLocation(uniform.GetName()));
       }
-    }*/
+      ind++;
+    }
   }
 
-  int32_t RT_RendererProgram::GetUniformLocation(std::string const & a_name) const
+  int32_t RT_RendererProgram::GetUniformLocation(std::string const& a_name) const
   {
     int32_t result = glGetUniformLocation(m_rendererID, a_name.c_str());
     if (result == -1)
@@ -225,27 +232,48 @@ namespace Engine
     return result;
   }
 
+  void RT_RendererProgram::UploadTexture(TextureUnit a_textureUnit, RefID const * a_textureIDs, uint32_t a_count)
+  {
+    uint32_t textureUnit = a_textureUnit;
+    for (uint32_t i = 0; i < a_count; i++)
+    {
+      RefID id = a_textureIDs[i];
+
+      RT_Texture2D *pTexture = RenderThreadData::Instance()->textures.at(id);
+      
+      if (pTexture != nullptr)
+        pTexture->Bind(textureUnit);
+      textureUnit++;
+    }
+  }
+
   void RT_RendererProgram::UploadUniformBuffer(byte const* a_pbuf)
   {
     if (m_shaderData.IsNull() || a_pbuf == nullptr)
       return;
 
-    //TODO should this be here, or do we leave it up to the user to bind before uploading uniforms?
     Bind();
 
-    for (size_t i = 0; i < m_shaderData->GetUniforms().size(); i++)
+    for (uint32_t i = 0; i < (uint32_t)m_shaderData->GetUniforms().size(); i++)
     {
       ShaderUniformDeclaration const * pdecl = &m_shaderData->GetUniforms()[i];
       uint32_t offset = pdecl->GetDataOffset();
-      UniformBufferElementHeader::IntType headerData = 
-        *static_cast<UniformBufferElementHeader::IntType const *>(Core::AdvancePtr(a_pbuf, offset));
-      UniformBufferElementHeader header(headerData);
+      UniformBufferElementHeader header;
+      void const * buf = header.Deserialize(a_pbuf);
       if (header.GetSize() == 0)
         continue;
 
-      void const * buf = Core::AdvancePtr(a_pbuf, offset + sizeof(UniformBufferElementHeader::IntType));
       uint32_t count = header.GetSize() / SizeOfShaderDataType(pdecl->GetType());
-      UploadUniform(uint32_t(i), buf, count);
+      if (pdecl->GetType() == ShaderDataType::TEXTURE2D)
+      {
+        TextureUnit const * pUnit = m_textureBindingPoints.at(i);
+        if (pUnit != nullptr)
+          UploadTexture(*pUnit, (RefID*)buf, count);
+      }
+      else
+      {
+        UploadUniform(i, buf, count);
+      }
     }
   }
 
@@ -254,6 +282,7 @@ namespace Engine
     switch (a_type)
     {
       case ShaderDataType::BOOL:
+      case ShaderDataType::INT:
       {
         glUniform1i(a_location, *static_cast<int const*>(a_pbuf));
         break;
@@ -272,6 +301,7 @@ namespace Engine
     switch (a_type)
     {
       case ShaderDataType::BOOL:
+      case ShaderDataType::INT:
       {
         glUniform1iv(a_location, a_count, static_cast<int const*>(a_pbuf));
         break;
@@ -286,7 +316,7 @@ namespace Engine
 
   void RT_RendererProgram::UploadUniform(uint32_t a_index, void const * a_pbuf, uint32_t a_count)
   {
-    ShaderUniformDeclaration const* pdecl = &m_shaderData->GetUniforms()[a_index];
+    ShaderUniformDeclaration const * pdecl = &m_shaderData->GetUniforms()[a_index];
     BSR_ASSERT(a_count <= pdecl->GetCount());
 
     if (pdecl->IsArray())

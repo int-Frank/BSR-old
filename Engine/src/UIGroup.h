@@ -17,9 +17,10 @@ namespace Engine
     ~UIGroup();
 
     bool HandleNewCursonPostion(float x, float y) override;
-    void DoAction(Action) override;
     bool IsInside(float x, float y) override;
     virtual void Render();
+
+    void DoEventActivate() override;
 
     void Clear();
     void Add(UIWidget*);

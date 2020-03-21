@@ -36,12 +36,10 @@ namespace Engine
   {
   public:
 
-    typedef uint32_t IntType;
-
-    enum Flag : IntType
+    enum Flag : uint32_t
     {
       ElementLocked = 0,
-      Unused_1,
+      IsInvalid,
       Unused_2,
       Unused_3,
       Unused_4,
@@ -51,7 +49,10 @@ namespace Engine
     };
 
     UniformBufferElementHeader();
-    UniformBufferElementHeader(IntType);
+
+    size_t SerializedSize() const;
+    void * Serialize(void *) const;
+    void const * Deserialize(void const *);
 
     void SetSize(uint32_t);
     void SetFlag(Flag, bool);
@@ -59,7 +60,9 @@ namespace Engine
     uint32_t GetSize() const;
     bool Is(Flag) const;
 
-    IntType data;
+  private:
+
+    uint32_t m_data;
   };
 
   //A data type of STRUCT will just be padding. This can be used 
@@ -132,28 +135,6 @@ namespace Engine
     Dg::DynamicArray<std140UniformBlock *> m_blocks;
   };
 
-  class ShaderResourceDeclaration
-  {
-  public:
-    ShaderResourceDeclaration(ShaderResourceType, std::string const &, uint32_t count);
-
-    std::string const & GetName() const;
-    uint32_t GetRegister() const;
-    uint32_t GetCount() const;
-    ShaderResourceType GetType() const;
-
-    //DEBUG
-    void Log(int a_indent = 0);
-
-    void SetRegister(uint32_t);
-
-  private:
-    std::string m_name;
-    uint32_t m_register;
-    uint32_t m_count;
-    ShaderResourceType m_type;
-  };
-
   class ShaderUniformDeclaration
   {
   public:
@@ -178,7 +159,6 @@ namespace Engine
   private:
 
     uint32_t m_dataOffset;
-    uint32_t m_dataSize;
 
     bool m_isArray;
     std::string m_name;
@@ -188,7 +168,6 @@ namespace Engine
   };
 
   typedef Dg::DynamicArray<ShaderUniformDeclaration> ShaderUniformList;
-  typedef Dg::DynamicArray<ShaderResourceDeclaration*> ShaderResourceList;
 
   class ShaderData : public Resource
   {
@@ -209,6 +188,8 @@ namespace Engine
     ShaderSource const & GetShaderSource() const;
     ShaderUniformList const & GetUniforms() const;
     ShaderUniformList & GetUniforms();
+    ShaderUniformList const & GetTextures() const;
+    ShaderUniformList & GetTextures();
 
     //DEBUG
     void Log();
@@ -228,7 +209,7 @@ namespace Engine
 
     ShaderSource        m_source;
     ShaderUniformList   m_uniforms;
-    ShaderResourceList  m_resources;
+    ShaderUniformList   m_textures;
   };
 
   class BindingPoint : public Resource

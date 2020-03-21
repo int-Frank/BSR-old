@@ -63,6 +63,7 @@ namespace Engine
 
     glGetIntegerv(GL_MAX_SAMPLES, &caps.maxSamples);
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &caps.maxAnisotropy);
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &caps.maxTextureUnits);
 
     glGetIntegerv(GL_MAX_VERTEX_UNIFORM_BLOCKS, &caps.maxVertexUniformBlocks);
     glGetIntegerv(GL_MAX_GEOMETRY_UNIFORM_BLOCKS, &caps.maxGeometryUniformBlocks);

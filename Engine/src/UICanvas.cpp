@@ -47,6 +47,6 @@ namespace Engine
   void UICanvas::Activate()
   {
     if (m_pFocus)
-      m_pFocus->DoAction(UIWidget::Action::Activate);
+      m_pFocus->DoEventActivate();
   }
 }

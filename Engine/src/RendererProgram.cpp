@@ -150,7 +150,7 @@ namespace Engine
       RT_RendererProgram* pRP = RenderThreadData::Instance()->rendererPrograms.at(resID);
       if (pRP == nullptr)
       {
-        LOG_WARN("RendererProgram::Bind: RefID '{}' does not exist!", resID);
+        LOG_WARN("RendererProgram::UploadUniformBuffer: RefID '{}' does not exist!", resID);
         return;
       }
       pRP->UploadUniformBuffer(buf);

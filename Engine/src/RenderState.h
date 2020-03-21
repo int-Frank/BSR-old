@@ -118,6 +118,10 @@ namespace Engine
         RendererProgramUploadUniform,
 
         MaterialBind,
+
+        TextureCreate,
+        TextureDelete,
+        TextureBindToSlot,
       };
     };
 

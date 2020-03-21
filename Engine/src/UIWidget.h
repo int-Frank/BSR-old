@@ -8,24 +8,37 @@
 
 namespace Engine
 {
-  class Message;
+  struct UIData
+  {
+    union
+    {
+      bool bVal;
+      int iVal;
+      float fVal;
+      char* pcVal;
+    };
+  };
+
+  typedef void (*fnUICallback)(UIData const &);
+
+  enum class UICallback
+  {
+    GainFocus,
+    LoseFocus,
+    Activate,   //Button
+    NewValue,   //Slider, Lists
+    Toggle,     //Checkbox
+    COUNT
+  };
 
   class UIWidget
   {
   public:
 
-    enum class Action
-    {
-      HoverOn,
-      HoverOff,
-      Activate
-    };
-
-    static int const ACTION_COUNT = 3;
-
+    //TODO add rotation to widgets
     UIWidget(std::string const& name,
-      vec3 trans, vec3 scale,
-      bool isInteractive, int depth = 0
+             vec3 trans, vec3 scale,
+             bool isInteractive, int depth = 0
     );
     virtual ~UIWidget();
 
@@ -33,12 +46,14 @@ namespace Engine
 
     //return: handled
     virtual bool HandleNewCursonPostion(float x, float y);
-    virtual void DoAction(Action)
-    {
-    }
-
-    //Takes ownership of message
-    void Bind(Action, Message*);
+    
+    virtual void DoEventGainFocus() {}
+    virtual void DoEventLoseFocus() {}
+    virtual void DoEventMouseDown() {}
+    virtual void DoEventMouseUp() {}
+    virtual void DoEventScroll(float val) {}
+    virtual void DoEventText(char text[32]) {}
+    virtual void DoEventActivate() {}
 
     void SetFocus(bool);
     bool HasFocus() const;
@@ -75,7 +90,7 @@ namespace Engine
 
   protected:
     std::string m_name;
-    Message* m_bindings[3];
+    fnUICallback m_bindings[static_cast<size_t>(UICallback::COUNT)];
     bool m_isInteractive;
     UIWidget* m_pParent;
     vec3 m_translation;

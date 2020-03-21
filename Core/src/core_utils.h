@@ -8,6 +8,7 @@
 #include "DgR3Vector.h"
 #include "DgR3Matrix.h"
 #include "DgR2Matrix.h"
+#include "DgBit.h"
 
 #define BIT(x) (1 << x)
 #define SIZEOF32(x) static_cast<uint32_t>(sizeof(x))
@@ -19,7 +20,28 @@ typedef Dg::R2::Vector_cartesian<float> vec2;
 typedef Dg::R3::Vector<float>           vec4;
 typedef Dg::R2::Matrix<float>           mat3;
 typedef Dg::R3::Matrix<float>           mat4;
-typedef Dg::Matrix<1, 4, uint8_t>       RGBA;
+
+class RGBA
+{
+public:
+  
+  typedef uint32_t DataType;
+
+  RGBA() :data(0xFF) {}
+  RGBA(uint32_t val) :data(val) {}
+
+  uint32_t r() const {return Dg::GetSubInt<uint32_t, 0,  8>(data);}
+  uint32_t g() const {return Dg::GetSubInt<uint32_t, 8,  8>(data);}
+  uint32_t b() const {return Dg::GetSubInt<uint32_t, 16, 8>(data);}
+  uint32_t a() const {return Dg::GetSubInt<uint32_t, 24, 8>(data);}
+  
+  void r(uint32_t val) {data = Dg::SetSubInt<uint32_t, 0,  8>(data, val);}
+  void g(uint32_t val) {data = Dg::SetSubInt<uint32_t, 8,  8>(data, val);}
+  void b(uint32_t val) {data = Dg::SetSubInt<uint32_t, 16, 8>(data, val);}
+  void a(uint32_t val) {data = Dg::SetSubInt<uint32_t, 24, 8>(data, val);}
+
+  uint32_t data;
+};
 
 //--- Types ------------------------------------------------------------------
 
@@ -46,10 +68,10 @@ namespace Core
   std::string ImportTextFile(std::string const & path);
 
   //Compare a std::string to a serialized string
-  bool CompareStrings(std::string const&, void const*);
+  bool AreEqual(std::string const&, void const*);
 
   //Compare two serialized strings
-  bool CompareStrings(void const *, void const *);
+  bool AreEqual(void const *, void const *);
 }
 
 #endif

@@ -27,6 +27,8 @@
 #include "RendererProgram.h"
 #include "core_Assert.h"
 #include "DgDynamicArray.h"
+#include "DgMap_AVL.h"
+#include "Texture.h"
 
 namespace Engine
 {
@@ -54,15 +56,15 @@ namespace Engine
 
     protected:
 
-      ShaderUniformDeclaration const * FindUniform(std::string const&);
+      ShaderUniformDeclaration const * FindUniform(std::string const &);
       UniformBufferElementHeader CreateHeader(ShaderUniformDeclaration const*, uint32_t size);
       void WriteToBuffer(uint32_t offset, UniformBufferElementHeader header, void const * buffer);
-
+      
     protected:
 
-      Ref<impl::MaterialData> m_materialData;
-      uint32_t m_bufSize;
-      byte* m_pBuf;
+      Ref<impl::MaterialData>               m_materialData;
+      uint32_t                              m_bufSize;
+      byte*                                 m_pBuf;
     };
   }
 
@@ -73,12 +75,16 @@ namespace Engine
 
     ~MaterialInstance();
     void SetUniform(std::string const& uniform, void const* data, uint32_t size);
+    void SetTexture(std::string const& name, Ref<Texture2D> const&);
 
   private: //Accessed by Material
 
     MaterialInstance(Ref<impl::MaterialData>);
     void InitBuffer(byte const *);
     void SetUniform(uint32_t offset, void const* data, uint32_t size);
+
+  private:
+
   };
 
   class Material : public impl::MaterialBase
@@ -89,11 +95,12 @@ namespace Engine
 
     static Ref<Material> Create(Ref<RendererProgram>);
     Ref<MaterialInstance> SpawnInstance();
-    void SetUniform(std::string const& uniform, void const * data, uint32_t size);
+    void SetUniform(std::string const& name, void const* data, uint32_t size);
+    void SetTexture(std::string const& name, Ref<Texture2D> const&);
 
   private:
+    Dg::Map_AVL<std::string, ResourceID>  m_textureBindings;
     Dg::DynamicArray<Ref<MaterialInstance>> m_materialInstances;
-    //std::vector<Ref<Texture>> m_Textures;
     uint32_t m_renderFlags;
   };
 

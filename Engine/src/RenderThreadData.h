@@ -9,6 +9,7 @@
 #include "RT_VertexArray.h"
 #include "RT_RendererProgram.h"
 #include "RT_BindingPoint.h"
+#include "RT_Texture.h"
 #include "ResourceID.h"
 
 namespace Engine
@@ -30,6 +31,7 @@ namespace Engine
     Dg::OpenHashMap<RefID, RT_UniformBuffer>        UBOs;
     Dg::OpenHashMap<RefID, RT_ShaderStorageBuffer>  SSBOs;
     Dg::OpenHashMap<RefID, RT_BindingPoint>         bindingPoints;
+    Dg::OpenHashMap<RefID, RT_Texture2D>            textures;
     Dg::OpenHashMap<RefID, RT_RendererProgram>      rendererPrograms;
   };
 }

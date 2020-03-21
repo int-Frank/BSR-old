@@ -23,8 +23,7 @@ namespace Engine
 
   UIWidget::~UIWidget()
   {
-    for (int i = 0; i < ACTION_COUNT; i++)
-      delete m_bindings[i];
+
   }
 
   bool UIWidget::IsInside(float a_x, float a_y)
@@ -48,13 +47,6 @@ namespace Engine
   bool UIWidget::HandleNewCursonPostion(float a_x, float a_y)
   {
     return false;
-  }
-
-  void UIWidget::Bind(Action a_action, Message* a_pMsg)
-  {
-    int index = static_cast<int>(a_action);
-    delete m_bindings[index];
-    m_bindings[index] = a_pMsg;
   }
 
   bool UIWidget::HasFocus() const

@@ -23,31 +23,19 @@ namespace Engine
     return false;
   }
 
-  void UIButton::DoAction(Action a_action)
+  void UIButton::DoEventGainFocus()
   {
-    int index = static_cast<int>(a_action);
+    LOG_WARN("HOVER ON");
+  }
 
-    switch (a_action)
-    {
-      case Action::Activate:
-      {
-        LOG_ERROR("ACTIVATE");
-        break;
-      }
-      case Action::HoverOn:
-      {
-        LOG_WARN("HOVER ON");
-        break;
-      }
-      case Action::HoverOff:
-      {
-        LOG_DEBUG("HOVER OFF");
-        break;
-      }
-    }
+  void UIButton::DoEventLoseFocus()
+  {
+    LOG_WARN("HOVER OFF");
+  }
 
-    if (m_bindings[index])
-      MessageBus::Instance()->Register(m_bindings[index]->CloneAsTRef());
+  void UIButton::DoEventActivate()
+  {
+    LOG_ERROR("ACTIVATE");
   }
 
   void UIButton::Render()

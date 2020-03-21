@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "core_utils.h"
+#include "Serialize.h"
 
 namespace Core
 {
@@ -26,5 +27,24 @@ namespace Core
         (std::istreambuf_iterator<char>()));
     }
     return content;
+  }
+
+  bool AreEqual(std::string const & a_str, void const * a_serStr)
+  {
+    uint32_t sze(0);
+    void const * buf = a_serStr;
+    buf = Deserialize(buf, &sze);
+
+    if (a_str.size() != size_t(sze))
+      return false;
+
+    char const * cstr = (char const *)(buf);
+
+    for (uint32_t i = 0; i < sze; i++)
+    {
+       if (a_str[i] != cstr[i])
+         return false;
+    }
+    return true;
   }
 }

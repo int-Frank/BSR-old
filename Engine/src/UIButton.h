@@ -16,7 +16,9 @@ namespace Engine
     ~UIButton();
 
     bool HandleNewCursonPostion(float x, float y) override;
-    void DoAction(Action) override;
+    void DoEventGainFocus() override;
+    void DoEventLoseFocus() override;
+    void DoEventActivate() override;
 
     void Render() override;
 

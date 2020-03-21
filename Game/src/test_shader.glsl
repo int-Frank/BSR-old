@@ -92,6 +92,9 @@ layout (std140) uniform MyUniformBlock
     float         ub_array[16];
 }; 
 
+uniform sampler2D texture1;
+uniform sampler2D texture2[3];
+
 out vec4 color;
 
 void main(void)

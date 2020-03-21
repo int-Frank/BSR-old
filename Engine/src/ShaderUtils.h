@@ -7,7 +7,6 @@
 
 #define SD32(x) static_cast<uint32_t>(::Engine::ShaderDomain::x)
 #define SDT32(x) static_cast<uint32_t>(::Engine::ShaderDataType::x)
-#define SRT32(x) static_cast<uint32_t>(::Engine::ShaderResourceType::x)
 #define SBT32(x) static_cast<uint32_t>(::Engine::StorageBlockType::x)
 
 namespace Engine
@@ -33,7 +32,10 @@ namespace Engine
     MAT3x2, MAT3x4,
     MAT4x2, MAT4x3,
 
-    STRUCT
+    TEXTURE2D,
+    //TEXTURECUBE
+
+    STRUCT //This must always be last
   };
 
   enum class ShaderDataClass : uint32_t
@@ -42,7 +44,8 @@ namespace Engine
     Scalar,
     Vector,
     Matrix,
-    Struct
+    Struct,
+    Texture
   };
 
   enum class MatrixLayout : uint32_t
@@ -57,14 +60,8 @@ namespace Engine
     Bool,
     Int,
     UInt,
+    UInt64,
     Float
-  };
-
-  enum class ShaderResourceType : uint32_t
-  {
-    NONE        = 0,
-    TEXTURE2D,
-    TEXTURECUBE
   };
 
 #define ShaderDomain_COUNT 3
@@ -116,9 +113,6 @@ namespace Engine
   ShaderDataBaseType GetShaderDataBaseType(ShaderDataType);
 
   uint32_t SizeOfShaderDataBaseType(ShaderDataBaseType);
-
-  ShaderResourceType StringToShaderResourceType(std::string const&);
-  std::string ShaderResourceTypeToString(ShaderResourceType);
 
   //------------------------------------------------------------------------------------
   // OpenGL specific

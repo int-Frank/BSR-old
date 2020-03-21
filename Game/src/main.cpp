@@ -9,11 +9,31 @@
 #include "VertexArray.h"
 #include "RendererProgram.h"
 #include "Material.h"
+#include "Texture.h"
 
 #include "UICanvas.h"
 #include "UIGroup.h"
 #include "UIButton.h"
 #include "EngineMessages.h"
+
+RGBA * GenerateTexture(uint32_t a_width, uint32_t a_height)
+{
+  RGBA * pixels = new RGBA[a_width * a_height];
+
+  for (uint32_t y = 0; y < a_height; y++)
+  {
+    for (uint32_t x = 0; x < a_width; x++)
+    {
+      uint32_t ind = y * a_width + x;
+      pixels[ind].a(255);
+      pixels[ind].r(y < a_height / 2 ? 255 : 0);
+      pixels[ind].g(x < a_width / 2 ? 255 : 0);
+      pixels[ind].b(0);
+    }
+  }
+
+  return pixels;
+}
 
 class GameLayer : public Engine::Layer
 {
@@ -31,10 +51,10 @@ public:
 
     float verts[] = 
     {
-      -0.5f, 0.5f,
-      0.5f, 0.5f,
-      0.5f, 0.0f,
-      -0.5f, 0.0f
+      -0.5f, 0.5f, 0.0f, 0.0f,
+      0.5f, 0.5f,  1.0, 0.0,
+      0.5f, 0.0f,  1.0, 1.0,
+      -0.5f, 0.0f, 0.0, 1.0
     };
 
     int indices[] = {0, 1, 2, 0, 2, 3};
@@ -42,7 +62,8 @@ public:
     m_vb = Engine::VertexBuffer::Create(verts, SIZEOF32(verts));
     m_vb->SetLayout(
       {
-        { Engine::ShaderDataType::VEC2, "a_Position" }
+        { Engine::ShaderDataType::VEC2, "inPos" }, //TODO make use of these strings. Maybe verify with rendererProgram?
+        { Engine::ShaderDataType::VEC2, "inTexCoord" },
       });
 
     m_ib = Engine::IndexBuffer::Create(indices, SIZEOF32(indices));
@@ -56,25 +77,23 @@ public:
       {
         { Engine::ShaderDomain::Vertex, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/vs.glsl" },
         { Engine::ShaderDomain::Fragment, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/fs.glsl" }
-        //{ Engine::ShaderDomain::Fragment, Engine::StrType::Path, "D:/dev/projects/BSR/Game/src/test_shader.glsl" }
       });
+
+    Engine::TextureFlags flags;
+    flags.SetFilter(Engine::TextureFilter::Linear);
+    flags.SetIsMipmapped(false);
+    flags.SetWrap(Engine::TextureWrap::Clamp);
+    m_texture = Engine::Texture2D::Create();
+    m_texture->Set(256, 256, GenerateTexture(256, 256), flags);
+    m_texture->Upload();
 
     m_material = Engine::Material::Create(refProg);
 
-    int t = 1;
-    int f = 0;
-
-    int vals[3] = {1, 0, 1};
-    float fval = 3.0f;
-
-    m_material->SetUniform("u_myStruct.myBool", vals, 4 * 3);
-    m_material->SetUniform("u_float", &fval, 4);
-
+    m_material->SetTexture("texture1", m_texture);
     m_material->Bind();
 
     Engine::UIGroup* pg0 = new Engine::UIGroup("g0", vec3(0.25f, 0.25f, 0.0f), vec3(0.5f, 0.5f, 0.0f));
     Engine::UIButton* btn0 = new Engine::UIButton("btn0", vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.5f, 0.0f));
-    //btn0->Bind(Engine::UIWidget::Action::HoverOn);
     pg0->Add(btn0);
     m_canvas.Add(pg0);
 
@@ -135,6 +154,7 @@ private:
   Engine::Ref<Engine::VertexBuffer>     m_vb;
   Engine::Ref<Engine::IndexBuffer>      m_ib;
   Engine::Ref<Engine::VertexArray>      m_va;
+  Engine::Ref<Engine::Texture2D>        m_texture;
   Engine::Ref<Engine::Material>         m_material;
   Engine::UICanvas                      m_canvas;
 };

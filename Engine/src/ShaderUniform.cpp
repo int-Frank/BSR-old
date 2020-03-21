@@ -72,50 +72,59 @@ namespace Engine
       Flags         = Size + static_cast<uint32_t>(Size::Size)
     };
 
-    static uint32_t const INTSIZE = uint32_t(sizeof(UniformBufferElementHeader::IntType));
+    static uint32_t const INTSIZE = uint32_t(sizeof(uint32_t));
   }
 
   UniformBufferElementHeader::UniformBufferElementHeader()
-    : data(0)
+    : m_data(0)
   {
   
   }
 
-  UniformBufferElementHeader::UniformBufferElementHeader(IntType a_data)
-    : data(a_data)
+  size_t UniformBufferElementHeader::SerializedSize() const
   {
+    return sizeof(uint32_t);
+  }
 
+  void * UniformBufferElementHeader::Serialize(void * a_buf) const
+  {
+    return Core::Serialize(a_buf, &m_data);
+  }
+
+  void const * UniformBufferElementHeader::Deserialize(void const * a_buf)
+  {
+    return Core::Deserialize(a_buf, &m_data);
   }
 
   void UniformBufferElementHeader::SetSize(uint32_t a_count)
   {
-    BSR_ASSERT(a_count <= IntType(Dg::Mask<IntType,
+    BSR_ASSERT(a_count <= uint32_t(Dg::Mask<uint32_t,
       static_cast<uint32_t>(impl_UniformBufferElementHeader::Begin::Size),
       static_cast<uint32_t>(impl_UniformBufferElementHeader::Size::Size)>::value));
     
-    data = Dg::SetSubInt<IntType,
+    m_data = Dg::SetSubInt<uint32_t,
       static_cast<uint32_t>(impl_UniformBufferElementHeader::Begin::Size),
-      static_cast<uint32_t>(impl_UniformBufferElementHeader::Size::Size)>(data, a_count);
+      static_cast<uint32_t>(impl_UniformBufferElementHeader::Size::Size)>(m_data, a_count);
   }
 
   void UniformBufferElementHeader::SetFlag(Flag a_flag, bool a_val)
   {
-    IntType val = a_val ? 1 : 0;
+    uint32_t val = a_val ? 1 : 0;
     uint32_t shft = a_flag + static_cast<uint32_t>(impl_UniformBufferElementHeader::Begin::Flags);
-    data = Dg::SetSubInt<IntType>(data, val, (1 << shft), 1);
+    m_data = Dg::SetSubInt<uint32_t>(m_data, val, (1 << shft), 1);
   }
 
   uint32_t UniformBufferElementHeader::GetSize() const
   {
-    return Dg::GetSubInt<IntType,
+    return Dg::GetSubInt<uint32_t,
       static_cast<uint32_t>(impl_UniformBufferElementHeader::Begin::Size),
-      static_cast<uint32_t>(impl_UniformBufferElementHeader::Size::Size)>(data);
+      static_cast<uint32_t>(impl_UniformBufferElementHeader::Size::Size)>(m_data);
   }
 
   bool UniformBufferElementHeader::Is(Flag a_flag) const
   {
     uint32_t shft = a_flag + static_cast<uint32_t>(impl_UniformBufferElementHeader::Begin::Flags);
-    return Dg::GetSubInt<uint32_t>(data, (1 << shft), 1) != 0;
+    return Dg::GetSubInt<uint32_t>(m_data, (1 << shft), 1) != 0;
   }
 
   //---------------------------------------------------------------------------------------------------
@@ -323,46 +332,6 @@ namespace Engine
   //---------------------------------------------------------------------------------------------------
 
   //---------------------------------------------------------------------------------------------------
-  // ShaderResourceDeclaration
-  //---------------------------------------------------------------------------------------------------
-  ShaderResourceDeclaration::ShaderResourceDeclaration(ShaderResourceType a_type,
-                                                       std::string const & a_name, 
-                                                       uint32_t a_count)
-    : m_type(a_type)
-    , m_name(a_name)
-    , m_count(a_count)
-    , m_register(0)
-  {
-
-  }
-  void ShaderResourceDeclaration::Log(int a_indent)
-  {
-    std::string indent(size_t(a_indent)  * 2, ' ');
-    LOG_DEBUG("{}RESOURCE - name: {}, count: {}, reg: {}, type: {}", 
-      indent.c_str(), m_name.c_str(), m_count, m_register, ShaderResourceTypeToString(m_type).c_str());
-  }
-
-  std::string const & ShaderResourceDeclaration::GetName() const
-  {
-    return m_name;
-  }
-
-  uint32_t ShaderResourceDeclaration::GetRegister() const
-  {
-    return m_register;
-  }
-
-  uint32_t ShaderResourceDeclaration::GetCount() const
-  {
-    return m_count;
-  }
-
-  ShaderResourceType ShaderResourceDeclaration::GetType() const
-  {
-    return m_type;
-  }
-
-  //---------------------------------------------------------------------------------------------------
   // ShaderUniformDeclaration
   //---------------------------------------------------------------------------------------------------
   ShaderUniformDeclaration::ShaderUniformDeclaration(ShaderDataType a_type, 
@@ -374,10 +343,8 @@ namespace Engine
     , m_count(a_count)
     , m_isArray(a_isArray)
     , m_dataOffset(0)
-    , m_dataSize(0)
   {
     BSR_ASSERT(a_type != ShaderDataType::STRUCT);
-    m_dataSize = SizeOfShaderDataType(m_type) * m_count + impl_UniformBufferElementHeader::INTSIZE;
   }
   
   void ShaderUniformDeclaration::Log() const
@@ -416,7 +383,7 @@ namespace Engine
 
   uint32_t ShaderUniformDeclaration::GetDataSize() const
   {
-    return m_dataSize;
+    return SizeOfShaderDataType(m_type) * m_count + impl_UniformBufferElementHeader::INTSIZE;
   }
 
   void ShaderUniformDeclaration::SetDataOffset(uint32_t a_offset)
@@ -534,7 +501,7 @@ namespace Engine
     return __FindDecls(a_str, UNIFORM_VAR_EXPRESSION);
   }
 
-  static bool IsTypeStringResource(const std::string& type)
+  static bool IsTypeStringTexture(const std::string& type)
   {
     if (type == "sampler2D")		return true;
     if (type == "samplerCube")		return true;
@@ -581,11 +548,7 @@ namespace Engine
   void ShaderData::Clear()
   {
     m_uniforms.clear();
-
-    for (auto ptr : m_resources)
-      delete ptr;
-
-    m_resources.clear();
+    //m_textures.clear();
   }
 
   void ShaderData::Parse()
@@ -658,35 +621,27 @@ namespace Engine
 
     for (auto const& var : vars)
     {
-      if (IsTypeStringResource(var.type))
-      {
-        ShaderResourceDeclaration* pDecl = new ShaderResourceDeclaration(StringToShaderResourceType(var.type), var.name, var.count);
-        m_resources.push_back(pDecl);
-      }
-      else
-      {
-        ShaderDataType t = StringToShaderDataType(var.type);
+      ShaderDataType t = StringToShaderDataType(var.type);
 
-        if (t == ShaderDataType::NONE)
+      if (t == ShaderDataType::NONE)
+      {
+        size_t structIndex = FindStruct(var.type, a_structs);
+        BSR_ASSERT(structIndex != INVALID_INDEX, "Undefined struct!");
+        ShaderStruct const * pStruct = &a_structs.data[structIndex];
+        for (size_t i = 0; i < pStruct->GetFields().size(); i++)
         {
-          size_t structIndex = FindStruct(var.type, a_structs);
-          BSR_ASSERT(structIndex != INVALID_INDEX, "Undefined struct!");
-          ShaderStruct const * pStruct = &a_structs.data[structIndex];
-          for (size_t i = 0; i < pStruct->GetFields().size(); i++)
-          {
-            ShaderUniformDeclaration const* pUniform = &pStruct->GetFields()[i];
-            std::string name = var.name + "." + pUniform->GetName();
-            ShaderUniformDeclaration decl(pUniform->GetType(), name, pUniform->IsArray(), pUniform->GetCount());
-            decl.GetDomains().AddDomain(a_domain);
-            PushUniform(decl);
-          }
-        }
-        else
-        {
-          ShaderUniformDeclaration decl(t, var.name, var.isArray, var.count);
+          ShaderUniformDeclaration const* pUniform = &pStruct->GetFields()[i];
+          std::string name = var.name + "." + pUniform->GetName();
+          ShaderUniformDeclaration decl(pUniform->GetType(), name, pUniform->IsArray(), pUniform->GetCount());
           decl.GetDomains().AddDomain(a_domain);
           PushUniform(decl);
         }
+      }
+      else
+      {
+        ShaderUniformDeclaration decl(t, var.name, var.isArray, var.count);
+        decl.GetDomains().AddDomain(a_domain);
+        PushUniform(decl);
       }
     }
   }
@@ -703,7 +658,7 @@ namespace Engine
 
   void ShaderData::PushUniform(ShaderUniformDeclaration a_decl)
   {
-    for (ShaderUniformDeclaration & decl: m_uniforms)
+    for (ShaderUniformDeclaration& decl: m_uniforms)
     {
       if (a_decl == decl)
       {
@@ -744,12 +699,12 @@ namespace Engine
     return m_source;
   }
 
-  ShaderUniformList const & ShaderData::GetUniforms() const
+  ShaderUniformList const& ShaderData::GetUniforms() const
   {
     return m_uniforms;
   }
 
-  ShaderUniformList & ShaderData::GetUniforms()
+  ShaderUniformList& ShaderData::GetUniforms()
   {
     return m_uniforms;
   }
