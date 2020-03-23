@@ -35,7 +35,7 @@ namespace Engine
     TEXTURE2D,
     //TEXTURECUBE
 
-    STRUCT //This must always be last
+    STRUCT //This must always be last. Do I even need this?
   };
 
   enum class ShaderDataClass : uint32_t

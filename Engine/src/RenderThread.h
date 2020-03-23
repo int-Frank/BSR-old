@@ -4,7 +4,6 @@
 
 #include <thread>
 #include <atomic>
-#include <condition_variable>
 
 namespace Engine
 {
@@ -43,6 +42,7 @@ namespace Engine
   private:
 
     void WaitAndLock(int);
+    void WaitForLock(int);
     void Unlock(int);
 
     enum LockState
@@ -54,7 +54,6 @@ namespace Engine
     int m_index;
     LockState m_locks[2]; //Do these need to be atomic??
     std::atomic<ReturnCode> m_returnCode;
-    std::condition_variable m_cv;
     std::atomic<bool> m_shouldStop;
 
     std::thread m_renderThread;

@@ -58,12 +58,13 @@ namespace Engine
     void SetFocus(bool);
     bool HasFocus() const;
 
-    virtual void Render()
-    {
-    }
+    virtual void Render(){}
 
     void Translate(float xMin, float yMin);
     void Scale(float sx, float sy);
+
+    void SetGlobalTranslation(float xMin, float yMin);
+    void SetGlobalScale(float sx, float sy);
 
     void SetTranslation(float xMin, float yMin);
     void SetScale(float sx, float sy);
@@ -73,9 +74,7 @@ namespace Engine
     vec3 GetScale() const;
     int GetDepth() const;
 
-    virtual void DepthHasChanged(UIWidget* child)
-    {
-    }
+    virtual void DepthHasChanged(UIWidget* child){}
 
     void SetGlobalToLocal();
     mat3 GetGlobalToLocal() const;

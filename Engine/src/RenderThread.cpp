@@ -80,14 +80,7 @@ namespace Engine
   bool RenderThread::Start()
   {
     m_renderThread = std::thread(RenderThreadWorker);
-    {
-      std::mutex mutex_start;
-      std::unique_lock<std::mutex> lck(mutex_start);
-      m_cv.wait(lck, [this]
-        {
-          return m_returnCode != ReturnCode::None;
-        });
-    }
+    WaitAndLock(m_index);
     return m_returnCode == ReturnCode::Ready;
   }
 
@@ -107,6 +100,12 @@ namespace Engine
     m_locks[a_index] = Locked;
   }
 
+  void RenderThread::WaitForLock(int a_index)
+  {
+    while (m_locks[a_index] != Locked)
+      std::this_thread::yield();
+  }
+
   void RenderThread::Unlock(int a_index)
   {
     m_locks[a_index] = Unlocked;
@@ -115,6 +114,7 @@ namespace Engine
   void RenderThread::Sync()
   {
     int renderInd = OTHER(m_index);
+    WaitForLock(m_index); // In some cases, the reader thread might be stuck and not even locked this yet
     WaitAndLock(renderInd);
   }
 
@@ -130,13 +130,14 @@ namespace Engine
   {
     int renderInd = OTHER(m_index);
     m_returnCode = ReturnCode::Ready;
-    m_cv.notify_all();
+    Unlock(m_index);
+    WaitForLock(m_index); //Wait for the main thread to lock this
   }
 
   void RenderThread::RenderThreadInitFailed()
   {
     m_returnCode = ReturnCode::Fail;
-    m_cv.notify_all();
+    Unlock(m_index);
   }
 
   void RenderThread::RenderThreadShutDownFinished()

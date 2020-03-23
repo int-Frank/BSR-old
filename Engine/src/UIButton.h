@@ -25,7 +25,7 @@ namespace Engine
     void SetText(std::string const& text);
     void SetTextSize(int);
     void SetFont(uint32_t id);
-    void SetColor(RGBA normal, RGBA hover);
+    void SetBackgroundColor(RGBA normal, RGBA hover);
     void SetTextColor(RGBA normal, RGBA hover);
   };
 }
