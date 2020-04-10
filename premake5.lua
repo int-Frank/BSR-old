@@ -34,7 +34,16 @@ group "Depenencies"
     targetdir (projOutput)
     objdir (projOutputInt)
     systemversion "latest"
-    include "Vendor/DgLib/premake5_DgLib.lua"
+    language "C++"
+    cppdialect "C++17"
+  
+    files 
+    {
+      "Vendor/DgLib/src/**.h",
+      "Vendor/DgLib/src/**.cpp",
+    }
+  
+    include "./DgLib_vpaths.lua"
     
     filter "configurations:Debug"
 		  runtime "Debug"
