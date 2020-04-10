@@ -114,7 +114,10 @@ namespace Engine
   void RenderThread::Sync()
   {
     int renderInd = OTHER(m_index);
-    WaitForLock(m_index); // In some cases, the reader thread might be stuck and not even locked this yet
+    // It might be the case the main thread might do a complete pass before the 
+    // render thread has even locked this. This might happen if the render thread
+    // stalled for some reason while waiting at the end of a frame.
+    WaitForLock(m_index); 
     WaitAndLock(renderInd);
   }
 
