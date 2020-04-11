@@ -1,3 +1,4 @@
+//@group UI
 
 #include "UICommon.h"
 #include "UIWidget.h"

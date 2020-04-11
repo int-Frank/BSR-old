@@ -198,7 +198,7 @@ project "Engine"
 		"%{IncludeDir.SDL2}"
   }
   
-  include "Engine/Engine_vpaths.lua"
+  include "./Engine_vpaths.lua"
   
   filter "configurations:Debug"
 		defines "BSR_DEBUG"

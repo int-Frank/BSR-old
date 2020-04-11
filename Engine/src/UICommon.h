@@ -1,3 +1,5 @@
+//@group UI
+
 #ifndef UICOMMON_H
 #define UICOMMON_H
 
