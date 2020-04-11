@@ -1,5 +1,6 @@
 
 #include <chrono>
+#include <map>
 
 #include "Engine.h"
 #include "Layer_InputHandler.h"
@@ -15,6 +16,65 @@
 #include "UIGroup.h"
 #include "UIButton.h"
 #include "EngineMessages.h"
+#include "DgBinPacker.h"
+#include "DgRNG_Local.h"
+
+#define TEXTURE_XY 512
+
+RGBA * GenerateBinTexture()
+{
+  int itemMin = 32;
+  int itemMax = 64;
+
+  int nItems = 72;
+
+  Dg::RNG_Local rng;
+  rng.SetSeed(13);
+
+  struct MyItem
+  {
+    int dim[2];
+    int pos[2];
+  };
+
+  Dg::BinPacker<int> rp;
+  std::map<Dg::BinPkr_ItemID, MyItem> itemMap;
+
+  for (int i = 0; i < nItems; i++)
+  {
+    MyItem item;
+    item.dim[Dg::Element::width] = rng.GetUintRange(itemMin, itemMax);
+    item.dim[Dg::Element::height] = rng.GetUintRange(itemMin, itemMax);
+
+    Dg::BinPkr_ItemID id = rp.RegisterItem(item.dim[Dg::Element::width], item.dim[Dg::Element::height]);
+    itemMap.insert(std::pair<Dg::BinPkr_ItemID, MyItem>(id, item));
+  }
+
+  Dg::BinPacker<int>::Bin bin;
+  bin.dimensions[0] = TEXTURE_XY;
+  bin.dimensions[1] = TEXTURE_XY;
+  bin.maxDimensions[0] = TEXTURE_XY;
+  bin.maxDimensions[1] = TEXTURE_XY;
+
+  rp.Fill(bin);
+
+  Dg::DynamicArray<MyItem> items;
+
+  for (auto const & item : bin.items)
+  {
+    Dg::BinPkr_ItemID id = item.id;
+    itemMap.at(id).pos[Dg::Element::x] = item.xy[Dg::Element::x];
+    itemMap.at(id).pos[Dg::Element::y] = item.xy[Dg::Element::y];
+    items.push_back(itemMap.at(id));
+  }
+
+  RGBA * pPixels = new RGBA[TEXTURE_XY * TEXTURE_XY];
+
+  for (auto const & item : items)
+  {
+    
+  }
+}
 
 RGBA * GenerateTexture(uint32_t a_width, uint32_t a_height)
 {
