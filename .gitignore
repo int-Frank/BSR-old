@@ -100,9 +100,7 @@ StyleCopReport.xml
 *_h.h
 *.ilk
 *.meta
-*.obj
 *.iobj
-*.pch
 *.pdb
 *.ipdb
 *.pgc
@@ -383,3 +381,5 @@ MigrationBackup/
 *.vcxproj
 *.sln
 build/
+/DgLib_vpaths.lua
+/Engine_vpaths.lua
