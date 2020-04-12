@@ -23,13 +23,13 @@
 
 RGBA * GenerateBinTexture()
 {
-  int itemMin = 32;
+  int itemMin = 8;
   int itemMax = 64;
 
-  int nItems = 72;
+  int nItems = 220;
 
   Dg::RNG_Local rng;
-  rng.SetSeed(13);
+  rng.SetSeed(14);
 
   struct MyItem
   {
@@ -51,12 +51,16 @@ RGBA * GenerateBinTexture()
   }
 
   Dg::BinPacker<int>::Bin bin;
-  bin.dimensions[0] = TEXTURE_XY;
-  bin.dimensions[1] = TEXTURE_XY;
+  bin.dimensions[0] = itemMax;
+  bin.dimensions[1] = itemMax;
   bin.maxDimensions[0] = TEXTURE_XY;
   bin.maxDimensions[1] = TEXTURE_XY;
 
-  rp.Fill(bin);
+  size_t leftovers = rp.Fill(bin);
+  //bin.items.clear();
+  //leftovers = rp.Fill(bin);
+
+  LOG_INFO("Leftovers: {}", leftovers);
 
   Dg::DynamicArray<MyItem> items;
 
@@ -68,12 +72,48 @@ RGBA * GenerateBinTexture()
     items.push_back(itemMap.at(id));
   }
 
+  LOG_INFO("Item count: {}", items.size());
+
   RGBA * pPixels = new RGBA[TEXTURE_XY * TEXTURE_XY];
+
+  for (int i = 0; i < TEXTURE_XY * TEXTURE_XY; i++)
+  {
+    pPixels[i].a(255);
+    pPixels[i].r(0);
+    pPixels[i].g(0);
+    pPixels[i].b(0);
+  }
 
   for (auto const & item : items)
   {
-    
+    int overlap = 0;
+    for (auto item2 : items)
+    {
+      if (item.pos[0] == item2.pos[0] && item.pos[1] == item2.pos[1])
+        overlap++;
+    }
+
+    if (overlap > 1)
+    {
+      LOG_INFO("FOUND: [{}, {}], {}", item.pos[0], item.pos[1], overlap);
+    }
+    rng.SetSeed(234);
+    uint32_t r = rng.GetUintRange(128, 255);
+    uint32_t g = rng.GetUintRange(128, 255);
+    uint32_t b = rng.GetUintRange(128, 255);
+
+    for (int x = item.pos[Dg::Element::x]; x < item.pos[Dg::Element::x] + item.dim[Dg::Element::width]; x++)
+    {
+      for (int y = item.pos[Dg::Element::y]; y < item.pos[Dg::Element::y] + item.dim[Dg::Element::height]; y++)
+      {
+        pPixels[x + y * TEXTURE_XY].a(255);
+        pPixels[x + y * TEXTURE_XY].r(r);
+        pPixels[x + y * TEXTURE_XY].g(g);
+        pPixels[x + y * TEXTURE_XY].b(b);
+      }
+    }
   }
+  return pPixels;
 }
 
 RGBA * GenerateTexture(uint32_t a_width, uint32_t a_height)
@@ -111,10 +151,10 @@ public:
 
     float verts[] = 
     {
-      -0.5f, 0.5f, 0.0f, 0.0f,
-      0.5f, 0.5f,  1.0, 0.0,
-      0.5f, 0.0f,  1.0, 1.0,
-      -0.5f, 0.0f, 0.0, 1.0
+      -1.0f, 1.0f, 0.0f, 0.0f,
+      0.5f, 1.0f,  1.0, 0.0,
+      0.5f, -0.66666f,  1.0, 1.0,
+      -1.0f, -0.66666f, 0.0, 1.0
     };
 
     int indices[] = {0, 1, 2, 0, 2, 3};
@@ -144,7 +184,7 @@ public:
     flags.SetIsMipmapped(false);
     flags.SetWrap(Engine::TextureWrap::Clamp);
     m_texture = Engine::Texture2D::Create();
-    m_texture->Set(256, 256, GenerateTexture(256, 256), flags);
+    m_texture->Set(TEXTURE_XY, TEXTURE_XY, GenerateBinTexture(), flags);
     m_texture->Upload();
 
     m_material = Engine::Material::Create(refProg);

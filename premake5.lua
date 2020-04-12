@@ -40,7 +40,7 @@ group "Depenencies"
     files 
     {
       "Vendor/DgLib/src/**.h",
-      "Vendor/DgLib/src/**.cpp",
+      "Vendor/DgLib/src/**.cpp"
     }
   
     include "./DgLib_vpaths.lua"
