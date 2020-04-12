@@ -18,18 +18,91 @@ projOutputInt = "%{wks.location}/build/intermediate/%{prj.name}-%{cfg.buildcfg}"
 IncludeDir = {}
 IncludeDir["Glad"] = "%{wks.location}/Vendor/GLAD/include"
 IncludeDir["SDL2"] = "%{wks.location}/Vendor/SDL2-2.0.9/include"
-IncludeDir["imgui"] = "%{wks.location}/Vendor/imgui"
-IncludeDir["spdlog"] = "%{wks.location}/Vendor/spdlog/include"
-IncludeDir["DgLib"] = "%{wks.location}/Vendor/DgLib/src"
+IncludeDir["imgui"] = "%{wks.location}/Vendor/imgui/imgui"
+IncludeDir["spdlog"] = "%{wks.location}/Vendor/spdlog/spdlog/include"
+IncludeDir["DgLib"] = "%{wks.location}/Vendor/DgLib/DgLib/src"
 IncludeDir["cppunitlite"] = "%{wks.location}/Vendor/cppunitlite"
 
 group "Depenencies"
 
-  include "Vendor/GLAD/premake5_GLAD.lua"
-  include "Vendor/imgui/premake5_imgui.lua"
+  project "Glad"
+    kind "StaticLib"
+    language "C"
+    staticruntime "on"
+    location "Vendor/GLAD"
+    
+    targetdir (projOutput)
+    objdir (projOutputInt)
+    
+    files
+    {
+      "Vendor/GLAD/include/glad/glad.h",
+      "Vendor/GLAD/include/KHR/khrplatform.h",
+      "Vendor/GLAD/src/glad.c"
+    }
+
+    includedirs
+    {
+      "Vendor/GLAD/include"
+    }
+    
+    filter "system:windows"
+      systemversion "latest"
+
+    filter "configurations:Debug"
+	  	runtime "Debug"
+	  	symbols "on"
+
+	  filter "configurations:Release"
+	  	runtime "Release"
+	  	optimize "on"
+
+	  filter "configurations:Dist"
+	  	runtime "Release"
+	  	optimize "on"
+    
+  project "imgui"
+    kind "StaticLib"
+    language "C++"
+    systemversion "latest"
+    cppdialect "C++17"
+    staticruntime "On"
+    location "Vendor/imgui/imgui"
+  
+    targetdir (projOutput)
+    objdir (projOutputInt)
+    
+    files
+    {
+        "imconfig.h",
+        "imgui.h",
+        "imgui.cpp",
+        "imgui_draw.cpp",
+        "imgui_internal.h",
+        "imgui_widgets.cpp",
+        "imstb_rectpack.h",
+        "imstb_textedit.h",
+        "imstb_truetype.h",
+        "imgui_demo.cpp"
+    }
+    
+    filter { "system:windows", "configurations:Release" }
+        buildoptions "/MT"
+        
+    filter "configurations:Debug"
+		  runtime "Debug"
+		  symbols "on"
+
+	  filter "configurations:Release"
+		  runtime "Release"
+		  optimize "on"
+
+	  filter "configurations:Dist"
+		  runtime "Release"
+		  optimize "on"
     
   project "DgLib"
-    location "Vendor/DgLib"
+    location "Vendor/DgLib/DgLib"
     kind "StaticLib"
     targetdir (projOutput)
     objdir (projOutputInt)
@@ -39,8 +112,10 @@ group "Depenencies"
   
     files 
     {
-      "Vendor/DgLib/src/**.h",
-      "Vendor/DgLib/src/**.cpp"
+      "Vendor/DgLib/DgLib/src/**.h",
+      "Vendor/DgLib/DgLib/src/**.cpp",
+      "Vendor/DgLib/DgLib/src/impl/**.h",
+      "Vendor/DgLib/DgLib/src/impl**.cpp"
     }
   
     include "./DgLib_vpaths.lua"
